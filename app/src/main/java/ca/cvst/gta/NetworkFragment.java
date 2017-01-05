@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -112,22 +113,6 @@ public class NetworkFragment extends Fragment {
         }
 
         /**
-         * Wrapper class that serves as a union of a result value and an exception. When the download
-         * task has completed, either the result value or exception can be a non-null value.
-         * This allows you to pass exceptions to the UI thread that were thrown during doInBackground().
-         */
-        public class Result {
-            public String mResultValue;
-            public Exception mException;
-            public Result(String resultValue) {
-                mResultValue = resultValue;
-            }
-            public Result(Exception exception) {
-                mException = exception;
-            }
-        }
-
-        /**
          * Cancel background network operation if we do not have network connectivity.
          */
         @Override
@@ -160,7 +145,7 @@ public class NetworkFragment extends Fragment {
                     } else {
                         throw new IOException("No response received.");
                     }
-                } catch(Exception e) {
+                } catch (Exception e) {
                     result = new Result(e);
                 }
             }
@@ -191,22 +176,24 @@ public class NetworkFragment extends Fragment {
 
         /**
          * Given a URL, sets up a connection and gets the HTTP response body from the server.
-         * If the network request is successful, it returns the response body in String form. Otherwise,
+         * If the network request is successful, it returns the response body in String form.
+         * Otherwise,
          * it will throw an IOException.
          */
         private String downloadUrl(URL url) throws IOException {
             InputStream stream = null;
-            HttpsURLConnection connection = null;
+            HttpURLConnection connection = null;
             String result = null;
             try {
-                connection = (HttpsURLConnection) url.openConnection();
+                connection = (HttpURLConnection) url.openConnection();
                 // Timeout for reading InputStream arbitrarily set to 3000ms.
                 connection.setReadTimeout(3000);
                 // Timeout for connection.connect() arbitrarily set to 3000ms.
                 connection.setConnectTimeout(3000);
                 // For this use case, set HTTP method to GET.
                 connection.setRequestMethod("GET");
-                // Already true by default but setting just in case; needs to be true since this request
+                // Already true by default but setting just in case; needs to be true since this
+                // request
                 // is carrying an input (response) body.
                 connection.setDoInput(true);
                 // Open communications link (network traffic occurs here).
@@ -255,12 +242,33 @@ public class NetworkFragment extends Fragment {
             }
             if (numChars != -1) {
                 // The stream was not empty.
-                // Create String that is actual length of response body if actual length was less than
+                // Create String that is actual length of response body if actual length was less
+                // than
                 // max length.
                 numChars = Math.min(numChars, maxLength);
                 result = new String(buffer, 0, numChars);
             }
             return result;
+        }
+
+        /**
+         * Wrapper class that serves as a union of a result value and an exception. When the
+         * download
+         * task has completed, either the result value or exception can be a non-null value.
+         * This allows you to pass exceptions to the UI thread that were thrown during
+         * doInBackground().
+         */
+        public class Result {
+            public String mResultValue;
+            public Exception mException;
+
+            public Result(String resultValue) {
+                mResultValue = resultValue;
+            }
+
+            public Result(Exception exception) {
+                mException = exception;
+            }
         }
     }
 
