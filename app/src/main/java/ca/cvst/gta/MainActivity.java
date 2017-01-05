@@ -1,5 +1,7 @@
 package ca.cvst.gta;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -11,6 +13,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -19,7 +22,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
@@ -29,9 +34,10 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener,
-        OnMapReadyCallback {
+        OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
+    private Marker mMarker;
 
     // Boolean telling us whether a download is in progress, so we don't trigger overlapping
     // downloads with consecutive button clicks.
@@ -91,14 +97,45 @@ public class MainActivity extends AppCompatActivity
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
         LatLng toronto = new LatLng(43.6543, -79.3860);
-        mMap.addMarker(new MarkerOptions().position(toronto).title("Marker in Toronto"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(toronto));
+        mMarker = mMap.addMarker(new MarkerOptions()
+                .position(toronto)
+                .icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("ttc",25,25)))
+                .title("Marker in Toronto"));
+
+        mMarker.setTag("data set in onMapReady");
+        mMap.setOnMarkerClickListener(this);
+
+
+
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(toronto));
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        mMap.setTrafficEnabled(true);
+        //mMap.setTrafficEnabled(true);
         mMap.setBuildingsEnabled(true);
         mMap.getUiSettings().setZoomControlsEnabled(true);
+    }
+
+    @Override
+    public boolean onMarkerClick(final Marker marker) {
+        // Retrieve the data from the marker.
+        String data = marker.getTag().toString();
+
+        Toast.makeText(this, data, Toast.LENGTH_SHORT).show();
+
+        // Check if a click count was set, then display the click count.
+      /*  if (clickCount != null) {
+            clickCount = clickCount + 1;
+            marker.setTag(clickCount);
+            Toast.makeText(this,
+                    marker.getTitle() +
+                            " has been clicked " + clickCount + " times.",
+                    Toast.LENGTH_SHORT).show();
+        }*/
+
+        // Return false to indicate that we have not consumed the event and that we wish
+        // for the default behavior to occur (which is for the camera to move such that the
+        // marker is centered and for the marker's info window to open, if it has one).
+        return false;
     }
 
     @Override
@@ -158,4 +195,13 @@ public class MainActivity extends AppCompatActivity
     public void onClick(View view) {
 
     }
+
+
+    public Bitmap resizeMapIcons(String iconName, int width, int height){
+        Bitmap imageBitmap = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(iconName, "drawable", getPackageName()));
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false);
+        return resizedBitmap;
+    }
+
+
 }
