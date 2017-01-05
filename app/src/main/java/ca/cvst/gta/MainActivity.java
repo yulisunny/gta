@@ -25,7 +25,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener,
-        DownloadCallback<String>, OnMapReadyCallback {//, OnMapReadyCallback{
+        DownloadCallback<String>, OnMapReadyCallback {
 
     static final LatLng MyPos = new LatLng(40, -79);
 
