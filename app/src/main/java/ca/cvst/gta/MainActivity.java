@@ -92,11 +92,10 @@ public class MainActivity extends AppCompatActivity
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng toronto = new LatLng(43.6543, -79.3860);
+        mMap.addMarker(new MarkerOptions().position(toronto).title("Marker in Toronto"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(toronto));
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        mMap.setIndoorEnabled(true);
         mMap.setTrafficEnabled(true);
         mMap.setBuildingsEnabled(true);
         mMap.getUiSettings().setZoomControlsEnabled(true);
