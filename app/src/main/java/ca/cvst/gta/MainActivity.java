@@ -12,11 +12,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -30,7 +28,8 @@ import org.json.JSONObject;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, OnMapReadyCallback {
+        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener,
+        OnMapReadyCallback {
 
     private GoogleMap mMap;
 
@@ -63,6 +62,28 @@ public class MainActivity extends AppCompatActivity
         MapFragment mapFragment = (MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        String url = "http://portal.cvst.ca/api/0.1/ttc";
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray ttcVehicles) {
+                        for (int i = 0; i < ttcVehicles.length(); ++i) {
+                            try {
+                                JSONObject ttcVehicle = ttcVehicles.getJSONObject(i);
+                                System.out.println("ttcVehicle = " + ttcVehicle);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("error = " + error);
+            }
+        });
+        NetworkManager.getInstance(this).addToRequestQueue(jsonArrayRequest);
 
     }
 
@@ -136,27 +157,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onClick(View view) {
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String url = "http://portal.cvst.ca/api/0.1/ttc";
-        JsonArrayRequest stringRequest = new JsonArrayRequest(url,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray ttcVehicles) {
-                        for (int i = 0; i < ttcVehicles.length(); ++i) {
-                            try {
-                                JSONObject ttcVehicle = ttcVehicles.getJSONObject(i);
-                                System.out.println("ttcVehicle = " + ttcVehicle);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println("error = " + error);
-            }
-        });
-        requestQueue.add(stringRequest);
+
     }
 }
