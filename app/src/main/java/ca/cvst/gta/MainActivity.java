@@ -15,20 +15,21 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener,
-        DownloadCallback<String> {//, OnMapReadyCallback{
+        DownloadCallback<String>, OnMapReadyCallback {//, OnMapReadyCallback{
 
     static final LatLng MyPos = new LatLng(40, -79);
 
-    private GoogleMap googleMap;
+    private GoogleMap mMap;
 
     // Keep a reference to the NetworkFragment, which owns the AsyncTask object
     // that is used to execute network ops.
@@ -60,28 +61,10 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
 
-        // SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-        //        .findFragmentById(R.id.map);
-        //mapFragment.getMapAsync(this);
+        MapFragment mapFragment = (MapFragment) getFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
-
-        try {
-            if (googleMap == null) {
-                googleMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
-                        .getMap();
-
-            }
-            googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-            googleMap.setMyLocationEnabled(true);
-            googleMap.setTrafficEnabled(true);
-            googleMap.setIndoorEnabled(true);
-            googleMap.setBuildingsEnabled(true);
-            googleMap.getUiSettings().setZoomControlsEnabled(true);
-            Marker marker = googleMap.addMarker(new MarkerOptions().position(MyPos));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         mNetworkFragment = NetworkFragment.getInstance(getSupportFragmentManager(),
                 "http://portal.cvst.ca/api/0.1/ttc");
@@ -89,7 +72,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    /*@Override
+    @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
@@ -103,7 +86,7 @@ public class MainActivity extends AppCompatActivity
         mMap.setBuildingsEnabled(true);
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
-    }*/
+    }
 
     @Override
     public void onBackPressed() {
