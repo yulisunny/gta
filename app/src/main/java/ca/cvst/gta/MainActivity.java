@@ -13,8 +13,22 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener{//, OnMapReadyCallback{
+
+    static final LatLng MyPos = new LatLng(40, -79);
+
+    private GoogleMap googleMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +54,49 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
+       // SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        //        .findFragmentById(R.id.map);
+        //mapFragment.getMapAsync(this);
+
+
+        try{
+            if(googleMap == null){
+                googleMap = ((MapFragment)getFragmentManager().findFragmentById(R.id.map)).getMap();
+
+            }
+            googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+            googleMap.setMyLocationEnabled(true);
+            googleMap.setTrafficEnabled(true);
+            googleMap.setIndoorEnabled(true);
+            googleMap.setBuildingsEnabled(true);
+            googleMap.getUiSettings().setZoomControlsEnabled(true);
+            Marker marker = googleMap.addMarker(new MarkerOptions().position(MyPos));
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+
     }
+
+    /*@Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        // Add a marker in Sydney and move the camera
+        LatLng sydney = new LatLng(-34, 151);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mMap.setMapType(mMap.MAP_TYPE_HYBRID);
+        mMap.setIndoorEnabled(true);
+        mMap.setTrafficEnabled(true);
+        mMap.setBuildingsEnabled(true);
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+
+    }*/
 
     @Override
     public void onBackPressed() {
