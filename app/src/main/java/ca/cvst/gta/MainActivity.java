@@ -390,6 +390,7 @@ public class MainActivity extends AppCompatActivity
                 webSocket.send("{\"action\": \"subscribe\", \"publisherName\": \"ttc\", \"subscription\": {\"bool\": {\"must\": []}}}");
                 webSocket.setStringCallback(new WebSocket.StringCallback() {
                     public void onStringAvailable(String s) {
+                        //System.out.println("hi");
                         Handler handler = new Handler(Looper.getMainLooper());
                         try{
                             final JSONObject ttcVehicle = new JSONObject(s);
@@ -397,6 +398,8 @@ public class MainActivity extends AppCompatActivity
                                 @Override
                                 public void run() {
                                     try {
+                                        //System.out.println("ggogo");
+
                                         // a data format:
                                         // {"id":8526,
                                         // "timestamp":1483736583,
@@ -418,15 +421,29 @@ public class MainActivity extends AppCompatActivity
                                             JSONArray coordinates = data.getJSONArray("coordinates");
                                             LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
                                             m.setPosition(location);
+                                            String heading = data.getString("heading");
+                                            String direction = calculateDirection(Integer.parseInt(heading));
+
+                                            String time = data.getString("dateTime");
+                                            time = time.substring(0, time.length() - 6) + " EST";
+
+                                            m.setSnippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + time);
                                         } else {
                                             ttcInvertedIndex.put(vehicle_id, index);
                                             JSONArray coordinates = data.getJSONArray("coordinates");
                                             String route_name = data.getString("name");
+
+                                            String heading = data.getString("heading");
+                                            String direction = calculateDirection(Integer.parseInt(heading));
+
+                                            String time = data.getString("dateTime");
+                                            time = time.substring(0, time.length() - 6) + " EST";
+
                                             LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
                                             ttcMarkers.add(mMap.addMarker(new MarkerOptions()
                                                     .position(location)
                                                     .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
-                                                    .title(route_name).snippet("Bus ID: " + vehicle_id)));
+                                                    .title(route_name).snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + "Time: " + time)));
                                             //System.out.println("index: " + index);
                                             index = index + 1;
                                             //System.out.println("length: " + ttcMarkers.size());
