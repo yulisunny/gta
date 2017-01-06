@@ -30,5 +30,6 @@ dependencies {
     compile 'com.google.android.gms:play-services-maps:10.0.1'
     compile 'com.google.android.gms:play-services-location:10.0.1'
     compile 'com.android.volley:volley:1.0.0'
+    compile 'com.koushikdutta.async:androidasync:2.1.9'
     testCompile 'junit:junit:4.12'
 }
