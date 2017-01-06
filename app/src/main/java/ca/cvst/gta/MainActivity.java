@@ -52,8 +52,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.lang.Math.floor;
 
 
 public class MainActivity extends AppCompatActivity
@@ -71,7 +74,7 @@ public class MainActivity extends AppCompatActivity
     private int index;
     private ArrayList<Marker> ttcMarkers;
     private Map<Integer, Integer> ttcInvertedIndex;
-
+    private ArrayList<String> ttcDirections;
 
     // Boolean telling us whether a download is in progress, so we don't trigger overlapping
     // downloads with consecutive button clicks.
@@ -289,6 +292,7 @@ public class MainActivity extends AppCompatActivity
         ttcIcon = resizeMapIcons("ttc", 25, 25);
         ttcMarkers = new ArrayList<Marker>();
         ttcInvertedIndex = new HashMap<Integer, Integer>();
+        ttcDirections = new ArrayList<String>(Arrays.asList("N","NNE","NE","ENE","E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"));
 
         String url = "http://portal.cvst.ca/api/0.1/ttc";
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
@@ -349,7 +353,10 @@ public class MainActivity extends AppCompatActivity
             // add EST
             time = time + "EST";
 
+            // calculate the direction based on the heading
             String direction = ttcVehicle.getString("heading");
+            direction = calculateDirection(Integer.parseInt(direction));
+
             ttcInvertedIndex.put(vehicle_id, index);
             //String routeNumber = ttcVehicle.getString("routeNumber");
             LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
@@ -444,6 +451,11 @@ public class MainActivity extends AppCompatActivity
                 });
             }
         });
+    }
+
+    private String calculateDirection(int degree){
+        int val = (int) floor(degree / 22.5 + 0.5);
+        return ttcDirections.get(val%16);
     }
 
 }
