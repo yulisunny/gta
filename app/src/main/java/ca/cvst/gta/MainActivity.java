@@ -312,7 +312,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void plotTTC(){
-        if (ttcInfoArrayLength <= 0) return;
+        if (index >= ttcInfoArrayLength) return;
 
         try {
             JSONObject ttcVehicle = ttcInfoArray.getJSONObject(index);
