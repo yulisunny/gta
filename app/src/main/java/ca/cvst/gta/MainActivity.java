@@ -39,7 +39,6 @@ public class MainActivity extends AppCompatActivity
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
-    //private Marker mMarker;
     private JSONArray ttcInfoArray;
     private int ttcInfoArrayLength;
     private int index;
@@ -202,7 +201,6 @@ public class MainActivity extends AppCompatActivity
         //plotTTC();
     }
 
-
     private void grabTTCdata(){
         String url = "http://portal.cvst.ca/api/0.1/ttc";
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
@@ -221,7 +219,6 @@ public class MainActivity extends AppCompatActivity
                 System.out.println("error = " + error);
             }
         });
-
         NetworkManager.getInstance(this).addToRequestQueue(jsonArrayRequest);
     }
 
@@ -237,11 +234,14 @@ public class MainActivity extends AppCompatActivity
         try {
             JSONObject ttcVehicle = ttcInfoArray.getJSONObject(index);
             JSONArray coordinates = ttcVehicle.getJSONArray("coordinates");
+            int vehicle_id = ttcVehicle.getInt("vehicle_id");
+            String route_name = ttcVehicle.getString("route_name");
+            String routeNumber = ttcVehicle.getString("routeNumber");
             LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
             mMap.addMarker(new MarkerOptions()
                     .position(location)
                     .icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("ttc", 25, 25)))
-                    .title("Marker2 in Toronto"));
+                    .title(route_name).snippet("Bus ID: " + vehicle_id));
 
             (new Handler()).postDelayed(new Runnable(){
                 @Override
@@ -255,6 +255,5 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
     }
-
-
+    
 }
