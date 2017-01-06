@@ -1,9 +1,12 @@
 package ca.cvst.gta;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,9 +19,12 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Response;
@@ -147,6 +153,39 @@ public class MainActivity extends AppCompatActivity
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
         }
+        mMap.setTrafficEnabled(true);
+
+        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+            @Override
+            public View getInfoWindow(Marker arg0) {
+                return null;
+            }
+
+            @Override
+            public View getInfoContents(Marker marker) {
+
+                Context mContext = getApplicationContext();
+                LinearLayout info = new LinearLayout(mContext);
+                info.setOrientation(LinearLayout.VERTICAL);
+
+                TextView title = new TextView(mContext);
+                title.setTextColor(Color.BLACK);
+                title.setGravity(Gravity.CENTER);
+                title.setTypeface(null, Typeface.BOLD);
+                title.setText(marker.getTitle());
+
+                TextView snippet = new TextView(mContext);
+                snippet.setTextColor(Color.BLACK);
+                snippet.setText(marker.getSnippet());
+
+                info.addView(title);
+                info.addView(snippet);
+
+                return info;
+            }
+        });
+
         initialize_ttcData();
 
         //LatLng toronto = new LatLng(43.6543, -79.3860);
@@ -160,7 +199,6 @@ public class MainActivity extends AppCompatActivity
 
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(toronto));
 
-        //mMap.setTrafficEnabled(true);
         //mMap.setBuildingsEnabled(true);
         //mMap.getUiSettings().setZoomControlsEnabled(true);
     }
@@ -305,13 +343,20 @@ public class MainActivity extends AppCompatActivity
             JSONArray coordinates = ttcVehicle.getJSONArray("coordinates");
             int vehicle_id = ttcVehicle.getInt("vehicle_id");
             String route_name = ttcVehicle.getString("route_name");
+            String time = ttcVehicle.getString("dateTime");
+            // remove the last 5 characters "-0000"
+            time = time.substring(0, time.length() - 5);
+            // add EST
+            time = time + "EST";
+
+            String direction = ttcVehicle.getString("heading");
             ttcInvertedIndex.put(vehicle_id, index);
             //String routeNumber = ttcVehicle.getString("routeNumber");
             LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
             ttcMarkers.add(mMap.addMarker(new MarkerOptions()
                     .position(location)
                     .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
-                    .title(route_name).snippet("Bus ID: " + vehicle_id)));
+                    .title(route_name).snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + time)));
 
             // create a new thread to handle other markers so that the user doesn't need to wait on main thread to load all the data
             (new Handler()).postDelayed(new Runnable(){
