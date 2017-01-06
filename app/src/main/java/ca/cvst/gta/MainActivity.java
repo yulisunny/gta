@@ -44,6 +44,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener,
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity
     private int index;
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
-
+    private Bitmap ttcIcon;
     // Boolean telling us whether a download is in progress, so we don't trigger overlapping
     // downloads with consecutive button clicks.
     //private boolean mDownloading = false;
@@ -103,7 +105,12 @@ public class MainActivity extends AppCompatActivity
                 webSocket.send("{\"action\": \"subscribe\", \"publisherName\": \"ttc\", \"subscription\": {\"bool\": {\"must\": []}}}");
                 webSocket.setStringCallback(new WebSocket.StringCallback() {
                     public void onStringAvailable(String s) {
-                        System.out.println("I got a string: " + s);
+                        try {
+                            JSONObject jsonObj = new JSONObject(s);
+                            //System.out.println(jsonObj);
+                        } catch(JSONException e){
+                            e.printStackTrace();
+                        }
                     }
                 });
                 webSocket.setDataCallback(new DataCallback() {
@@ -159,7 +166,7 @@ public class MainActivity extends AppCompatActivity
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
         }
-        grabTTCdata();
+        grabAndPlotTTCdata();
 
 
         //LatLng toronto = new LatLng(43.6543, -79.3860);
@@ -260,31 +267,10 @@ public class MainActivity extends AppCompatActivity
     public void onClick(View view) {
         Intent intent = new Intent(this, NewSubscriptionActivity.class);
         startActivity(intent);
-       /* String url = "http://portal.cvst.ca/api/0.1/ttc";
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray ttcVehicles) {
-                        for (int i = 0; i < ttcVehicles.length(); ++i) {
-                            try {
-                                JSONObject ttcVehicle = ttcVehicles.getJSONObject(i);
-                                System.out.println("ttcVehicle = " + ttcVehicle);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println("error = " + error);
-            }
-        });
-        NetworkManager.getInstance(this).addToRequestQueue(jsonArrayRequest);*/
-        //plotTTC();
     }
 
-    private void grabTTCdata(){
+    private void grabAndPlotTTCdata(){
+        ttcIcon = resizeMapIcons("ttc", 25, 25);
         String url = "http://portal.cvst.ca/api/0.1/ttc";
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
                 new Response.Listener<JSONArray>() {
@@ -294,7 +280,6 @@ public class MainActivity extends AppCompatActivity
                         ttcInfoArray = ttcVehicles;
                         index = 0;
                         plotTTC();
-
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -319,11 +304,11 @@ public class MainActivity extends AppCompatActivity
             JSONArray coordinates = ttcVehicle.getJSONArray("coordinates");
             int vehicle_id = ttcVehicle.getInt("vehicle_id");
             String route_name = ttcVehicle.getString("route_name");
-            String routeNumber = ttcVehicle.getString("routeNumber");
+            //String routeNumber = ttcVehicle.getString("routeNumber");
             LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
             mMap.addMarker(new MarkerOptions()
                     .position(location)
-                    .icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("ttc", 25, 25)))
+                    .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
                     .title(route_name).snippet("Bus ID: " + vehicle_id));
 
             (new Handler()).postDelayed(new Runnable(){
