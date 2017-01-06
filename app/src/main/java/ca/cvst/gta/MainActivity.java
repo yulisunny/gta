@@ -1,13 +1,15 @@
 package ca.cvst.gta;
 
-import android.*;
+import android.support.v7.app.AppCompatActivity;
+
+
 import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -232,6 +234,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onClick(View view) {
+        Intent intent = new Intent(this, NewSubscriptionActivity.class);
+        startActivity(intent);
        /* String url = "http://portal.cvst.ca/api/0.1/ttc";
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
                 new Response.Listener<JSONArray>() {
