@@ -3,6 +3,8 @@ package ca.cvst.gta;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -37,11 +39,14 @@ public class MainActivity extends AppCompatActivity
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
-    private Marker mMarker;
+    //private Marker mMarker;
+    private JSONArray ttcInfoArray;
+    private int ttcInfoArrayLength;
+    private int index;
 
     // Boolean telling us whether a download is in progress, so we don't trigger overlapping
     // downloads with consecutive button clicks.
-    private boolean mDownloading = false;
+    //private boolean mDownloading = false;
 
 
     @Override
@@ -64,55 +69,35 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-
         MapFragment mapFragment = (MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        String url = "http://portal.cvst.ca/api/0.1/ttc";
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray ttcVehicles) {
-                        for (int i = 0; i < ttcVehicles.length(); ++i) {
-                            try {
-                                JSONObject ttcVehicle = ttcVehicles.getJSONObject(i);
-                                System.out.println("ttcVehicle = " + ttcVehicle);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println("error = " + error);
-            }
-        });
-        NetworkManager.getInstance(this).addToRequestQueue(jsonArrayRequest);
 
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        grabTTCdata();
 
-        LatLng toronto = new LatLng(43.6543, -79.3860);
-        mMarker = mMap.addMarker(new MarkerOptions()
-                .position(toronto)
-                .icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("ttc",25,25)))
-                .title("Marker in Toronto"));
+        //LatLng toronto = new LatLng(43.6543, -79.3860);
+        //mMarker = mMap.addMarker(new MarkerOptions()
+        //        .position(toronto)
+        //        .icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("ttc",25,25)))
+        //        .title("Marker in Toronto"));
 
-        mMarker.setTag("data set in onMapReady");
-        mMap.setOnMarkerClickListener(this);
-
-
+        //System.out.println(ttcInfoArray);
+       // mMarker.setTag("data set in onMapReady");
+       // mMap.setOnMarkerClickListener(this);
+        //plotTTC();
 
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(toronto));
-        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
         //mMap.setTrafficEnabled(true);
-        mMap.setBuildingsEnabled(true);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
+        //mMap.setBuildingsEnabled(true);
+        //mMap.getUiSettings().setZoomControlsEnabled(true);
     }
 
     @Override
@@ -193,14 +178,82 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onClick(View view) {
-
+       /* String url = "http://portal.cvst.ca/api/0.1/ttc";
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray ttcVehicles) {
+                        for (int i = 0; i < ttcVehicles.length(); ++i) {
+                            try {
+                                JSONObject ttcVehicle = ttcVehicles.getJSONObject(i);
+                                System.out.println("ttcVehicle = " + ttcVehicle);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("error = " + error);
+            }
+        });
+        NetworkManager.getInstance(this).addToRequestQueue(jsonArrayRequest);*/
+        //plotTTC();
     }
 
 
-    public Bitmap resizeMapIcons(String iconName, int width, int height){
+    private void grabTTCdata(){
+        String url = "http://portal.cvst.ca/api/0.1/ttc";
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray ttcVehicles) {
+                        ttcInfoArrayLength = ttcVehicles.length();
+                        ttcInfoArray = ttcVehicles;
+                        index = 0;
+                        plotTTC();
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("error = " + error);
+            }
+        });
+
+        NetworkManager.getInstance(this).addToRequestQueue(jsonArrayRequest);
+    }
+
+    private Bitmap resizeMapIcons(String iconName, int width, int height){
         Bitmap imageBitmap = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(iconName, "drawable", getPackageName()));
         Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false);
         return resizedBitmap;
+    }
+
+    private void plotTTC(){
+        if (ttcInfoArrayLength <= 0) return;
+
+        try {
+            JSONObject ttcVehicle = ttcInfoArray.getJSONObject(index);
+            JSONArray coordinates = ttcVehicle.getJSONArray("coordinates");
+            LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
+            mMap.addMarker(new MarkerOptions()
+                    .position(location)
+                    .icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("ttc", 25, 25)))
+                    .title("Marker2 in Toronto"));
+
+            (new Handler()).postDelayed(new Runnable(){
+                @Override
+                public void run() {
+                    index = index + 1;
+                    plotTTC();
+                }
+            }, 1);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
 
