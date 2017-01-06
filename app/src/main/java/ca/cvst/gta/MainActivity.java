@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
@@ -44,7 +45,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity
@@ -52,12 +55,18 @@ public class MainActivity extends AppCompatActivity
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private GoogleMap mMap;
+    private GoogleApiClient mGoogleApiClient;
+    private Location mLastLocation;
+
+    // For ttc:
+    private Bitmap ttcIcon;
     private JSONArray ttcInfoArray;
     private int ttcInfoArrayLength;
     private int index;
-    private GoogleApiClient mGoogleApiClient;
-    private Location mLastLocation;
-    private Bitmap ttcIcon;
+    private ArrayList<Marker> ttcMarkers;
+    private Map<Integer, Integer> ttcInvertedIndex;
+
+
     // Boolean telling us whether a download is in progress, so we don't trigger overlapping
     // downloads with consecutive button clicks.
     //private boolean mDownloading = false;
@@ -94,34 +103,6 @@ public class MainActivity extends AppCompatActivity
         MapFragment mapFragment = (MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        AsyncHttpClient.getDefaultInstance().websocket("ws://subs.portal.cvst.ca:8888/websocket", null, new AsyncHttpClient.WebSocketConnectCallback() {
-            @Override
-            public void onCompleted(Exception ex, WebSocket webSocket) {
-                if (ex != null) {
-                    ex.printStackTrace();
-                    return;
-                }
-                webSocket.send("{\"action\": \"subscribe\", \"publisherName\": \"ttc\", \"subscription\": {\"bool\": {\"must\": []}}}");
-                webSocket.setStringCallback(new WebSocket.StringCallback() {
-                    public void onStringAvailable(String s) {
-                        try {
-                            JSONObject jsonObj = new JSONObject(s);
-                            //System.out.println(jsonObj);
-                        } catch(JSONException e){
-                            e.printStackTrace();
-                        }
-                    }
-                });
-                webSocket.setDataCallback(new DataCallback() {
-                    public void onDataAvailable(DataEmitter emitter, ByteBufferList byteBufferList) {
-                        System.out.println("I got some bytes!");
-                        // note that this data has been read
-                        byteBufferList.recycle();
-                    }
-                });
-            }
-        });
     }
 
     @Override
@@ -166,7 +147,9 @@ public class MainActivity extends AppCompatActivity
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
         }
-        grabAndPlotTTCdata();
+        initialize_ttcData();
+
+        //WebSocketConn();
 
 
         //LatLng toronto = new LatLng(43.6543, -79.3860);
@@ -269,8 +252,11 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
 
-    private void grabAndPlotTTCdata(){
+    private void initialize_ttcData(){
         ttcIcon = resizeMapIcons("ttc", 25, 25);
+        ttcMarkers = new ArrayList<Marker>();
+        ttcInvertedIndex = new HashMap<Integer, Integer>();
+
         String url = "http://portal.cvst.ca/api/0.1/ttc";
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
                 new Response.Listener<JSONArray>() {
@@ -279,7 +265,7 @@ public class MainActivity extends AppCompatActivity
                         ttcInfoArrayLength = ttcVehicles.length();
                         ttcInfoArray = ttcVehicles;
                         index = 0;
-                        plotTTC();
+                        ttcPlotRecursive();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -296,32 +282,110 @@ public class MainActivity extends AppCompatActivity
         return resizedBitmap;
     }
 
-    private void plotTTC(){
-        if (index >= ttcInfoArrayLength) return;
-
+    private void ttcPlotRecursive(){
+        if (index >= ttcInfoArrayLength){
+            WebSocketConn();
+            return;
+        }
         try {
             JSONObject ttcVehicle = ttcInfoArray.getJSONObject(index);
             JSONArray coordinates = ttcVehicle.getJSONArray("coordinates");
             int vehicle_id = ttcVehicle.getInt("vehicle_id");
             String route_name = ttcVehicle.getString("route_name");
+            ttcInvertedIndex.put(vehicle_id, index);
             //String routeNumber = ttcVehicle.getString("routeNumber");
             LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
-            mMap.addMarker(new MarkerOptions()
+            ttcMarkers.add(mMap.addMarker(new MarkerOptions()
                     .position(location)
                     .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
-                    .title(route_name).snippet("Bus ID: " + vehicle_id));
+                    .title(route_name).snippet("Bus ID: " + vehicle_id)));
 
+            // create a new thread to handle other markers so that the user doesn't need to wait on main thread to load all the data
             (new Handler()).postDelayed(new Runnable(){
                 @Override
                 public void run() {
                     index = index + 1;
-                    plotTTC();
+                    ttcPlotRecursive();
                 }
             }, 1);
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private void WebSocketConn(){
+        AsyncHttpClient.getDefaultInstance().websocket("ws://subs.portal.cvst.ca:8888/websocket", null, new AsyncHttpClient.WebSocketConnectCallback() {
+            @Override
+            public void onCompleted(final Exception ex, WebSocket webSocket) {
+                if (ex != null) {
+                    ex.printStackTrace();
+                    return;
+                }
+                webSocket.send("{\"action\": \"subscribe\", \"publisherName\": \"ttc\", \"subscription\": {\"bool\": {\"must\": []}}}");
+                webSocket.setStringCallback(new WebSocket.StringCallback() {
+                    public void onStringAvailable(String s) {
+                        Handler handler = new Handler(Looper.getMainLooper());
+                        try{
+                            final JSONObject ttcVehicle = new JSONObject(s);
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        JSONObject data = ttcVehicle.getJSONObject("data");
+                                        int vehicle_id = data.getInt("id");
+                                        if (ttcInvertedIndex.containsKey(vehicle_id)) {
+                                            int arrayIndex = ttcInvertedIndex.get(vehicle_id);
+                                            Marker m = ttcMarkers.get(arrayIndex);
+                                            JSONArray coordinates = data.getJSONArray("coordinates");
+                                            LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
+                                            //System.out.println("location: " + location);
+                                            //System.out.println(m);
+                                            //m.setVisible(false);
+                                            m.setPosition(location);
+                                            //System.out.println("Bus ID: " + vehicle_id);
+                                            //System.out.println("data: " + data);
+                                        } else {
+                                            ttcInvertedIndex.put(vehicle_id, index);
+                                            JSONArray coordinates = data.getJSONArray("coordinates");
+                                            String route_name = data.getString("name");
+                                            LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
+                                            ttcMarkers.add(mMap.addMarker(new MarkerOptions()
+                                                    .position(location)
+                                                    .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
+                                                    .title(route_name).snippet("Bus ID: " + vehicle_id)));
+                                            System.out.println("index: " + index);
+                                            index = index + 1;
+                                            System.out.println("length: " + ttcMarkers.size());
+                                        }
+                                        //System.out.println(vehicle_id);
+                                        //System.out.println(arrayIndex);
+                                        //System.out.println(data);
+                                        //{"id":8526,"timestamp":1483736583,"routeNumber":"35","category":"ttc","predictable":true,"dateTime":"2017-01-06 21:03:03+00:00","name":"35-Jane","lastTime":"2017-01-06 21:03:01+00:00","GPStime":1483736571,"dirTag":"35_0_35D","heading":"162","coordinates":[-79.531799,43.7945179]}
+                                        //
+                                        //
+                                        //
+                                        //System.out.println(ttcVehicle);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            });
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                webSocket.setDataCallback(new DataCallback() {
+                    public void onDataAvailable(DataEmitter emitter, ByteBufferList byteBufferList) {
+                        System.out.println("I got some bytes!");
+                        // note that this data has been read
+                        byteBufferList.recycle();
+                    }
+                });
+            }
+        });
     }
 
 }
