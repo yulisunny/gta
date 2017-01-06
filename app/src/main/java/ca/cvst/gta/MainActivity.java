@@ -149,19 +149,14 @@ public class MainActivity extends AppCompatActivity
         }
         initialize_ttcData();
 
-        //WebSocketConn();
-
-
         //LatLng toronto = new LatLng(43.6543, -79.3860);
         //mMarker = mMap.addMarker(new MarkerOptions()
         //        .position(toronto)
         //        .icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("ttc",25,25)))
         //        .title("Marker in Toronto"));
 
-        //System.out.println(ttcInfoArray);
        // mMarker.setTag("data set in onMapReady");
        // mMap.setOnMarkerClickListener(this);
-        //plotTTC();
 
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(toronto));
 
@@ -288,6 +283,24 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         try {
+            /* portal.cvst.ca/api/0.1/ttc
+                {
+                    "GPStime": 1483740522,
+                    "coordinates": [
+                        -79.434685,
+                        43.680168
+                    ],
+                    "dateTime": "Fri, 06 Jan 2017 22:09:00 -0000",
+                    "dirTag": "63_0_63B",
+                    "heading": "216",
+                    "last_update": "Fri, 06 Jan 2017 22:08:59 -0000",
+                    "predictable": true,
+                    "routeNumber": "63",
+                    "route_name": "63-Ossington",
+                    "timestamp": 1483740540,
+                    "vehicle_id": 1000
+                }, */
+
             JSONObject ttcVehicle = ttcInfoArray.getJSONObject(index);
             JSONArray coordinates = ttcVehicle.getJSONArray("coordinates");
             int vehicle_id = ttcVehicle.getInt("vehicle_id");
@@ -332,6 +345,19 @@ public class MainActivity extends AppCompatActivity
                                 @Override
                                 public void run() {
                                     try {
+                                        // a data format:
+                                        // {"id":8526,
+                                        // "timestamp":1483736583,
+                                        // "routeNumber":"35",
+                                        // "category":"ttc",
+                                        // "predictable":true,
+                                        // "dateTime":"2017-01-06 21:03:03+00:00",
+                                        // "name":"35-Jane",
+                                        // "lastTime":"2017-01-06 21:03:01+00:00",
+                                        // "GPStime":1483736571,"dirTag":"35_0_35D",
+                                        // "heading":"162",
+                                        // "coordinates":[-79.531799,43.7945179]}
+
                                         JSONObject data = ttcVehicle.getJSONObject("data");
                                         int vehicle_id = data.getInt("id");
                                         if (ttcInvertedIndex.containsKey(vehicle_id)) {
@@ -339,12 +365,7 @@ public class MainActivity extends AppCompatActivity
                                             Marker m = ttcMarkers.get(arrayIndex);
                                             JSONArray coordinates = data.getJSONArray("coordinates");
                                             LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
-                                            //System.out.println("location: " + location);
-                                            //System.out.println(m);
-                                            //m.setVisible(false);
                                             m.setPosition(location);
-                                            //System.out.println("Bus ID: " + vehicle_id);
-                                            //System.out.println("data: " + data);
                                         } else {
                                             ttcInvertedIndex.put(vehicle_id, index);
                                             JSONArray coordinates = data.getJSONArray("coordinates");
@@ -354,18 +375,10 @@ public class MainActivity extends AppCompatActivity
                                                     .position(location)
                                                     .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
                                                     .title(route_name).snippet("Bus ID: " + vehicle_id)));
-                                            System.out.println("index: " + index);
+                                            //System.out.println("index: " + index);
                                             index = index + 1;
-                                            System.out.println("length: " + ttcMarkers.size());
+                                            //System.out.println("length: " + ttcMarkers.size());
                                         }
-                                        //System.out.println(vehicle_id);
-                                        //System.out.println(arrayIndex);
-                                        //System.out.println(data);
-                                        //{"id":8526,"timestamp":1483736583,"routeNumber":"35","category":"ttc","predictable":true,"dateTime":"2017-01-06 21:03:03+00:00","name":"35-Jane","lastTime":"2017-01-06 21:03:01+00:00","GPStime":1483736571,"dirTag":"35_0_35D","heading":"162","coordinates":[-79.531799,43.7945179]}
-                                        //
-                                        //
-                                        //
-                                        //System.out.println(ttcVehicle);
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
