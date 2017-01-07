@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/GTA.iml" filepath="$PROJECT_DIR$/GTA.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gta.iml" filepath="$PROJECT_DIR$/gta.iml" />
     </modules>
   </component>
 </project>
