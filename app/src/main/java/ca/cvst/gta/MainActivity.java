@@ -271,9 +271,10 @@ public class MainActivity extends AppCompatActivity
             // Handle the camera action
         } else if (id == R.id.nav_historical_data_dashboard) {
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.ttc) {
+            // ttc insert here
 
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.current_road_incidents) {
 
         }
 
@@ -444,9 +445,7 @@ public class MainActivity extends AppCompatActivity
                                                     .position(location)
                                                     .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
                                                     .title(route_name).snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + "Time: " + time)));
-                                            //System.out.println("index: " + index);
                                             index = index + 1;
-                                            //System.out.println("length: " + ttcMarkers.size());
                                         }
                                     } catch (JSONException e) {
                                         e.printStackTrace();

@@ -12,16 +12,16 @@
             android:title="Historical Data Dashboard"/>
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="Traffic Data Type">
         <menu>
             <item
-                android:id="@+id/nav_share"
+                android:id="@+id/ttc"
                 android:icon="@drawable/ic_menu_share"
-                android:title="Share"/>
+                android:title="TTC bus"/>
             <item
-                android:id="@+id/nav_send"
+                android:id="@+id/current_road_incidents"
                 android:icon="@drawable/ic_menu_send"
-                android:title="Send"/>
+                android:title="Current Road Incidents"/>
         </menu>
     </item>
 
