@@ -1,9 +1,12 @@
 package ca.cvst.gta;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,9 +19,12 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Response;
@@ -46,8 +52,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.lang.Math.floor;
 
 
 public class MainActivity extends AppCompatActivity
@@ -65,7 +74,7 @@ public class MainActivity extends AppCompatActivity
     private int index;
     private ArrayList<Marker> ttcMarkers;
     private Map<Integer, Integer> ttcInvertedIndex;
-
+    private ArrayList<String> ttcDirections;
 
     // Boolean telling us whether a download is in progress, so we don't trigger overlapping
     // downloads with consecutive button clicks.
@@ -147,6 +156,39 @@ public class MainActivity extends AppCompatActivity
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
         }
+        mMap.setTrafficEnabled(true);
+
+        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+            @Override
+            public View getInfoWindow(Marker arg0) {
+                return null;
+            }
+
+            @Override
+            public View getInfoContents(Marker marker) {
+
+                Context mContext = getApplicationContext();
+                LinearLayout info = new LinearLayout(mContext);
+                info.setOrientation(LinearLayout.VERTICAL);
+
+                TextView title = new TextView(mContext);
+                title.setTextColor(Color.BLACK);
+                title.setGravity(Gravity.CENTER);
+                title.setTypeface(null, Typeface.BOLD);
+                title.setText(marker.getTitle());
+
+                TextView snippet = new TextView(mContext);
+                snippet.setTextColor(Color.BLACK);
+                snippet.setText(marker.getSnippet());
+
+                info.addView(title);
+                info.addView(snippet);
+
+                return info;
+            }
+        });
+
         initialize_ttcData();
 
         //LatLng toronto = new LatLng(43.6543, -79.3860);
@@ -160,7 +202,6 @@ public class MainActivity extends AppCompatActivity
 
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(toronto));
 
-        //mMap.setTrafficEnabled(true);
         //mMap.setBuildingsEnabled(true);
         //mMap.getUiSettings().setZoomControlsEnabled(true);
     }
@@ -251,6 +292,7 @@ public class MainActivity extends AppCompatActivity
         ttcIcon = resizeMapIcons("ttc", 25, 25);
         ttcMarkers = new ArrayList<Marker>();
         ttcInvertedIndex = new HashMap<Integer, Integer>();
+        ttcDirections = new ArrayList<String>(Arrays.asList("N","NNE","NE","ENE","E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"));
 
         String url = "http://portal.cvst.ca/api/0.1/ttc";
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
@@ -305,13 +347,23 @@ public class MainActivity extends AppCompatActivity
             JSONArray coordinates = ttcVehicle.getJSONArray("coordinates");
             int vehicle_id = ttcVehicle.getInt("vehicle_id");
             String route_name = ttcVehicle.getString("route_name");
+            String time = ttcVehicle.getString("dateTime");
+            // remove the last 5 characters "-0000"
+            time = time.substring(0, time.length() - 5);
+            // add EST
+            time = time + "EST";
+
+            // calculate the direction based on the heading
+            String direction = ttcVehicle.getString("heading");
+            direction = calculateDirection(Integer.parseInt(direction));
+
             ttcInvertedIndex.put(vehicle_id, index);
             //String routeNumber = ttcVehicle.getString("routeNumber");
             LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
             ttcMarkers.add(mMap.addMarker(new MarkerOptions()
                     .position(location)
                     .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
-                    .title(route_name).snippet("Bus ID: " + vehicle_id)));
+                    .title(route_name).snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + time)));
 
             // create a new thread to handle other markers so that the user doesn't need to wait on main thread to load all the data
             (new Handler()).postDelayed(new Runnable(){
@@ -338,6 +390,7 @@ public class MainActivity extends AppCompatActivity
                 webSocket.send("{\"action\": \"subscribe\", \"publisherName\": \"ttc\", \"subscription\": {\"bool\": {\"must\": []}}}");
                 webSocket.setStringCallback(new WebSocket.StringCallback() {
                     public void onStringAvailable(String s) {
+                        //System.out.println("hi");
                         Handler handler = new Handler(Looper.getMainLooper());
                         try{
                             final JSONObject ttcVehicle = new JSONObject(s);
@@ -345,6 +398,8 @@ public class MainActivity extends AppCompatActivity
                                 @Override
                                 public void run() {
                                     try {
+                                        //System.out.println("ggogo");
+
                                         // a data format:
                                         // {"id":8526,
                                         // "timestamp":1483736583,
@@ -366,15 +421,29 @@ public class MainActivity extends AppCompatActivity
                                             JSONArray coordinates = data.getJSONArray("coordinates");
                                             LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
                                             m.setPosition(location);
+                                            String heading = data.getString("heading");
+                                            String direction = calculateDirection(Integer.parseInt(heading));
+
+                                            String time = data.getString("dateTime");
+                                            time = time.substring(0, time.length() - 6) + " EST";
+
+                                            m.setSnippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + time);
                                         } else {
                                             ttcInvertedIndex.put(vehicle_id, index);
                                             JSONArray coordinates = data.getJSONArray("coordinates");
                                             String route_name = data.getString("name");
+
+                                            String heading = data.getString("heading");
+                                            String direction = calculateDirection(Integer.parseInt(heading));
+
+                                            String time = data.getString("dateTime");
+                                            time = time.substring(0, time.length() - 6) + " EST";
+
                                             LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
                                             ttcMarkers.add(mMap.addMarker(new MarkerOptions()
                                                     .position(location)
                                                     .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
-                                                    .title(route_name).snippet("Bus ID: " + vehicle_id)));
+                                                    .title(route_name).snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + "Time: " + time)));
                                             //System.out.println("index: " + index);
                                             index = index + 1;
                                             //System.out.println("length: " + ttcMarkers.size());
@@ -399,6 +468,11 @@ public class MainActivity extends AppCompatActivity
                 });
             }
         });
+    }
+
+    private String calculateDirection(int degree){
+        int val = (int) floor(degree / 22.5 + 0.5);
+        return ttcDirections.get(val%16);
     }
 
 }
