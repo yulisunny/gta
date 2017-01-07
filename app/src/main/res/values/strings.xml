@@ -19,4 +19,8 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    
+    <string-array name="publishers_array">
+        <item>TTC</item>
+    </string-array>
 </resources>
