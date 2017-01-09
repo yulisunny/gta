@@ -14,16 +14,16 @@
 
     <item android:title="Traffic Data Type">
         <menu>
-            <group android:checkableBehavior="all">
+            <group android:id="@+id/data_type_group" android:checkableBehavior="all">
                 <item
                     android:id="@+id/ttc"
                     android:icon="@drawable/ic_menu_share"
                     android:title="TTC bus"
-                    android:checked="true"/>
+                    />
                 <item
                     android:id="@+id/current_road_incidents"
                     android:icon="@drawable/ic_menu_send"
-                    android:title="Current Road Incidents"/>
+                    android:title="Current Road Incidents" />
             </group>
         </menu>
     </item>
