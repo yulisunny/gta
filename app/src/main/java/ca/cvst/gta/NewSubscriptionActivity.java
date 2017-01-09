@@ -132,6 +132,7 @@ public class NewSubscriptionActivity extends AppCompatActivity implements Adapte
             mFieldNamesSpinner.setAdapter(mFieldNamesAdapter);
             mFilters.clear();
             mFilterListAdapter.notifyDataSetChanged();
+            mSubscribeButton.setEnabled(false);
         }
     }
 
