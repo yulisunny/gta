@@ -17,7 +17,7 @@
             <group android:id="@+id/data_type_group" android:checkableBehavior="all">
                 <item
                     android:id="@+id/ttc"
-                    android:icon="@drawable/ic_menu_share"
+                    android:icon="@drawable/ttc"
                     android:title="TTC bus"
                     />
                 <item

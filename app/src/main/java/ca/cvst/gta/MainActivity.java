@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         MenuItem ttc = navigationView.getMenu().findItem(R.id.ttc);
-        ttc.setChecked(true);
+        ttc.setChecked(false);
 
 
         if (mGoogleApiClient == null) {
@@ -276,16 +276,18 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.ttc) {
             // ttc insert here
             if (item.isChecked()) {
-                System.out.println("in 1");
+                //System.out.println("in 1");
                 item.setChecked(false);
+                ttcIsChecked = false;
             }
             else {
                 System.out.println("in 2");
                 item.setChecked(true);
+                ttcIsChecked = true;
             }
 
             for (Marker ttcMarker : ttcMarkers) {
-                ttcMarker.setVisible(item.isChecked());
+                ttcMarker.setVisible(ttcIsChecked);
             }
         } else if (id == R.id.current_road_incidents) {
 
@@ -373,7 +375,9 @@ public class MainActivity extends AppCompatActivity
             ttcMarkers.add(mMap.addMarker(new MarkerOptions()
                     .position(location)
                     .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
-                    .title(route_name).snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + dateTime)));
+                    .title(route_name)
+                    .snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + dateTime)
+                    .visible(ttcIsChecked)));
 
             // create a new thread to handle other markers so that the user doesn't need to wait on main thread to load all the data
             (new Handler()).postDelayed(new Runnable(){
@@ -450,7 +454,9 @@ public class MainActivity extends AppCompatActivity
                                             ttcMarkers.add(mMap.addMarker(new MarkerOptions()
                                                     .position(location)
                                                     .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
-                                                    .title(route_name).snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + "Time: " + dateTime)));
+                                                    .title(route_name)
+                                                    .snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + "Time: " + dateTime)
+                                                    .visible(ttcIsChecked)));
                                             index = index + 1;
                                         }
                                     } catch (JSONException e) {
