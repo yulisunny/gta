@@ -2,6 +2,7 @@ package ca.cvst.gta;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<Marker> ttcMarkers;
     private Map<Integer, Integer> ttcInvertedIndex;
     private ArrayList<String> ttcDirections;
+    private boolean ttcIsChecked = false;
 
 
     @Override
@@ -240,8 +242,22 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
+       /* SharedPreferences settings = getSharedPreferences("settings", 0);
+        boolean isChecked = settings.getBoolean("checkbox", false);
+        MenuItem ttc = menu.findItem(R.id.ttc);
+        ttc.setChecked(true);*/
+
         return true;
     }
+
+  /*  @Override
+    public boolean onPrepareOptionsMenu(Menu menu){
+        // First item: ttc
+        MenuItem ttc = menu.findItem(R.id.ttc);
+        ttc.setChecked(ttcIsChecked);
+        return true;
+    }*/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -270,7 +286,20 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.ttc) {
             // ttc insert here
+            boolean checked = item.isChecked();
+            if (checked) {
+                item.setChecked(false);
+            }
+            else {
+                item.setChecked(true);
+            }
 
+            checked = item.isChecked();
+            System.out.println("boolean: " + checked);
+
+            for (Marker ttcMarker : ttcMarkers) {
+                ttcMarker.setVisible(checked);
+            }
         } else if (id == R.id.current_road_incidents) {
 
         }
