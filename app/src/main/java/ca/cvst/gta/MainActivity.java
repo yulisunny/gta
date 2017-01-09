@@ -75,7 +75,6 @@ public class MainActivity extends AppCompatActivity
     private int index;
     private ArrayList<Marker> ttcMarkers;
     private Map<Integer, Integer> ttcInvertedIndex;
-    private ArrayList<String> ttcDirections;
     private boolean ttcIsChecked = false;
 
 
@@ -281,7 +280,7 @@ public class MainActivity extends AppCompatActivity
                 ttcIsChecked = false;
             }
             else {
-                System.out.println("in 2");
+                //System.out.println("in 2");
                 item.setChecked(true);
                 ttcIsChecked = true;
             }
@@ -307,7 +306,6 @@ public class MainActivity extends AppCompatActivity
         ttcIcon = resizeMapIcons("ttc", 25, 25);
         ttcMarkers = new ArrayList<Marker>();
         ttcInvertedIndex = new HashMap<Integer, Integer>();
-        ttcDirections = new ArrayList<String>(Arrays.asList("N","NNE","NE","ENE","E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"));
 
         String url = "http://portal.cvst.ca/api/0.1/ttc";
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
@@ -363,11 +361,11 @@ public class MainActivity extends AppCompatActivity
             int vehicle_id = ttcVehicle.getInt("vehicle_id");
             String route_name = ttcVehicle.getString("route_name");
             long GPStimestamp = ttcVehicle.getLong("GPStime");
-            String dateTime = convertTimestampToString(GPStimestamp);
+            String dateTime = Helper.convertTimestampToString(GPStimestamp);
 
             // calculate the direction based on the heading
             String direction = ttcVehicle.getString("heading");
-            direction = calculateDirection(Integer.parseInt(direction));
+            direction = Helper.calculateDirection(Integer.parseInt(direction));
 
             ttcInvertedIndex.put(vehicle_id, index);
             //String routeNumber = ttcVehicle.getString("routeNumber");
@@ -407,64 +405,7 @@ public class MainActivity extends AppCompatActivity
                         Handler handler = new Handler(Looper.getMainLooper());
                         try{
                             final JSONObject ttcVehicle = new JSONObject(s);
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        // data format:
-                                        // {"id":8526,
-                                        // "timestamp":1483736583,
-                                        // "routeNumber":"35",
-                                        // "category":"ttc",
-                                        // "predictable":true,
-                                        // "dateTime":"2017-01-06 21:03:03+00:00",
-                                        // "name":"35-Jane",
-                                        // "lastTime":"2017-01-06 21:03:01+00:00",
-                                        // "GPStime":1483736571,"dirTag":"35_0_35D",
-                                        // "heading":"162",
-                                        // "coordinates":[-79.531799,43.7945179]}
-
-                                        JSONObject data = ttcVehicle.getJSONObject("data");
-                                        int vehicle_id = data.getInt("id");
-                                        if (ttcInvertedIndex.containsKey(vehicle_id)) {
-                                            int arrayIndex = ttcInvertedIndex.get(vehicle_id);
-                                            Marker m = ttcMarkers.get(arrayIndex);
-                                            JSONArray coordinates = data.getJSONArray("coordinates");
-                                            LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
-                                            m.setPosition(location);
-                                            String heading = data.getString("heading");
-                                            String direction = calculateDirection(Integer.parseInt(heading));
-
-                                            long GPStimestamp = data.getLong("GPStime");
-                                            String dateTime = convertTimestampToString(GPStimestamp);
-
-                                            m.setSnippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + dateTime);
-                                        } else {
-                                            ttcInvertedIndex.put(vehicle_id, index);
-                                            JSONArray coordinates = data.getJSONArray("coordinates");
-                                            String route_name = data.getString("name");
-
-                                            String heading = data.getString("heading");
-                                            String direction = calculateDirection(Integer.parseInt(heading));
-
-                                            long GPStimestamp = data.getLong("GPStime");
-                                            String dateTime = convertTimestampToString(GPStimestamp);
-
-                                            LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
-                                            ttcMarkers.add(mMap.addMarker(new MarkerOptions()
-                                                    .position(location)
-                                                    .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
-                                                    .title(route_name)
-                                                    .snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + "Time: " + dateTime)
-                                                    .visible(ttcIsChecked)));
-                                            index = index + 1;
-                                        }
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-
-                            });
+                            handler.post(new WebsocketPlotTtcRunnable(ttcVehicle, ttcInvertedIndex, index, ttcMarkers, mMap, ttcIsChecked, ttcIcon));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -479,17 +420,6 @@ public class MainActivity extends AppCompatActivity
                 });
             }
         });
-    }
-
-    private String calculateDirection(int degree){
-        int val = (int) floor(degree / 22.5 + 0.5);
-        return ttcDirections.get(val%16);
-    }
-
-    private String convertTimestampToString(long timestamp){
-        // recognized that the timestamp is supposed to be 13 digit long in 2017, but it's only ten.
-        Date date = new Date(timestamp * 1000);
-        return date.toString();
     }
 
 }
