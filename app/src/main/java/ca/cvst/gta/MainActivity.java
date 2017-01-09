@@ -61,8 +61,12 @@ import static java.lang.Math.floor;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener,
-        OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        View.OnClickListener,
+        OnMapReadyCallback,
+        GoogleMap.OnMarkerClickListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
@@ -275,12 +279,10 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.ttc) {
             // ttc insert here
             if (item.isChecked()) {
-                //System.out.println("in 1");
                 item.setChecked(false);
                 ttcIsChecked = false;
             }
             else {
-                //System.out.println("in 2");
                 item.setChecked(true);
                 ttcIsChecked = true;
             }
@@ -356,20 +358,23 @@ public class MainActivity extends AppCompatActivity
                     "vehicle_id": 1000
                 }, */
 
+            // get the current location coordinates
             JSONObject ttcVehicle = ttcInfoArray.getJSONObject(index);
             JSONArray coordinates = ttcVehicle.getJSONArray("coordinates");
-            int vehicle_id = ttcVehicle.getInt("vehicle_id");
+            LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
+
+            // get current route name
             String route_name = ttcVehicle.getString("route_name");
-            long GPStimestamp = ttcVehicle.getLong("GPStime");
-            String dateTime = Helper.convertTimestampToString(GPStimestamp);
+
+            // get current date and time
+            String dateTime = Helper.convertTimestampToString(ttcVehicle.getLong("GPStime"));
 
             // calculate the direction based on the heading
-            String direction = ttcVehicle.getString("heading");
-            direction = Helper.calculateDirection(Integer.parseInt(direction));
+            String direction = Helper.calculateDirection(Integer.parseInt(ttcVehicle.getString("heading")));
 
+            // get the vehicle id and store it in inverted index table and add it to ttcMarker array
+            int vehicle_id = ttcVehicle.getInt("vehicle_id");
             ttcInvertedIndex.put(vehicle_id, index);
-            //String routeNumber = ttcVehicle.getString("routeNumber");
-            LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
             ttcMarkers.add(mMap.addMarker(new MarkerOptions()
                     .position(location)
                     .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))

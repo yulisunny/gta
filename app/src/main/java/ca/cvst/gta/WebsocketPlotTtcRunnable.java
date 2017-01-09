@@ -60,8 +60,6 @@ public class WebsocketPlotTtcRunnable implements Runnable {
             // "heading":"162",
             // "coordinates":[-79.531799,43.7945179]}
 
-            //System.out.println("hihi");
-
             JSONObject data = ttcVehicle.getJSONObject("data");
             int vehicle_id = data.getInt("id");
             if (ttcInvertedIndex.containsKey(vehicle_id)) {
@@ -75,7 +73,6 @@ public class WebsocketPlotTtcRunnable implements Runnable {
                 String direction = Helper.calculateDirection(Integer.parseInt(data.getString("heading")));
 
                 String dateTime = Helper.convertTimestampToString(data.getLong("GPStime"));
-                //System.out.println("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + dateTime);
 
                 m.setSnippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + dateTime);
             } else {
