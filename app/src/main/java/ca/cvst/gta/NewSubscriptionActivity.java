@@ -150,10 +150,23 @@ public class NewSubscriptionActivity extends AppCompatActivity implements Adapte
         RadioButton checkedOperation = (RadioButton) findViewById(mOperationsRadioGroup.getCheckedRadioButtonId());
         Filter.Operation operation = Filter.Operation.valueOf(checkedOperation.getText().toString().toUpperCase());
         Filter newFilter = new Filter(fieldName, operation, fieldValue);
-        mFilters.add(0, newFilter);
-        mFilterListAdapter.notifyItemInserted(0);
-        mFilterList.scrollToPosition(0);
-        mSubscribeButton.setEnabled(true);
+        if (checkNewFilter(newFilter)) {
+            mFilters.add(0, newFilter);
+            mFilterListAdapter.notifyItemInserted(0);
+            mFilterList.scrollToPosition(0);
+            mSubscribeButton.setEnabled(true);
+        }
+    }
+
+    public boolean checkNewFilter(Filter newFilter) {
+        for (Filter existingFilter : mFilters) {
+            if (TextUtils.equals(newFilter.getFieldName(), existingFilter.getFieldName()) &&
+                    newFilter.getOperation() == existingFilter.getOperation() &&
+                    TextUtils.equals(newFilter.getFieldValue(), existingFilter.getFieldValue())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void attemptSubscribe() {
