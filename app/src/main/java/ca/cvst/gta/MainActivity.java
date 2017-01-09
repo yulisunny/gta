@@ -53,6 +53,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,10 +76,6 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<Marker> ttcMarkers;
     private Map<Integer, Integer> ttcInvertedIndex;
     private ArrayList<String> ttcDirections;
-
-    // Boolean telling us whether a download is in progress, so we don't trigger overlapping
-    // downloads with consecutive button clicks.
-    //private boolean mDownloading = false;
 
 
     @Override
@@ -348,11 +345,8 @@ public class MainActivity extends AppCompatActivity
             JSONArray coordinates = ttcVehicle.getJSONArray("coordinates");
             int vehicle_id = ttcVehicle.getInt("vehicle_id");
             String route_name = ttcVehicle.getString("route_name");
-            String time = ttcVehicle.getString("dateTime");
-            // remove the last 5 characters "-0000"
-            time = time.substring(0, time.length() - 5);
-            // add EST
-            time = time + "EST";
+            long GPStimestamp = ttcVehicle.getLong("GPStime");
+            String dateTime = convertTimestampToString(GPStimestamp);
 
             // calculate the direction based on the heading
             String direction = ttcVehicle.getString("heading");
@@ -364,7 +358,7 @@ public class MainActivity extends AppCompatActivity
             ttcMarkers.add(mMap.addMarker(new MarkerOptions()
                     .position(location)
                     .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
-                    .title(route_name).snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + time)));
+                    .title(route_name).snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + dateTime)));
 
             // create a new thread to handle other markers so that the user doesn't need to wait on main thread to load all the data
             (new Handler()).postDelayed(new Runnable(){
@@ -391,7 +385,6 @@ public class MainActivity extends AppCompatActivity
                 webSocket.send("{\"action\": \"subscribe\", \"publisherName\": \"ttc\", \"subscription\": {\"bool\": {\"must\": []}}}");
                 webSocket.setStringCallback(new WebSocket.StringCallback() {
                     public void onStringAvailable(String s) {
-                        //System.out.println("hi");
                         Handler handler = new Handler(Looper.getMainLooper());
                         try{
                             final JSONObject ttcVehicle = new JSONObject(s);
@@ -399,9 +392,7 @@ public class MainActivity extends AppCompatActivity
                                 @Override
                                 public void run() {
                                     try {
-                                        //System.out.println("ggogo");
-
-                                        // a data format:
+                                        // data format:
                                         // {"id":8526,
                                         // "timestamp":1483736583,
                                         // "routeNumber":"35",
@@ -425,10 +416,10 @@ public class MainActivity extends AppCompatActivity
                                             String heading = data.getString("heading");
                                             String direction = calculateDirection(Integer.parseInt(heading));
 
-                                            String time = data.getString("dateTime");
-                                            time = time.substring(0, time.length() - 6) + " EST";
+                                            long GPStimestamp = data.getLong("GPStime");
+                                            String dateTime = convertTimestampToString(GPStimestamp);
 
-                                            m.setSnippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + time);
+                                            m.setSnippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + dateTime);
                                         } else {
                                             ttcInvertedIndex.put(vehicle_id, index);
                                             JSONArray coordinates = data.getJSONArray("coordinates");
@@ -437,14 +428,14 @@ public class MainActivity extends AppCompatActivity
                                             String heading = data.getString("heading");
                                             String direction = calculateDirection(Integer.parseInt(heading));
 
-                                            String time = data.getString("dateTime");
-                                            time = time.substring(0, time.length() - 6) + " EST";
+                                            long GPStimestamp = data.getLong("GPStime");
+                                            String dateTime = convertTimestampToString(GPStimestamp);
 
                                             LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
                                             ttcMarkers.add(mMap.addMarker(new MarkerOptions()
                                                     .position(location)
                                                     .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
-                                                    .title(route_name).snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + "Time: " + time)));
+                                                    .title(route_name).snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + "Time: " + dateTime)));
                                             index = index + 1;
                                         }
                                     } catch (JSONException e) {
@@ -472,6 +463,12 @@ public class MainActivity extends AppCompatActivity
     private String calculateDirection(int degree){
         int val = (int) floor(degree / 22.5 + 0.5);
         return ttcDirections.get(val%16);
+    }
+
+    private String convertTimestampToString(long timestamp){
+        // recognized that the timestamp is supposed to be 13 digit long in 2017, but it's only ten.
+        Date date = new Date(timestamp * 1000);
+        return date.toString();
     }
 
 }
