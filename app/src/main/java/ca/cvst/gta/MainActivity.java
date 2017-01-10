@@ -69,13 +69,10 @@ public class MainActivity extends AppCompatActivity
 
     // For ttc:
     private Bitmap ttcIcon;
-    private JSONArray ttcInfoArray;
-    private int ttcInfoArrayLength;
-    private int index;
     private ArrayList<Marker> ttcMarkers;
     private Map<Integer, Integer> ttcInvertedIndex;
-    private boolean ttcIsChecked = false;
-
+    private boolean ttcIsChecked = true; // TODO turn this to false once debugging finishes
+    private Handler ttcHandler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -309,10 +306,7 @@ public class MainActivity extends AppCompatActivity
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray ttcVehicles) {
-                        ttcInfoArrayLength = ttcVehicles.length();
-                        ttcInfoArray = ttcVehicles;
-                        index = 0;
-                        ttcPlotRecursive();
+                        ttcPlotNearby(ttcVehicles);
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -329,13 +323,110 @@ public class MainActivity extends AppCompatActivity
         return resizedBitmap;
     }
 
-    private void ttcPlotRecursive(){
-        if (index >= ttcInfoArrayLength){
+    private void ttcPlotFurtherRecursive(final ArrayList<JSONObject> ttcVehicles, int ttcMarkerIndex, final int ttcSecondaryArrayIndex){
+        if (ttcMarkerIndex >= ttcVehicles.size()){
             WebSocketConn();
             return;
         }
         try {
-            /* portal.cvst.ca/api/0.1/ttc
+            JSONObject ttcVehicle = ttcVehicles.get(ttcSecondaryArrayIndex);
+
+            // get the current location coordinates
+            JSONArray coordinates = ttcVehicle.getJSONArray("coordinates");
+            LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
+
+            // get current route name
+            String route_name = ttcVehicle.getString("route_name");
+
+            // get current date and time
+            String dateTime = Helper.convertTimestampToString(ttcVehicle.getLong("GPStime"));
+
+            // calculate the direction based on the heading
+            String direction = Helper.calculateDirection(Integer.parseInt(ttcVehicle.getString("heading")));
+
+            // get the vehicle id and store it in inverted index table and add it to ttcMarker array
+            int vehicle_id = ttcVehicle.getInt("vehicle_id");
+            ttcInvertedIndex.put(vehicle_id, ttcMarkerIndex);
+            ttcMarkers.add(mMap.addMarker(new MarkerOptions()
+                    .position(location)
+                    .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
+                    .title(route_name)
+                    .snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + dateTime)
+                    .visible(ttcIsChecked)));
+
+            final int ttcMarkerIndexFinal = ttcMarkerIndex + 1;
+            final int ttcSecondaryArrayIndexFinal = ttcSecondaryArrayIndex + 1;
+
+            ttcHandler.post(new Runnable(){
+                @Override
+                public void run() {
+                    ttcPlotFurtherRecursive(ttcVehicles, ttcMarkerIndexFinal, ttcSecondaryArrayIndexFinal);
+                }
+            });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void WebSocketConn() {
+        AsyncHttpClient.getDefaultInstance().websocket("ws://subs.portal.cvst.ca:8888/websocket", null, new AsyncHttpClient.WebSocketConnectCallback() {
+            @Override
+            public void onCompleted(final Exception ex, WebSocket webSocket) {
+                if (ex != null) {
+                    ex.printStackTrace();
+                    return;
+                }
+                webSocket.send("{\"action\": \"subscribe\", \"publisherName\": \"ttc\", \"subscription\": {\"bool\": {\"must\": []}}}");
+                webSocket.setStringCallback(new WebSocket.StringCallback() {
+                    public void onStringAvailable(String s) {
+                        Handler handler = new Handler(Looper.getMainLooper());
+                        try{
+                            final JSONObject ttcVehicle = new JSONObject(s);
+                            handler.post(new WebsocketPlotTtcRunnable(ttcVehicle, ttcInvertedIndex, ttcMarkers, mMap, ttcIsChecked, ttcIcon));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                webSocket.setDataCallback(new DataCallback() {
+                    public void onDataAvailable(DataEmitter emitter, ByteBufferList byteBufferList) {
+                        System.out.println("I got some bytes!");
+                        // note that this data has been read
+                        byteBufferList.recycle();
+                    }
+                });
+            }
+        });
+    }
+
+    private void ttcPlotNearby(JSONArray ttcVehicles) {
+        try {
+            int ttcMarkersIndex = 0;
+            ArrayList<JSONObject> ttcVehiclesSecondary = new ArrayList<JSONObject>();
+
+            for (int index = 0; index < ttcVehicles.length(); index++){
+                JSONObject ttcVehicle = ttcVehicles.getJSONObject(index);
+                JSONArray coordinates = ttcVehicle.getJSONArray("coordinates");
+                double Latitude = coordinates.getDouble(1);
+                double Longitude = coordinates.getDouble(0);
+
+                if (Helper.isNearby(mLastLocation.getLatitude(), mLastLocation.getLongitude(), Latitude, Longitude)) {
+                    ttcPlotMarker(ttcVehicle, ttcMarkersIndex, Latitude, Longitude);
+                    ttcMarkersIndex = ttcMarkersIndex + 1;
+                }
+                else {
+                    ttcVehiclesSecondary.add(ttcVehicle);
+                }
+            }
+            ttcPlotFurtherRecursive(ttcVehiclesSecondary, ttcMarkersIndex, 0);
+
+        } catch (JSONException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void ttcPlotMarker(JSONObject ttcVehicle, int index, double Lat, double Long) {
+        /* portal.cvst.ca/api/0.1/ttc
                 {
                     "GPStime": 1483740522,
                     "coordinates": [
@@ -353,10 +444,8 @@ public class MainActivity extends AppCompatActivity
                     "vehicle_id": 1000
                 }, */
 
-            // get the current location coordinates
-            JSONObject ttcVehicle = ttcInfoArray.getJSONObject(index);
-            JSONArray coordinates = ttcVehicle.getJSONArray("coordinates");
-            LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
+        try {
+            final LatLng location = new LatLng(Lat, Long);
 
             // get current route name
             String route_name = ttcVehicle.getString("route_name");
@@ -376,50 +465,9 @@ public class MainActivity extends AppCompatActivity
                     .title(route_name)
                     .snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + dateTime)
                     .visible(ttcIsChecked)));
-
-            // create a new thread to handle other markers so that the user doesn't need to wait on main thread to load all the data
-            (new Handler()).postDelayed(new Runnable(){
-                @Override
-                public void run() {
-                    index = index + 1;
-                    ttcPlotRecursive();
-                }
-            }, 1);
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    private void WebSocketConn(){
-        AsyncHttpClient.getDefaultInstance().websocket("ws://subs.portal.cvst.ca:8888/websocket", null, new AsyncHttpClient.WebSocketConnectCallback() {
-            @Override
-            public void onCompleted(final Exception ex, WebSocket webSocket) {
-                if (ex != null) {
-                    ex.printStackTrace();
-                    return;
-                }
-                webSocket.send("{\"action\": \"subscribe\", \"publisherName\": \"ttc\", \"subscription\": {\"bool\": {\"must\": []}}}");
-                webSocket.setStringCallback(new WebSocket.StringCallback() {
-                    public void onStringAvailable(String s) {
-                        Handler handler = new Handler(Looper.getMainLooper());
-                        try{
-                            final JSONObject ttcVehicle = new JSONObject(s);
-                            handler.post(new WebsocketPlotTtcRunnable(ttcVehicle, ttcInvertedIndex, index, ttcMarkers, mMap, ttcIsChecked, ttcIcon));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-                webSocket.setDataCallback(new DataCallback() {
-                    public void onDataAvailable(DataEmitter emitter, ByteBufferList byteBufferList) {
-                        System.out.println("I got some bytes!");
-                        // note that this data has been read
-                        byteBufferList.recycle();
-                    }
-                });
-            }
-        });
     }
 
 }
