@@ -37,9 +37,9 @@ public class UpdatesListenerIntentService extends IntentService {
                         System.out.println("s = " + s);
                         NotificationCompat.Builder mBuilder =
                                 new NotificationCompat.Builder(getApplicationContext())
-                                .setSmallIcon(R.drawable.ic_notification)
-                                .setContentTitle("New Update on Your Subscription")
-                                .setContentText(s);
+                                        .setSmallIcon(R.drawable.ic_notification)
+                                        .setContentTitle("New Update on Your Subscription")
+                                        .setContentText(s);
 //                        final JSONObject ttcVehicle = new JSONObject(s);
                         NotificationManager notificationManager =
                                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
