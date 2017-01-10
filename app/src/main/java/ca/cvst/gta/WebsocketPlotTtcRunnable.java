@@ -30,14 +30,14 @@ public class WebsocketPlotTtcRunnable implements Runnable {
 
     public WebsocketPlotTtcRunnable(JSONObject ttcVehicle,
                                     Map<Integer, Integer> ttcInvertedIndex,
-                                    int index,
+                                    //int index,
                                     ArrayList<Marker> ttcMarkers,
                                     GoogleMap mMap,
                                     boolean ttcIsChecked,
                                     Bitmap ttcIcon) {
         this.ttcVehicle = ttcVehicle;
         this.ttcInvertedIndex = ttcInvertedIndex;
-        this.index = index;
+        //this.index = index;
         this.ttcMarkers = ttcMarkers;
         this.mMap = mMap;
         this.ttcIsChecked = ttcIsChecked;
@@ -76,8 +76,6 @@ public class WebsocketPlotTtcRunnable implements Runnable {
 
                 m.setSnippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + '\n' + "Time: " + dateTime);
             } else {
-                ttcInvertedIndex.put(vehicle_id, index);
-
                 JSONArray coordinates = data.getJSONArray("coordinates");
                 LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
 
@@ -93,7 +91,8 @@ public class WebsocketPlotTtcRunnable implements Runnable {
                         .title(route_name)
                         .snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + "Time: " + dateTime)
                         .visible(ttcIsChecked)));
-                index = index + 1;
+                ttcInvertedIndex.put(vehicle_id, ttcMarkers.size());
+                //index = index + 1;
             }
         } catch (JSONException e) {
             e.printStackTrace();
