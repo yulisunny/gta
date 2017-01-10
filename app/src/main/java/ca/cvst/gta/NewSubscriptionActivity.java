@@ -3,6 +3,7 @@ package ca.cvst.gta;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +21,14 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -170,9 +179,9 @@ public class NewSubscriptionActivity extends AppCompatActivity implements Adapte
     }
 
     private void attemptSubscribe() {
-        if (mSubscribeTask != null) {
-            return;
-        }
+//        if (mSubscribeTask != null) {
+//            return;
+//        }
 //        // Reset errors.
 //        mEmailView.setError(null);
 //        mPasswordView.setError(null);
@@ -180,8 +189,64 @@ public class NewSubscriptionActivity extends AppCompatActivity implements Adapte
 //        View focusView = null;
 //        focusView.requestFocus();
         showProgress(true);
-        mSubscribeTask = new SubscribeTask(mFilters);
-        mSubscribeTask.execute((Void) null);
+//        mSubscribeTask = new SubscribeTask(mPublishersSpinner.getSelectedItem().toString(), mFilters, this);
+//        mSubscribeTask.execute((Void) null);
+        JSONObject payload = null;
+        try {
+            JSONArray mustArray = new JSONArray();
+            for (Filter filter : mFilters) {
+                if (filter.getOperation() == Filter.Operation.EQ) {
+                    JSONObject o1 = new JSONObject();
+                    o1.put(filter.getFieldName(), filter.getFieldValue());
+                    JSONObject o2 = new JSONObject();
+                    o2.put("match", o1);
+                    mustArray.put(o2);
+                } else {
+                    JSONObject o1 = new JSONObject();
+                    o1.put(filter.getOperation().toString().toLowerCase(), Float.valueOf(filter.getFieldValue()));
+                    JSONObject o2 = new JSONObject();
+                    o2.put(filter.getFieldName(), o1);
+                    JSONObject o3 = new JSONObject();
+                    o3.put("range", o2);
+                    mustArray.put(o3);
+                }
+            }
+            JSONObject boolObject = new JSONObject().put("must", mustArray);
+            JSONObject subscriptionObject = new JSONObject().put("bool", boolObject);
+            payload = new JSONObject();
+            payload.put("publisherName", mPublishersSpinner.getSelectedItem().toString());
+            payload.put("subscription", subscriptionObject);
+            payload.put("ttl", "1d");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        System.out.println("payload = " + payload);
+        JsonObjectRequest request = new JsonObjectRequest("http://subs.portal.cvst.ca/api/subscribe", payload, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                System.out.println("response = " + response);
+                showProgress(false);
+                String status = "error";
+                String message = "There was an error, please try again.";
+                try {
+                    status = response.getString("status");
+                    message = response.getString("message");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                if (status.equals("success")) {
+                    finish();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("error = " + error);
+                Toast.makeText(getApplicationContext(), "Subscription failed.", Toast.LENGTH_LONG).show();
+            }
+        });
+        NetworkManager.getInstance(this).addToRequestQueue(request);
 
     }
 
@@ -220,17 +285,63 @@ public class NewSubscriptionActivity extends AppCompatActivity implements Adapte
 
     public class SubscribeTask extends AsyncTask<Void, Void, Boolean> {
 
+        private final String mPublisher;
         private final List<Filter> mFilters;
+        private Context mContext;
 
-        SubscribeTask(List<Filter> filters) {
+        SubscribeTask(String publisher, List<Filter> filters, Context context) {
+            mPublisher = publisher;
             mFilters = filters;
+            mContext = context;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
-
+            JSONObject payload = null;
             try {
+                JSONArray mustArray = new JSONArray();
+                for (Filter filter : mFilters) {
+                    if (filter.getOperation() == Filter.Operation.EQ) {
+                        JSONObject o1 = new JSONObject();
+                        o1.put(filter.getFieldName(), filter.getFieldValue());
+                        JSONObject o2 = new JSONObject();
+                        o2.put("match", o1);
+                        mustArray.put(o2);
+                    } else {
+                        JSONObject o1 = new JSONObject();
+                        o1.put(filter.getOperation().toString().toLowerCase(), Float.valueOf(filter.getFieldValue()));
+                        JSONObject o2 = new JSONObject();
+                        o2.put(filter.getFieldName(), o1);
+                        JSONObject o3 = new JSONObject();
+                        o3.put("range", o2);
+                        mustArray.put(o3);
+                    }
+                }
+                JSONObject boolObject = new JSONObject().put("must", mustArray);
+                JSONObject subscriptionObject = new JSONObject().put("bool", boolObject);
+                payload = new JSONObject();
+                payload.put("publisherName", mPublisher);
+                payload.put("subscription", subscriptionObject);
+                payload.put("ttl", "1d");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            System.out.println("payload = " + payload);
+            try {
+                JsonObjectRequest request = new JsonObjectRequest("http://subs.portal.cvst.ca/api/subscribe", payload, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        System.out.println("response = " + response);
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        System.out.println("error = " + error);
+
+                    }
+                });
+                NetworkManager.getInstance(mContext).addToRequestQueue(request);
                 // Simulate network access.
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
