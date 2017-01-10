@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<Marker> ttcMarkers;
     private Map<Integer, Integer> ttcInvertedIndex;
     private boolean ttcIsChecked = true; // TODO turn this to false once debugging finishes
-    private Handler ttcHandler = new Handler(Looper.getMainLooper());
+    //private Handler ttcHandler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -389,6 +389,7 @@ public class MainActivity extends AppCompatActivity
             final int ttcMarkerIndexFinal = ttcMarkerIndex + 1;
             final int ttcSecondaryArrayIndexFinal = ttcSecondaryArrayIndex + 1;
 
+            Handler ttcHandler = new Handler(Looper.getMainLooper());
             ttcHandler.post(new Runnable(){
                 @Override
                 public void run() {
