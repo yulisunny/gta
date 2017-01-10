@@ -58,6 +58,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import layout.UpdatesListenerIntentService;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         View.OnClickListener,
@@ -140,6 +142,8 @@ public class MainActivity extends AppCompatActivity
 
         };
         NetworkManager.getInstance(this).addToRequestQueue(loginRequest);
+        Intent updatesIntent = new Intent(getApplicationContext(), UpdatesListenerIntentService.class);
+        startService(updatesIntent);
     }
 
     @Override

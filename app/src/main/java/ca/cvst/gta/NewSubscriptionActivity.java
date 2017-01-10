@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,8 +32,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import layout.UpdatesListenerIntentService;
 
 public class NewSubscriptionActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
@@ -239,8 +236,6 @@ public class NewSubscriptionActivity extends AppCompatActivity implements Adapte
                 }
                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
                 if (status.equals("success")) {
-                    Intent updatesIntent = new Intent(getApplicationContext(), UpdatesListenerIntentService.class);
-                    startService(updatesIntent);
                     finish();
                 }
             }
