@@ -35,6 +35,8 @@ public class WebsocketPlotTtcRunnable implements Runnable {
                                     GoogleMap mMap,
                                     boolean ttcIsChecked,
                                     Bitmap ttcIcon) {
+
+        System.out.println("Websocket packet incoming");
         this.ttcVehicle = ttcVehicle;
         this.ttcInvertedIndex = ttcInvertedIndex;
         //this.index = index;
