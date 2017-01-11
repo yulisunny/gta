@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -33,7 +34,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewSubscriptionActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class NewSubscriptionActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, RadioGroup.OnCheckedChangeListener {
 
     /**
      * Keep track of the subscription task to ensure we can cancel it if requested.
@@ -110,6 +111,7 @@ public class NewSubscriptionActivity extends AppCompatActivity implements Adapte
         mFilterList.setAdapter(mFilterListAdapter);
 
         mOperationsRadioGroup = (RadioGroup) findViewById(R.id.radio_group_operation);
+        mOperationsRadioGroup.setOnCheckedChangeListener(this);
         RadioButton eqButton = (RadioButton) findViewById(R.id.radio_eq);
         eqButton.setChecked(true);
     }
@@ -147,6 +149,21 @@ public class NewSubscriptionActivity extends AppCompatActivity implements Adapte
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
+    }
+
+    @Override
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+        if (checkedId == R.id.radio_eq) {
+            mFieldValueView.setInputType(InputType.TYPE_CLASS_TEXT);
+        } else {
+            String regex = "-?\\d+(\\.\\d+)?";
+            String existingInput = mFieldValueView.getText().toString();
+            if (!existingInput.matches(regex)) {
+                mFieldValueView.setText("");
+            }
+            mFieldValueView.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        }
+        System.out.println("checkedId = " + checkedId);
     }
 
     private void attemptAddFilter() {
