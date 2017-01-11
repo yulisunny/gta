@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_new_historical_chart"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="ca.cvst.gta.NewHistoricalChartActivity"
+    tools:showIn="@layout/activity_new_historical_chart">
+
+    <LinearLayout
+        android:id="@+id/layout_chart_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/text_new_historical_chart_type"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/new_historical_chart_traffic_data_type"/>
+
+        <Spinner
+            android:id="@+id/spinner_new_historical_chart_type"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:entries="@array/new_historical_chart_traffic_data_array"
+            android:prompt="@string/new_historical_chart_spinner_default"
+            style="@android:style/Widget.Spinner"
+            android:spinnerMode="dropdown"/>
+
+        <TextView
+            android:id="@+id/text_new_historical_chart_time_range"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/new_historical_chart_time_range"
+            android:paddingTop="10dp"/>
+
+        <Spinner
+            android:id="@+id/spinner_new_historical_chart_time_range"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/new_historical_chart_time_range_array"
+            android:prompt="@string/new_historical_chart_spinner_default"
+            style="@android:style/Widget.Spinner"
+            android:spinnerMode="dropdown"/>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_add_historical_chart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layout_chart_type"
+        android:textAllCaps="false"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:text="@string/add_new_historical_chart"/>
+
+</RelativeLayout>

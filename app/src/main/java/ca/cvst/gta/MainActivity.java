@@ -303,7 +303,8 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_past_notifications) {
             // Handle the camera action
         } else if (id == R.id.nav_historical_data_dashboard) {
-
+            Intent intent = new Intent(this, HistoricalDashboardActivity.class);
+            startActivity(intent);
         } else if (id == R.id.ttc) {
             // ttc insert here
             if (item.isChecked()) {

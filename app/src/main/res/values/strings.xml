@@ -58,4 +58,21 @@
         <item>flow</item>
         <item>averageSpeed</item>
     </string-array>
+    <string name="title_activity_historical_dashboard">Historical Dashboard</string>
+
+
+    <string name="title_activity_new_historical_chart">New Historical Chart</string>
+    <string name="new_historical_chart_spinner_default">-</string>
+    <string name="new_historical_chart_traffic_data_type">Type of Traffic Data: </string>
+    <string-array name="new_historical_chart_traffic_data_array">
+        <item>Air Quality</item>
+        <item>Free flow speed of Roads</item>
+    </string-array>
+    <string name="new_historical_chart_time_range">Time range to plot: </string>
+    <string-array name="new_historical_chart_time_range_array">
+        <item>Three Days</item>
+        <item>One Week</item>
+        <item>One Month</item>
+    </string-array>
+    <string name="add_new_historical_chart">Add Chart</string>
 </resources>
