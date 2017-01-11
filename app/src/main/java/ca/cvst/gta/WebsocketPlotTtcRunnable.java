@@ -91,13 +91,13 @@ public class WebsocketPlotTtcRunnable implements Runnable {
 
                 String dateTime = Helper.convertTimestampToString(data.getLong("GPStime"));
 
+                ttcInvertedIndex.put(vehicle_id, ttcMarkers.size());
                 ttcMarkers.add(mMap.addMarker(new MarkerOptions()
                         .position(location)
                         .icon(BitmapDescriptorFactory.fromBitmap(ttcIcon))
                         .title(route_name)
                         .snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + "Time: " + dateTime)
                         .visible(ttcIsChecked)));
-                ttcInvertedIndex.put(vehicle_id, ttcMarkers.size());
                 //index = index + 1;
             }
         } catch (JSONException e) {
