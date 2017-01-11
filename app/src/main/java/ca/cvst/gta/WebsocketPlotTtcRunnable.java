@@ -28,7 +28,6 @@ import java.util.Map;
 public class WebsocketPlotTtcRunnable implements Runnable {
     private final JSONObject ttcVehicle;
     private Bitmap ttcIcon;
-    private int index;
     private ArrayList<Marker> ttcMarkers;
     private Map<Integer, Integer> ttcInvertedIndex;
     private boolean ttcIsChecked;
@@ -36,14 +35,12 @@ public class WebsocketPlotTtcRunnable implements Runnable {
 
     public WebsocketPlotTtcRunnable(JSONObject ttcVehicle,
                                     Map<Integer, Integer> ttcInvertedIndex,
-                                    //int index,
                                     ArrayList<Marker> ttcMarkers,
                                     GoogleMap mMap,
                                     boolean ttcIsChecked,
                                     Bitmap ttcIcon) {
         this.ttcVehicle = ttcVehicle;
         this.ttcInvertedIndex = ttcInvertedIndex;
-        //this.index = index;
         this.ttcMarkers = ttcMarkers;
         this.mMap = mMap;
         this.ttcIsChecked = ttcIsChecked;
@@ -75,7 +72,7 @@ public class WebsocketPlotTtcRunnable implements Runnable {
                 JSONArray coordinates = data.getJSONArray("coordinates");
                 LatLng location = new LatLng(coordinates.getDouble(1), coordinates.getDouble(0));
                 //m.setPosition(location);
-                animateMarker(m, location, false);
+                animateMarker(m, location);
                 String direction = Helper.calculateDirection(Integer.parseInt(data.getString("heading")));
 
                 String dateTime = Helper.convertTimestampToString(data.getLong("GPStime"));
@@ -98,15 +95,13 @@ public class WebsocketPlotTtcRunnable implements Runnable {
                         .title(route_name)
                         .snippet("Bus ID: " + vehicle_id + '\n' + "Direction: " + direction + "Time: " + dateTime)
                         .visible(ttcIsChecked)));
-                //index = index + 1;
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    public void animateMarker(final Marker marker, final LatLng toPosition,
-                              final boolean hideMarker) {
+    public void animateMarker(final Marker marker, final LatLng toPosition) {
         final Handler handler = new Handler();
         final long start = SystemClock.uptimeMillis();
         Projection proj = mMap.getProjection();
@@ -131,12 +126,6 @@ public class WebsocketPlotTtcRunnable implements Runnable {
                 if (t < 1.0) {
                     // Post again 16ms later.
                     handler.postDelayed(this, 16);
-                } else {
-                    if (hideMarker) {
-                        marker.setVisible(false);
-                    } else {
-                        marker.setVisible(true);
-                    }
                 }
             }
         });
