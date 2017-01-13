@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_past_notifications"
+            android:icon="@drawable/ic_past_notifications"
+            android:title="Past Notifications"/>
+        <item
+            android:id="@+id/nav_historical_data_dashboard"
+            android:icon="@drawable/ic_historical_data_dashboard"
+            android:title="Historical Data Dashboard"/>
+    </group>
+
+    <item android:title="Traffic Data Type">
+        <menu>
+            <group android:id="@+id/data_type_group" android:checkableBehavior="all">
+                <item
+                    android:id="@+id/ttc"
+                    android:icon="@drawable/ttc"
+                    android:title="TTC bus"
+                    />
+                <item
+                    android:id="@+id/current_road_incidents"
+                    android:icon="@drawable/ic_menu_send"
+                    android:title="Current Road Incidents" />
+            </group>
+        </menu>
+    </item>
+
+</menu>
