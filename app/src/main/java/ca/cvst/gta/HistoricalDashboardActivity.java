@@ -15,14 +15,26 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.github.mikephil.charting.charts.Chart;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+
+import org.joda.time.LocalTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
 
 public class HistoricalDashboardActivity extends AppCompatActivity {
 
     private static final int NEW_HISTORICAL_CHART_REQUEST = 1;
 
-    private ArrayAdapter<String> historicalChartAdapter;
+    private ArrayAdapter<HistoricalChartData> historicalChartAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,16 +52,7 @@ public class HistoricalDashboardActivity extends AppCompatActivity {
             }
         });
 
-//        String[] values = new String[] { "Android", "iPhone", "WindowsMobile",
-//                "Blackberry", "WebOS", "Ubuntu", "Windows7", "Max OS X",
-//                "Linux", "OS/2", "Ubuntu", "Windows7", "Max OS X", "Linux",
-//                "OS/2", "Ubuntu", "Windows7", "Max OS X", "Linux", "OS/2",
-//                "Android", "iPhone", "WindowsMobile" };
-
-        ArrayList<String> list = new ArrayList<>();
-//        for (int i = 0; i < values.length; ++i) {
-//            list.add(values[i]);
-//        }
+        ArrayList<HistoricalChartData> list = new ArrayList<>();
         historicalChartAdapter = new HistoricalChartAdapter(this, list);
         ListView listview = (ListView) findViewById(R.id.historical_dashboard_listview);
         listview.setAdapter(historicalChartAdapter);
@@ -59,34 +62,75 @@ public class HistoricalDashboardActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == NEW_HISTORICAL_CHART_REQUEST) {
             if (resultCode == RESULT_OK) {
-                String msg = data.getStringExtra("MESSAGE");
-                historicalChartAdapter.add(msg);
+                String chartType = data.getStringExtra("CHART_TYPE");
+                String chartDataTime = data.getStringExtra("DATA_TIME");
+
+                historicalChartAdapter.add(new HistoricalChartData(
+                        chartType, chartType, 1L ,2L ,chartDataTime
+                ));
             }
         }
     }
 
-//    private JSONObject getHistoricalDataWithTimeRange(
-//            HashMap<String, String> params, Long startTimeEpochMs, Long endTimeEpochMs) throws Exception {
-//        String temp = "{test: data}";
-//        return new JSONObject(temp);
-//    }
+    public class HistoricalChartAdapter extends ArrayAdapter<HistoricalChartData> {
 
-    public class HistoricalChartAdapter extends ArrayAdapter<String> {
-
-        public HistoricalChartAdapter(Context context, ArrayList<String> objects) {
+        public HistoricalChartAdapter(Context context, ArrayList<HistoricalChartData> objects) {
             super(context, 0, objects);
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            String object = getItem(position);
+            HistoricalChartData chartData = getItem(position);
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.historical_chart_card, parent, false);
             }
-
             TextView tvCaptions = (TextView) convertView.findViewById(R.id.historical_dashboard_card_tv_captions);
-            tvCaptions.setText(object);
+            tvCaptions.setText(String.format("%d, %s", position, chartData.toString()));
+            createLineChart(convertView);
             return convertView;
+        }
+    }
+
+
+    public void createLineChart(View v) {
+        List<Integer> fakeData = new ArrayList<>();
+        Random ran = new Random();
+        for (int i = 0; i < 10; i ++) {
+            fakeData.add(ran.nextInt(10));
+        }
+
+        LineChart chart = (LineChart) v.findViewById(R.id.historical_dashboard_card_iv);
+        List<Entry> entries = new ArrayList<>();
+        for (int i = 0; i < fakeData.size(); i ++) {
+            entries.add(new Entry((float)i , (float)fakeData.get(i)));
+        }
+        LineDataSet dataSet = new LineDataSet(entries, "Highway Flow Speed");
+        LineData lineData = new LineData(dataSet);
+        chart.setData(lineData);
+        chart.invalidate();
+    }
+
+    public class HistoricalChartData {
+
+        private String mChartType;
+        private String mDataType;
+        private Long mStartTime;
+        private Long mEndTime;
+        private LocalTime mDataTime;
+
+        public HistoricalChartData(String chartType, String dataType, Long startTime, Long endTime, String dataTime) {
+            DateTimeFormatter formatter = DateTimeFormat.forPattern("HH:mm");
+            mDataTime = formatter.parseLocalTime(dataTime);
+            mDataType = dataType;
+            mChartType = chartType;
+            mStartTime = startTime;
+            mEndTime = endTime;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("HistoricalChartData: chartType=%s, dataType=%s, startTime=%s, endTime=%s, dataTime=%s",
+                    mChartType, mDataType, mStartTime.toString(), mEndTime.toString(), DateTimeFormat.forPattern("HH:mm").print(mDataTime));
         }
     }
 

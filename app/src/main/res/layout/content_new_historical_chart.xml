@@ -50,13 +50,51 @@
             style="@android:style/Widget.Spinner"
             android:spinnerMode="dropdown"/>
 
+        <TextView
+            android:id="@+id/text_new_historical_chart_data_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/new_historical_chart_time_range"
+            android:paddingTop="10dp"/>
+
+        <EditText
+            android:id="@+id/edit_new_historical_chart_data_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/layout_chart_highway"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@id/layout_chart_type">
+
+        <TextView
+            android:id="@+id/text_new_historical_chart_highway_"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="10dp"
+            android:text="@string/new_historical_chart_hw_selection"/>
+
+        <Spinner
+            android:id="@+id/spinner_new_historical_chart_highway"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:entries="@array/new_historical_chart_highways"
+            android:prompt="@string/new_historical_chart_spinner_default"
+            style="@android:style/Widget.Spinner"
+            android:spinnerMode="dropdown"/>
+
     </LinearLayout>
 
     <Button
         android:id="@+id/btn_add_historical_chart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/layout_chart_type"
+        android:layout_below="@id/layout_chart_highway"
         android:textAllCaps="false"
         style="@style/Widget.AppCompat.Button.Colored"
         android:text="@string/add_new_historical_chart"/>

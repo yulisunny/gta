@@ -75,4 +75,10 @@
         <item>One Month</item>
     </string-array>
     <string name="add_new_historical_chart">Add Chart</string>
+    <string name="new_historical_chart_hw_selection">Select a highway of interest</string>
+    <string-array name="new_historical_chart_highways">
+        <item>HWY 401</item>
+        <item>HWY 407</item>
+        <item>HWY 400</item>
+    </string-array>
 </resources>
