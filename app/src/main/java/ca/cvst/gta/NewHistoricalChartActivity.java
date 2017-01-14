@@ -26,6 +26,8 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.RequestFuture;
 
+import org.joda.time.LocalTime;
+import org.joda.time.format.DateTimeFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -101,7 +103,8 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
     @Override
     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
         EditText dataTime = (EditText) findViewById(R.id.edit_new_historical_chart_data_time);
-        dataTime.setText(String.format("%d:%d", selectedHour, selectedMinute));
+        LocalTime time = new LocalTime(selectedHour, selectedMinute);
+        dataTime.setText(DateTimeFormat.forPattern("HH:mm").print(time));
     }
 
     public void showTimePickerDialog() {
