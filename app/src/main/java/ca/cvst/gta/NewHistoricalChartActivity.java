@@ -25,6 +25,13 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.RequestFuture;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
@@ -38,8 +45,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class NewHistoricalChartActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener {
+public class NewHistoricalChartActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener, OnMapReadyCallback {
     private Map<String, String> linkIdAddressMapping = new HashMap<>();
+    private Marker mapLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,10 +99,15 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
                 Intent intent = new Intent();
                 intent.putExtra("CHART_TYPE", chartType);
                 intent.putExtra("DATA_TIME", chartDataTime);
+                intent.putExtra("MAP_LAT", mapLocation.getPosition());
                 setResult(RESULT_OK, intent);
                 finish();
             }
         });
+
+        // Google Map Initializations
+        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map_new_historical_chart);
+        mapFragment.getMapAsync(this);
 
 //        initLinkIds();
     }
@@ -110,6 +123,25 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
     public void showTimePickerDialog() {
         DialogFragment newFragment = new TimePickerFragment();
         newFragment.show(getFragmentManager(), "timePicker");
+    }
+
+    @Override
+    public void onMapReady(final GoogleMap googleMap) {
+
+        googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                if (mapLocation == null) {
+                    mapLocation = googleMap.addMarker(new MarkerOptions()
+                            .position(latLng)
+                            .title("Marker")
+                            .draggable(true));
+                }
+                mapLocation.setPosition(latLng);
+
+            }
+        });
+
     }
 
     public static class TimePickerFragment extends DialogFragment {
