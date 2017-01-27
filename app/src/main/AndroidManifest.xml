@@ -50,7 +50,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -66,7 +65,7 @@
 
         <service
             android:name="layout.UpdatesListenerIntentService"
-            android:exported="false"></service>
+            android:exported="false" />
         <activity
             android:name=".HistoricalDashboardActivity"
             android:label="@string/title_activity_historical_dashboard"
@@ -74,7 +73,14 @@
         <activity
             android:name=".NewHistoricalChartActivity"
             android:label="@string/title_activity_new_historical_chart"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".NewHistoricalChartMapActivity"
+            android:label="@string/title_activity_new_historical_chart_map">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ca.cvst.gta.NewHistoricalChartActivity" />
+        </activity>
     </application>
 
 </manifest>

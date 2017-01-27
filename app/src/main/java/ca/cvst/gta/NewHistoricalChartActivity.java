@@ -2,52 +2,32 @@ package ca.cvst.gta;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.FragmentManager;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.format.DateFormat;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.TimePicker;
 
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.RequestFuture;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.clustering.ClusterItem;
 
 import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import java.util.Date;
 
-public class NewHistoricalChartActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener, OnMapReadyCallback {
-    private Map<String, String> linkIdAddressMapping = new HashMap<>();
-    private Marker mapLocation;
+public class NewHistoricalChartActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener {
+
+    private static final int NEW_HISTORICAL_CHART_MAP_REQUEST = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +37,9 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
         final Spinner spinnerTrafficType = (Spinner) findViewById(R.id.spinner_new_historical_chart_type);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        // Disable keyboard pop up
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         // Showing and hiding parts of the form depending on traffic type
         final View hwView = findViewById(R.id.layout_chart_highway);
@@ -80,7 +63,8 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
 
         // Picking a time to query historical data
         final EditText dataTime = (EditText) findViewById(R.id.edit_new_historical_chart_data_time);
-        dataTime.setText("12:00"); //default time
+        LocalTime currTime = new LocalTime();
+        dataTime.setText(DateTimeFormat.forPattern("HH:mm").print(currTime)); //default time
         dataTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,22 +78,26 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
         completeFormBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String chartType = spinnerTrafficType.getSelectedItem().toString();
-                String chartDataTime = dataTime.getText().toString();
-                Intent intent = new Intent();
-                intent.putExtra("CHART_TYPE", chartType);
-                intent.putExtra("DATA_TIME", chartDataTime);
-                intent.putExtra("MAP_LAT", mapLocation.getPosition());
-                setResult(RESULT_OK, intent);
-                finish();
+
+                // Select a link
+                Intent linkSelectionIntent = new Intent(getApplicationContext(), NewHistoricalChartMapActivity.class);
+                startActivityForResult(linkSelectionIntent, NEW_HISTORICAL_CHART_MAP_REQUEST);
             }
         });
 
-        // Google Map Initializations
-        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map_new_historical_chart);
-        mapFragment.getMapAsync(this);
+    }
 
-//        initLinkIds();
+    private Long getTimestamp(String timeSelection) {
+        Date currDate = new Date();
+        Long dayMillisFactor = Long.valueOf(24 * 3600 * 1000);
+        if (timeSelection.equals("Three Days")) {
+            return new Date(currDate.getTime() - 3 * dayMillisFactor).getTime();
+        } else if (timeSelection.equals("One Week")) {
+            return new Date(currDate.getTime() - 7 * dayMillisFactor).getTime();
+        } else if (timeSelection.equals("One Month")) {
+            return new Date(currDate.getTime() - 30 * dayMillisFactor).getTime();
+        }
+        return currDate.getTime();
     }
 
 
@@ -125,24 +113,6 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
         newFragment.show(getFragmentManager(), "timePicker");
     }
 
-    @Override
-    public void onMapReady(final GoogleMap googleMap) {
-
-        googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-            @Override
-            public void onMapLongClick(LatLng latLng) {
-                if (mapLocation == null) {
-                    mapLocation = googleMap.addMarker(new MarkerOptions()
-                            .position(latLng)
-                            .title("Marker")
-                            .draggable(true));
-                }
-                mapLocation.setPosition(latLng);
-
-            }
-        });
-
-    }
 
     public static class TimePickerFragment extends DialogFragment {
 
@@ -162,8 +132,33 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
 
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == NEW_HISTORICAL_CHART_MAP_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                String linkId = data.getStringExtra("LINK_ID");
 
-// TomTomAPI
+                final Spinner spinnerTrafficType = (Spinner) findViewById(R.id.spinner_new_historical_chart_type);
+                final Spinner spinnerTimeRange = (Spinner) findViewById(R.id.spinner_new_historical_chart_time_range);
+                final EditText dataTime = (EditText) findViewById(R.id.edit_new_historical_chart_data_time);
+
+                String chartType = spinnerTrafficType.getSelectedItem().toString();
+                String chartDataTime = dataTime.getText().toString();
+                Intent intent = new Intent();
+                intent.putExtra("CHART_TYPE", chartType);
+                intent.putExtra("DATA_TIME", chartDataTime);
+                intent.putExtra("START_TIME", new Date().getTime());
+                intent.putExtra("END_TIME",getTimestamp(spinnerTimeRange.getSelectedItem().toString()));
+                intent.putExtra("LINK_ID", linkId);
+                setResult(RESULT_OK, intent);
+                finish();
+            }
+        }
+    }
+
+
+
+
 //    private void initLinkIds() {
 //        String url = "http://portal.cvst.ca/api/0.1/tomtom/hdf/linkids";
 //        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
@@ -239,5 +234,8 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
 //        });
 //        NetworkManager.getInstance(this).addToRequestQueue(jsonObjectRequest);
 //    }
+
+
+
 
 }

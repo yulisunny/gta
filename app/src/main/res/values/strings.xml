@@ -74,11 +74,19 @@
         <item>One Week</item>
         <item>One Month</item>
     </string-array>
-    <string name="add_new_historical_chart">Add Chart</string>
-    <string name="new_historical_chart_hw_selection">Long click on map to select the address</string>
+    <string name="new_historical_chart_time_of_day">Time of day to plot: </string>
+    <string name="add_new_historical_chart">Next</string>
+    <string name="new_historical_chart_hw_selection">Select a marker address of interest: </string>
     <string-array name="new_historical_chart_highways">
         <item>HWY 401</item>
         <item>HWY 407</item>
         <item>HWY 400</item>
     </string-array>
+    <string name="new_historical_chart_highway_type">Data Type: </string>
+    <string-array name="new_historical_chart_graph_type">
+        <item>average speed</item>
+        <item>flow</item>
+    </string-array>
+    <string name="title_activity_new_historical_chart_map">Select a location of interest </string>
+
 </resources>

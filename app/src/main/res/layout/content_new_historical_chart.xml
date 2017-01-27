@@ -1,99 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/content_new_historical_chart"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="ca.cvst.gta.NewHistoricalChartActivity"
-    tools:showIn="@layout/activity_new_historical_chart">
+    tools:showIn="@layout/activity_new_historical_chart"
+    >
 
-    <LinearLayout
-        android:id="@+id/layout_chart_type"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+    <RelativeLayout
+        android:id="@+id/layout_new_historical_chart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/text_new_historical_chart_type"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="@string/new_historical_chart_traffic_data_type"/>
-
-        <Spinner
-            android:id="@+id/spinner_new_historical_chart_type"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:entries="@array/new_historical_chart_traffic_data_array"
-            android:prompt="@string/new_historical_chart_spinner_default"
-            style="@android:style/Widget.Spinner"
-            android:spinnerMode="dropdown"/>
-
-        <TextView
-            android:id="@+id/text_new_historical_chart_time_range"
+        <LinearLayout
+            android:id="@+id/layout_chart_type"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/new_historical_chart_time_range"
-            android:paddingTop="10dp"/>
+            android:orientation="vertical">
 
-        <Spinner
-            android:id="@+id/spinner_new_historical_chart_time_range"
+            <TextView
+                android:id="@+id/text_new_historical_chart_type"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/new_historical_chart_traffic_data_type"/>
+
+            <Spinner
+                android:id="@+id/spinner_new_historical_chart_type"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:entries="@array/new_historical_chart_traffic_data_array"
+                android:prompt="@string/new_historical_chart_spinner_default"
+                style="@android:style/Widget.Spinner"
+                android:spinnerMode="dropdown"/>
+
+            <TextView
+                android:id="@+id/text_new_historical_chart_time_range"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/new_historical_chart_time_range"
+                android:paddingTop="10dp"/>
+
+            <Spinner
+                android:id="@+id/spinner_new_historical_chart_time_range"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/new_historical_chart_time_range_array"
+                android:prompt="@string/new_historical_chart_spinner_default"
+                style="@android:style/Widget.Spinner"
+                android:spinnerMode="dropdown"/>
+
+            <TextView
+                android:id="@+id/text_new_historical_chart_data_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/new_historical_chart_time_of_day"
+                android:paddingTop="10dp"/>
+
+            <EditText
+                android:id="@+id/edit_new_historical_chart_data_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_chart_highway"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:entries="@array/new_historical_chart_time_range_array"
-            android:prompt="@string/new_historical_chart_spinner_default"
-            style="@android:style/Widget.Spinner"
-            android:spinnerMode="dropdown"/>
+            android:orientation="vertical"
+            android:layout_below="@id/layout_chart_type">
 
-        <TextView
-            android:id="@+id/text_new_historical_chart_data_time"
+            <TextView
+                android:id="@+id/text_new_historical_chart_highway_type"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingTop="10dp"
+                android:text="@string/new_historical_chart_highway_type"/>
+
+            <Spinner
+                android:id="@+id/spinner_new_historical_chart_highway_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/new_historical_chart_graph_type"
+                style="@android:style/Widget.Spinner"
+                android:spinnerMode="dropdown"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_add_historical_chart"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/new_historical_chart_time_range"
-            android:paddingTop="10dp"/>
-
-        <EditText
-            android:id="@+id/edit_new_historical_chart_data_time"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-
-    </LinearLayout>
+            android:layout_below="@id/layout_chart_highway"
+            android:textAllCaps="false"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:text="@string/add_new_historical_chart"/>
+    </RelativeLayout>
+</ScrollView>
 
 
-    <LinearLayout
-        android:id="@+id/layout_chart_highway"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_below="@id/layout_chart_type">
+    <!--<LinearLayout-->
+    <!--android:id="@+id/layout_new_historical_chart_map"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:orientation="vertical"-->
+    <!--android:layout_below="@id/layout_chart_type">-->
 
-        <TextView
-            android:id="@+id/text_new_historical_chart_highway_"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingTop="10dp"
-            android:text="@string/new_historical_chart_hw_selection"/>
+    <!--<TextView-->
+    <!--android:id="@+id/text_new_historical_chart_map_"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:paddingTop="10dp"-->
+    <!--android:text="@string/new_historical_chart_hw_selection"/>-->
 
-        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-            android:name="com.google.android.gms.maps.MapFragment"
-            android:id="@+id/map_new_historical_chart"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"/>
-
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/btn_add_historical_chart"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/layout_chart_highway"
-        android:textAllCaps="false"
-        style="@style/Widget.AppCompat.Button.Colored"
-        android:text="@string/add_new_historical_chart"/>
-
-</RelativeLayout>
+    <!--&lt;!&ndash;<fragment xmlns:android="http://schemas.android.com/apk/res/android"&ndash;&gt;-->
+    <!--&lt;!&ndash;xmlns:map="http://schemas.android.com/apk/res-auto"&ndash;&gt;-->
+    <!--&lt;!&ndash;android:name="com.google.android.gms.maps.MapFragment"&ndash;&gt;-->
+    <!--&lt;!&ndash;android:id="@+id/map_new_historical_chart"&ndash;&gt;-->
+    <!--&lt;!&ndash;map:cameraTargetLat="43.6532"&ndash;&gt;-->
+    <!--&lt;!&ndash;map:cameraTargetLng="-79.3832"&ndash;&gt;-->
+    <!--&lt;!&ndash;map:cameraZoom="14"&ndash;&gt;-->
+    <!--&lt;!&ndash;android:layout_width="match_parent"&ndash;&gt;-->
+    <!--&lt;!&ndash;android:layout_height="200dp"/>&ndash;&gt;-->
+    <!--</LinearLayout>-->

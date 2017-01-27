@@ -3,13 +3,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!--<ImageView-->
-        <!--android:id="@+id/historical_dashboard_card_iv"-->
-        <!--android:layout_width="200dp"-->
-        <!--android:layout_height="100dp"-->
-        <!--android:src="@drawable/ic_past_notifications"-->
-        <!--android:layout_centerHorizontal="true"/>-->
-
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/historical_dashboard_card_iv"
         android:layout_width="200dp"
@@ -18,7 +11,6 @@
 
     <TextView
         android:id="@+id/historical_dashboard_card_tv_captions"
-        android:text="test captions"
         android:textAlignment="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

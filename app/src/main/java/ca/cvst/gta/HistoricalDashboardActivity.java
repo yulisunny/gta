@@ -24,6 +24,7 @@ import com.github.mikephil.charting.data.LineDataSet;
 import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,9 +65,14 @@ public class HistoricalDashboardActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 String chartType = data.getStringExtra("CHART_TYPE");
                 String chartDataTime = data.getStringExtra("DATA_TIME");
+                Long startTime = data.getLongExtra("START_TIME", 0);
+                Long endTime = data.getLongExtra("END_TIME", 0);
+                String linkId = data.getStringExtra("LINK_ID");
+
+
 
                 historicalChartAdapter.add(new HistoricalChartData(
-                        chartType, chartType, 1L ,2L ,chartDataTime
+                        chartType, chartType, startTime ,endTime ,chartDataTime, new JSONArray()
                 ));
             }
         }
@@ -82,9 +88,11 @@ public class HistoricalDashboardActivity extends AppCompatActivity {
         public View getView(int position, View convertView, ViewGroup parent) {
             HistoricalChartData chartData = getItem(position);
             if (convertView == null) {
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.historical_chart_card, parent, false);
+                convertView = LayoutInflater.from(getContext()).inflate(
+                        R.layout.historical_chart_card, parent, false);
             }
-            TextView tvCaptions = (TextView) convertView.findViewById(R.id.historical_dashboard_card_tv_captions);
+            TextView tvCaptions = (TextView) convertView.findViewById(
+                    R.id.historical_dashboard_card_tv_captions);
             tvCaptions.setText(String.format("%d, %s", position, chartData.toString()));
             createLineChart(convertView);
             return convertView;
@@ -114,23 +122,29 @@ public class HistoricalDashboardActivity extends AppCompatActivity {
 
         private String mChartType;
         private String mDataType;
+        private JSONArray mData;
         private Long mStartTime;
         private Long mEndTime;
         private LocalTime mDataTime;
 
-        public HistoricalChartData(String chartType, String dataType, Long startTime, Long endTime, String dataTime) {
+        public HistoricalChartData(String chartType, String dataType, Long startTime, Long endTime,
+                                   String dataTime, JSONArray data) {
             DateTimeFormatter formatter = DateTimeFormat.forPattern("HH:mm");
             mDataTime = formatter.parseLocalTime(dataTime);
             mDataType = dataType;
             mChartType = chartType;
             mStartTime = startTime;
             mEndTime = endTime;
+            mData = data;
         }
 
         @Override
         public String toString() {
-            return String.format("HistoricalChartData: chartType=%s, dataType=%s, startTime=%s, endTime=%s, dataTime=%s",
-                    mChartType, mDataType, mStartTime.toString(), mEndTime.toString(), DateTimeFormat.forPattern("HH:mm").print(mDataTime));
+            return String.format(
+                    "HistoricalChartData: dataType=%s, startTime=%s" +
+                    "endTime=%s, dataTime=%s, data=%s",
+                     mDataType, mStartTime.toString(), mEndTime.toString(),
+                    DateTimeFormat.forPattern("HH:mm").print(mDataTime), mData.toString());
         }
     }
 
