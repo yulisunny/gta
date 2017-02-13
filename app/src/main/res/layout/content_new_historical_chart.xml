@@ -71,11 +71,34 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/layout_chart_highway"
+            android:id="@+id/layout_chart_air_quality"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_below="@id/layout_chart_type">
+
+            <TextView
+                android:id="@+id/text_new_historical_chart_air_quality_location"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingTop="10dp"
+                android:text="@string/new_historical_chart_air_quality_location"/>
+
+            <Spinner
+                android:id="@+id/spinner_new_historical_chart_air_quality_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/new_historical_chart_air_sensor_locations"
+                style="@android:style/Widget.Spinner"
+                android:spinnerMode="dropdown"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_chart_highway"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_below="@id/layout_chart_air_quality">
 
             <TextView
                 android:id="@+id/text_new_historical_chart_highway_type"
@@ -100,7 +123,7 @@
             android:layout_below="@id/layout_chart_highway"
             android:textAllCaps="false"
             style="@style/Widget.AppCompat.Button.Colored"
-            android:text="@string/add_new_historical_chart"/>
+            android:text="@string/add_new_historical_chart_button_next"/>
     </RelativeLayout>
 </ScrollView>
 

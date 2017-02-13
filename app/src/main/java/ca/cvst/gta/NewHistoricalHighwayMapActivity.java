@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class NewHistoricalChartMapActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class NewHistoricalHighwayMapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private Marker mapLocation;
@@ -70,16 +70,13 @@ public class NewHistoricalChartMapActivity extends AppCompatActivity implements 
         googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker clickedMarker) {
-
                 // Reset last button
                 if (mapLocation != null && !clickedMarker.equals(mapLocation)) {
-                    System.out.println("Setting color to red!");
                     mapLocation.setIcon(BitmapDescriptorFactory.defaultMarker());
                     mapLocation.setZIndex(0f);
                 }
 
                 // Update marker color
-                System.out.println("Set color to green!");
                 clickedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
                 clickedMarker.setZIndex(1.0f);
                 mapLocation = clickedMarker;

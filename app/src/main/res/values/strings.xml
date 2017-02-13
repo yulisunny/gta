@@ -75,7 +75,8 @@
         <item>One Month</item>
     </string-array>
     <string name="new_historical_chart_time_of_day">Time of day to plot: </string>
-    <string name="add_new_historical_chart">Next</string>
+    <string name="add_new_historical_chart_button_next">Next</string>
+    <string name="add_new_historical_chart_button_complete">Finish</string>
     <string name="new_historical_chart_hw_selection">Select a marker address of interest: </string>
     <string-array name="new_historical_chart_highways">
         <item>HWY 401</item>
@@ -85,8 +86,10 @@
     <string name="new_historical_chart_highway_type">Data Type: </string>
     <string-array name="new_historical_chart_graph_type">
         <item>average speed</item>
-        <item>flow</item>
+        <item>travel time</item>
     </string-array>
+    <string name="new_historical_chart_air_quality_location">Select an air sensor: </string>
+    <string-array name="new_historical_chart_air_sensor_locations"></string-array>
     <string name="title_activity_new_historical_chart_map">Select a location of interest </string>
 
 </resources>

@@ -5,6 +5,7 @@ import android.app.DialogFragment;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.format.DateFormat;
@@ -15,9 +16,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TimePicker;
-
-import com.google.android.gms.maps.model.LatLng;
-import com.google.maps.android.clustering.ClusterItem;
 
 import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
@@ -41,25 +39,7 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
         // Disable keyboard pop up
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-        // Showing and hiding parts of the form depending on traffic type
-        final View hwView = findViewById(R.id.layout_chart_highway);
-        hwView.setVisibility(View.GONE);
-        spinnerTrafficType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String item = spinnerTrafficType.getSelectedItem().toString();
-                if (item.equals("Free flow speed of Roads")) {
-                    hwView.setVisibility(View.VISIBLE);
-                } else {
-                    hwView.setVisibility(View.GONE);
-                }
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
 
         // Picking a time to query historical data
         final EditText dataTime = (EditText) findViewById(R.id.edit_new_historical_chart_data_time);
@@ -74,17 +54,64 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
 
 
         // Complete Form
-        Button completeFormBtn = (Button) findViewById(R.id.btn_add_historical_chart);
+        final Button completeFormBtn = (Button) findViewById(R.id.btn_add_historical_chart);
         completeFormBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                // Select a link
-                Intent linkSelectionIntent = new Intent(getApplicationContext(), NewHistoricalChartMapActivity.class);
-                startActivityForResult(linkSelectionIntent, NEW_HISTORICAL_CHART_MAP_REQUEST);
+                if (spinnerTrafficType.getSelectedItemPosition() == 0) {
+                    Intent intent = createResultIntent();
+                    setResult(RESULT_OK, intent);
+                    finish();
+                } else {
+                    // Select a link for highway speed
+                    Intent linkSelectionIntent = new Intent(getApplicationContext(), NewHistoricalHighwayMapActivity.class);
+                    startActivityForResult(linkSelectionIntent, NEW_HISTORICAL_CHART_MAP_REQUEST);
+                }
             }
         });
 
+        // Showing and hiding parts of the form depending on traffic type
+        final View hwView = findViewById(R.id.layout_chart_highway);
+        hwView.setVisibility(View.GONE);
+        final View airQualityView = findViewById(R.id.layout_chart_air_quality);
+        airQualityView.setVisibility(View.GONE);
+        spinnerTrafficType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String item = spinnerTrafficType.getSelectedItem().toString();
+                if (item.equals("Free flow speed of Roads")) {
+                    hwView.setVisibility(View.VISIBLE);
+                    airQualityView.setVisibility(View.GONE);
+                    completeFormBtn.setText(R.string.add_new_historical_chart_button_next);
+                } else {
+                    hwView.setVisibility(View.GONE);
+                    airQualityView.setVisibility(View.VISIBLE);
+                    completeFormBtn.setText(R.string.add_new_historical_chart_button_complete);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+    }
+
+    @NonNull
+    private Intent createResultIntent() {
+        final Spinner spinnerTrafficType = (Spinner) findViewById(R.id.spinner_new_historical_chart_type);
+        final Spinner spinnerTimeRange = (Spinner) findViewById(R.id.spinner_new_historical_chart_time_range);
+        final EditText dataTime = (EditText) findViewById(R.id.edit_new_historical_chart_data_time);
+
+        String chartType = spinnerTrafficType.getSelectedItem().toString();
+        String chartDataTime = dataTime.getText().toString();
+        Intent intent = new Intent();
+        intent.putExtra("CHART_TYPE", chartType);
+        intent.putExtra("DATA_TIME", chartDataTime);
+        intent.putExtra("START_TIME", new Date().getTime());
+        intent.putExtra("END_TIME",getTimestamp(spinnerTimeRange.getSelectedItem().toString()));
+        return intent;
     }
 
     private Long getTimestamp(String timeSelection) {
@@ -129,35 +156,22 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
             dialog.setTitle("Select a time");
             return dialog;
         }
-
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == NEW_HISTORICAL_CHART_MAP_REQUEST) {
             if (resultCode == RESULT_OK) {
+                Intent intent = createResultIntent();
                 String linkId = data.getStringExtra("LINK_ID");
-
-                final Spinner spinnerTrafficType = (Spinner) findViewById(R.id.spinner_new_historical_chart_type);
-                final Spinner spinnerTimeRange = (Spinner) findViewById(R.id.spinner_new_historical_chart_time_range);
-                final EditText dataTime = (EditText) findViewById(R.id.edit_new_historical_chart_data_time);
-
-                String chartType = spinnerTrafficType.getSelectedItem().toString();
-                String chartDataTime = dataTime.getText().toString();
-                Intent intent = new Intent();
-                intent.putExtra("CHART_TYPE", chartType);
-                intent.putExtra("DATA_TIME", chartDataTime);
-                intent.putExtra("START_TIME", new Date().getTime());
-                intent.putExtra("END_TIME",getTimestamp(spinnerTimeRange.getSelectedItem().toString()));
+                Spinner hwDataType = (Spinner) findViewById(R.id.spinner_new_historical_chart_highway_type);
                 intent.putExtra("LINK_ID", linkId);
+                intent.putExtra("DATA_TYPE_POS", hwDataType.getSelectedItemPosition());
                 setResult(RESULT_OK, intent);
                 finish();
             }
         }
     }
-
-
-
 
 //    private void initLinkIds() {
 //        String url = "http://portal.cvst.ca/api/0.1/tomtom/hdf/linkids";
@@ -207,33 +221,7 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
 //            System.out.println("Received Execution Exception: " + e.toString());
 //        }
 
-        // Async
-//        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
-//                new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        /*
-//                        {
-//                            "From": "ON-400, North York, ON M9N 2V9, Canada",
-//                            "To": 0,
-//                            "elaboratedDataID": "Obc775a71f1592229917fb6a34a1d"
-//                         }
-//                         */
-//                        try {
-//                            String address = response.get("From").toString();
-//                            linkIdAddressMapping.put(linkId, address);
-//                        } catch (JSONException e) {
-//                            System.out.println("Invalid Json argument: " + e.toString());
-//                        }
-//                    }
-//                }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                System.out.println("error = " + error);
-//            }
-//        });
-//        NetworkManager.getInstance(this).addToRequestQueue(jsonObjectRequest);
-//    }
+
 
 
 
