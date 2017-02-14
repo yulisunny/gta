@@ -2,19 +2,16 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/historical_dashboard_card_iv"
-        android:layout_width="300dp"
-        android:layout_height="200dp"
-        android:layout_centerHorizontal="true"/>
-
     <TextView
         android:id="@+id/historical_dashboard_card_tv_captions"
         android:textAlignment="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/historical_dashboard_card_iv"
         android:layout_centerHorizontal="true" />
-
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/historical_dashboard_card_iv"
+        android:layout_width="300dp"
+        android:layout_height="200dp"
+        android:layout_below="@id/historical_dashboard_card_tv_captions"
+        android:layout_centerHorizontal="true"/>
 </RelativeLayout>

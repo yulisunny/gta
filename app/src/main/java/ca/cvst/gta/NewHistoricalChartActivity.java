@@ -17,11 +17,13 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TimePicker;
 
+import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class NewHistoricalChartActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener {
 
@@ -106,16 +108,18 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
 
         String chartType = spinnerTrafficType.getSelectedItem().toString();
         String chartDataTime = dataTime.getText().toString();
+        Date refTime = getCurrTime(chartDataTime);
+
         Intent intent = new Intent();
         intent.putExtra("CHART_TYPE", chartType);
         intent.putExtra("DATA_TIME", chartDataTime);
-        intent.putExtra("START_TIME", new Date().getTime());
-        intent.putExtra("END_TIME",getTimestamp(spinnerTimeRange.getSelectedItem().toString()));
+        intent.putExtra("END_TIME", refTime.getTime());
+        intent.putExtra("START_TIME",getTimestamp(spinnerTimeRange.getSelectedItem().toString(), refTime));
         return intent;
     }
 
-    private Long getTimestamp(String timeSelection) {
-        Date currDate = new Date();
+    private Long getTimestamp(String timeSelection, Date referenceTime) {
+        Date currDate = referenceTime;
         Long dayMillisFactor = Long.valueOf(24 * 3600 * 1000);
         if (timeSelection.equals("Three Days")) {
             return new Date(currDate.getTime() - 3 * dayMillisFactor).getTime();
@@ -125,6 +129,14 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
             return new Date(currDate.getTime() - 30 * dayMillisFactor).getTime();
         }
         return currDate.getTime();
+    }
+
+    private Date getCurrTime(String chartDataTime) {
+        String[] time =  chartDataTime.split(":");
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(time[0]));
+        calendar.set(Calendar.MINUTE, Integer.valueOf(time[1]));
+        return calendar.getTime();
     }
 
 
