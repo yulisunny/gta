@@ -91,5 +91,9 @@
     <string name="new_historical_chart_air_quality_location">Select an air sensor: </string>
     <string-array name="new_historical_chart_air_sensor_locations"></string-array>
     <string name="title_activity_new_historical_chart_map">Select a location of interest </string>
+    <string-array name="historical_dashboard_graph_menu_items">
+        <item>Edit</item>
+        <item>Delete</item>
+    </string-array>
 
 </resources>

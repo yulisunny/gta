@@ -84,6 +84,7 @@ public class NewHistoricalHighwayMapActivity extends AppCompatActivity implement
         getLinkIdInfo();
     }
 
+    // Use google map api to search for coordinate of an address
     public void onSearch(View view) {
         EditText location = (EditText)findViewById(R.id.historical_map_address_input);
         String inputLocation = location.getText().toString();
