@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tabs>
+    <tab
+        id="@+id/tab_past_notification"
+        icon="@drawable/ic_past_notifications"
+        title="Past Notifications" />
+    <tab
+        id="@+id/tab_home"
+        icon="@drawable/ic_add_white_24dp"
+        title="Home" />
+    <tab
+        id="@+id/tab_historical_data_dashboard"
+        icon="@drawable/ic_historical_data_dashboard"
+        title="Historical Dash" />
+</tabs>
