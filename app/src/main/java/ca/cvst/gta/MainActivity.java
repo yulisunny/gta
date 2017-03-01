@@ -1,8 +1,6 @@
 package ca.cvst.gta;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.v7.app.AppCompatActivity;
@@ -16,13 +14,9 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.Marker;
 import com.roughike.bottombar.BottomBar;
 import com.roughike.bottombar.OnTabSelectListener;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,17 +24,6 @@ import layout.UpdatesListenerIntentService;
 
 public class MainActivity extends AppCompatActivity implements
         HomeMapFragment.OnFragmentInteractionListener {
-
-    private GoogleMap mMap;
-    private GoogleApiClient mGoogleApiClient;
-    private Location mLastLocation;
-
-    // For ttc:
-    private Bitmap ttcIcon;
-    private ArrayList<Marker> ttcMarkers;
-    private Map<Integer, Integer> ttcInvertedIndex;
-    private boolean ttcIsChecked = false;
-    //private Handler ttcHandler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements
         bottomBar.setOnTabSelectListener(new OnTabSelectListener() {
             @Override
             public void onTabSelected(@IdRes int tabId) {
-                Toast.makeText(getApplicationContext(), String.valueOf(tabId), Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Please swap in your fragment", Toast.LENGTH_SHORT).show();
             }
         });
 
