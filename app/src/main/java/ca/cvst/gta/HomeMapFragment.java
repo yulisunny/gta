@@ -32,7 +32,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -77,6 +77,7 @@ public class HomeMapFragment extends Fragment implements
     private GoogleMap mMap;
     private Bitmap ttcIcon;
     private Map<Integer, Integer> ttcInvertedIndex;
+    private MapView mMapView;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -126,6 +127,8 @@ public class HomeMapFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        System.out.println("container = " + container);
+
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
 
@@ -144,9 +147,9 @@ public class HomeMapFragment extends Fragment implements
         MenuItem ttc = navigationView.getMenu().findItem(R.id.ttc);
         ttc.setChecked(false);
 
-        MapFragment mapFragment = (MapFragment) getActivity().getFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-
+        mMapView = (MapView) rootView.findViewById(R.id.map);
+        mMapView.onCreate(savedInstanceState);
+        mMapView.getMapAsync(this);
 
         return rootView;
     }
@@ -154,12 +157,14 @@ public class HomeMapFragment extends Fragment implements
     @Override
     public void onStart() {
         mGoogleApiClient.connect();
+        mMapView.onStart();
         super.onStart();
     }
 
     @Override
     public void onStop() {
         mGoogleApiClient.disconnect();
+        mMapView.onStop();
         super.onStop();
     }
 
@@ -180,6 +185,31 @@ public class HomeMapFragment extends Fragment implements
         super.onDetach();
         mListener = null;
     }
+
+    @Override
+    public void onResume() {
+        mMapView.onResume();
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mMapView.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mMapView.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mMapView.onLowMemory();
+    }
+
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
