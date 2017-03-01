@@ -23,7 +23,8 @@ import java.util.Map;
 import layout.UpdatesListenerIntentService;
 
 public class MainActivity extends AppCompatActivity implements
-        HomeMapFragment.OnFragmentInteractionListener {
+        HomeMapFragment.OnFragmentInteractionListener,
+        HistoricalDashboardFragment.OnFragmentInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,19 +32,23 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
         BottomBar bottomBar = (BottomBar) findViewById(R.id.bottomBar);
+        bottomBar.setDefaultTab(R.id.tab_home);
         bottomBar.setOnTabSelectListener(new OnTabSelectListener() {
             @Override
             public void onTabSelected(@IdRes int tabId) {
-                Toast.makeText(getApplicationContext(), "Please swap in your fragment", Toast.LENGTH_SHORT).show();
+                if (tabId == R.id.tab_historical_data_dashboard) {
+                    HistoricalDashboardFragment dashFragment = HistoricalDashboardFragment.newInstance("blah", "whatev");
+                    getSupportFragmentManager().beginTransaction().replace(R.id.contentContainer, dashFragment).commit();
+                } else if (tabId == R.id.tab_home) {
+                    HomeMapFragment mapFragment = HomeMapFragment.newInstance("blah", "lori");
+                    mapFragment.setRetainInstance(true);
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.contentContainer, mapFragment).commit();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Please swap in your fragment", Toast.LENGTH_SHORT).show();
+                }
             }
         });
-
-
-        if (savedInstanceState == null) {
-            HomeMapFragment mapFragment = HomeMapFragment.newInstance("blah", "lori");
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.contentContainer, mapFragment).commit();
-        }
 
 //        loginAndListenForNotif();
     }

@@ -7,7 +7,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -50,39 +50,59 @@ import java.util.List;
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.GraphContract;
 
-public class HistoricalDashboardActivity extends AppCompatActivity {
+import static android.app.Activity.RESULT_OK;
+
+public class HistoricalDashboardFragment extends Fragment {
 
     private static final int NEW_HISTORICAL_CHART_REQUEST = 1;
-
     private ArrayAdapter<HistoricalChartData> historicalChartAdapter;
     private ArrayList<HistoricalChartData> historicalChartList;
     private DbHelper mDbHelper;
     private Gson gson = new Gson();
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_historical_dashboard);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+    private OnFragmentInteractionListener mListener;
 
-        FloatingActionButton newChartBtn = (FloatingActionButton) findViewById(R.id.btn_new_historical_chart);
+    public HistoricalDashboardFragment() {
+        // Required empty public constructor
+    }
+
+    public static HistoricalDashboardFragment newInstance(String param1, String param2) {
+        HistoricalDashboardFragment fragment = new HistoricalDashboardFragment();
+        Bundle args = new Bundle();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_historical_dashboard, container, false);
+
+        Toolbar toolbar = (Toolbar) root.findViewById(R.id.toolbar);
+        mListener.setActionBar(toolbar);
+
+        FloatingActionButton newChartBtn = (FloatingActionButton) root.findViewById(R.id.btn_new_historical_chart);
         newChartBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), NewHistoricalChartActivity.class);
+                Intent intent = new Intent(getContext(), NewHistoricalChartActivity.class);
                 startActivityForResult(intent, NEW_HISTORICAL_CHART_REQUEST);
             }
         });
 
         historicalChartList = new ArrayList<>();
-        historicalChartAdapter = new HistoricalChartAdapter(this, historicalChartList);
-        ListView listview = (ListView) findViewById(R.id.historical_dashboard_listview);
+        historicalChartAdapter = new HistoricalChartAdapter(getContext(), historicalChartList);
+        ListView listview = (ListView) root.findViewById(R.id.historical_dashboard_listview);
         listview.setAdapter(historicalChartAdapter);
         registerForContextMenu(listview);
 
         // Init database
-        mDbHelper = new DbHelper(this);
+        mDbHelper = new DbHelper(getContext());
         List<HistoricalChartData> existingGraphs = loadAllGraphsFromDB();
         for (HistoricalChartData graph : existingGraphs) {
             if (graphNeedsUpdate(graph)) {
@@ -92,7 +112,48 @@ public class HistoricalDashboardActivity extends AppCompatActivity {
             }
         }
 
+        return root;
 
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        // Check which graphs needs to be saved
+        for (int i = 0; i < historicalChartAdapter.getCount(); i++) {
+            HistoricalChartData graph = historicalChartAdapter.getItem(i);
+            HistoricalChartStatus status = graph.mStatus;
+            switch (status) {
+                case OKAY:
+                    break;
+                case NEEDS_PERSIST:
+                    saveGraphsToDB(graph);
+                    break;
+                case NEEDS_UPDATE:
+                    updateGraphInDB(graph);
+            }
+        }
+
+        // Save the graphs
+        mDbHelper.close();
     }
 
     @Override
@@ -124,34 +185,59 @@ public class HistoricalDashboardActivity extends AppCompatActivity {
         }
     }
 
-    private Boolean graphNeedsUpdate(HistoricalChartData graph) {
-        LocalDateTime dateTime = new LocalDateTime(graph.mLastUpdatedTime);
-        LocalDateTime updateTime = dateTime.plusDays(1);
-        LocalDateTime currTime = new LocalDateTime();
-        return currTime.isAfter(updateTime);
-    }
-
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == NEW_HISTORICAL_CHART_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                String chartType = data.getStringExtra("CHART_TYPE");
+                String chartDataTime = data.getStringExtra("DATA_TIME");
+                Long startTime = data.getLongExtra("START_TIME", 0);
+                Long endTime = data.getLongExtra("END_TIME", 0);
+                String linkId = data.getStringExtra("LINK_ID");
+                Integer typePos = data.getIntExtra("DATA_TYPE_POS", 0);
+                String[] hwDataTypes = getResources().getStringArray(R.array.new_historical_chart_graph_type);
 
-        // Check which graphs needs to be saved
-        for (int i = 0; i < historicalChartAdapter.getCount(); i++) {
-            HistoricalChartData graph = historicalChartAdapter.getItem(i);
-            HistoricalChartStatus status = graph.mStatus;
-            switch (status) {
-                case OKAY:
-                    break;
-                case NEEDS_PERSIST:
-                    saveGraphsToDB(graph);
-                    break;
-                case NEEDS_UPDATE:
-                    updateGraphInDB(graph);
+                fetchDataFromCvst(linkId, hwDataTypes[typePos], chartType, chartDataTime, startTime, endTime);
             }
         }
+    }
 
-        // Save the graphs
-        mDbHelper.close();
+    public void createLineChart(View v, HistoricalChartData chartData) {
+        List<Integer> trafficData = chartData.mData;
+
+        LineChart chart = (LineChart) v.findViewById(R.id.historical_dashboard_card_iv);
+
+        // Set Axis
+        XAxis xAxis = chart.getXAxis();
+        xAxis.setValueFormatter(new DateAxisFormatter(chartData.mTimeSteps));
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setDrawAxisLine(true);
+        xAxis.setDrawGridLines(false);
+        xAxis.setDrawLabels(true);
+
+        YAxis yRightAxis = chart.getAxisRight();
+        yRightAxis.setEnabled(false);
+
+        List<Entry> entries = new ArrayList<>();
+        for (int i = 0; i < trafficData.size(); i++) {
+            entries.add(new Entry((float) i, (float) trafficData.get(i)));
+        }
+
+        LineDataSet dataSet = new LineDataSet(entries, "Average Highway Speed");
+        LineData lineData = new LineData(dataSet);
+        lineData.setValueTextSize(12);
+
+        // Update Chart Title
+        Description description = new Description();
+        description.setEnabled(false);
+        chart.setDescription(description);
+
+        Legend chartLegend = chart.getLegend();
+        chartLegend.setEnabled(false);
+
+        // Create Chart
+        chart.setData(lineData);
+        chart.invalidate();
     }
 
     private List<HistoricalChartData> loadAllGraphsFromDB() {
@@ -216,34 +302,11 @@ public class HistoricalDashboardActivity extends AppCompatActivity {
         return ret;
     }
 
-    private void deleteGraphFromDB() {
-//        // Define 'where' part of query.
-//        String selection = FeedEntry.COLUMN_NAME_TITLE + " LIKE ?";
-//        // Specify arguments in placeholder order.
-//                String[] selectionArgs = { "MyTitle" };
-//        // Issue SQL statement.
-//                db.delete(FeedEntry.TABLE_NAME, selection, selectionArgs);
-    }
-
-    private void saveGraphsToDB(HistoricalChartData graph) {
-        // Gets the data repository in write mode
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
-        // Create a new map of values, where column names are the keys
-        ContentValues values = new ContentValues();
-        values.put(GraphContract.GraphEntry.DATA_TYPE, graph.mDataType);
-        values.put(GraphContract.GraphEntry.DATA_LIST, gson.toJson(graph.mData));
-        values.put(GraphContract.GraphEntry.TIME_STEPS, gson.toJson(graph.mTimeSteps));
-        values.put(GraphContract.GraphEntry.TIMESTAMP, graph.mLastUpdatedTime);
-        values.put(GraphContract.GraphEntry.GRAPH_ID, graph.mGraphId);
-        values.put(GraphContract.GraphEntry.DATA_TIME, graph.mDataTime);
-        values.put(GraphContract.GraphEntry.CHART_TYPE, graph.mChartType);
-        values.put(GraphContract.GraphEntry.START_TIME, graph.mStartTime);
-        values.put(GraphContract.GraphEntry.END_TIME, graph.mEndTime);
-        values.put(GraphContract.GraphEntry.LINK_ID, graph.mLinkId);
-
-        // Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(GraphContract.GraphEntry.TABLE_NAME, null, values);
+    private Boolean graphNeedsUpdate(HistoricalChartData graph) {
+        LocalDateTime dateTime = new LocalDateTime(graph.mLastUpdatedTime);
+        LocalDateTime updateTime = dateTime.plusDays(1);
+        LocalDateTime currTime = new LocalDateTime();
+        return currTime.isAfter(updateTime);
     }
 
     private void updateGraphInDB(HistoricalChartData graph) {
@@ -267,112 +330,25 @@ public class HistoricalDashboardActivity extends AppCompatActivity {
                 selectionArgs);
     }
 
+    private void saveGraphsToDB(HistoricalChartData graph) {
+        // Gets the data repository in write mode
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == NEW_HISTORICAL_CHART_REQUEST) {
-            if (resultCode == RESULT_OK) {
-                String chartType = data.getStringExtra("CHART_TYPE");
-                String chartDataTime = data.getStringExtra("DATA_TIME");
-                Long startTime = data.getLongExtra("START_TIME", 0);
-                Long endTime = data.getLongExtra("END_TIME", 0);
-                String linkId = data.getStringExtra("LINK_ID");
-                Integer typePos = data.getIntExtra("DATA_TYPE_POS", 0);
-                String[] hwDataTypes = getResources().getStringArray(R.array.new_historical_chart_graph_type);
+        // Create a new map of values, where column names are the keys
+        ContentValues values = new ContentValues();
+        values.put(GraphContract.GraphEntry.DATA_TYPE, graph.mDataType);
+        values.put(GraphContract.GraphEntry.DATA_LIST, gson.toJson(graph.mData));
+        values.put(GraphContract.GraphEntry.TIME_STEPS, gson.toJson(graph.mTimeSteps));
+        values.put(GraphContract.GraphEntry.TIMESTAMP, graph.mLastUpdatedTime);
+        values.put(GraphContract.GraphEntry.GRAPH_ID, graph.mGraphId);
+        values.put(GraphContract.GraphEntry.DATA_TIME, graph.mDataTime);
+        values.put(GraphContract.GraphEntry.CHART_TYPE, graph.mChartType);
+        values.put(GraphContract.GraphEntry.START_TIME, graph.mStartTime);
+        values.put(GraphContract.GraphEntry.END_TIME, graph.mEndTime);
+        values.put(GraphContract.GraphEntry.LINK_ID, graph.mLinkId);
 
-                fetchDataFromCvst(linkId, hwDataTypes[typePos], chartType, chartDataTime, startTime, endTime);
-            }
-        }
-    }
-
-    private void createHistoricalChart(String chartType, String chartDataTime, Long startTime,
-                                       Long endTime, List<Integer> chartData, List<Long> startTimeNeeded, String linkId) {
-        historicalChartAdapter.add(new HistoricalChartData(
-                chartType, chartType, startTime, endTime, chartDataTime, chartData,
-                startTimeNeeded, null, HistoricalChartStatus.NEEDS_PERSIST, linkId
-        ));
-    }
-
-    public void createLineChart(View v, HistoricalChartData chartData) {
-        List<Integer> trafficData = chartData.mData;
-
-        LineChart chart = (LineChart) v.findViewById(R.id.historical_dashboard_card_iv);
-
-        // Set Axis
-        XAxis xAxis = chart.getXAxis();
-        xAxis.setValueFormatter(new DateAxisFormatter(chartData.mTimeSteps));
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setDrawAxisLine(true);
-        xAxis.setDrawGridLines(false);
-        xAxis.setDrawLabels(true);
-
-        YAxis yRightAxis = chart.getAxisRight();
-        yRightAxis.setEnabled(false);
-
-        List<Entry> entries = new ArrayList<>();
-        for (int i = 0; i < trafficData.size(); i++) {
-            entries.add(new Entry((float) i, (float) trafficData.get(i)));
-        }
-
-        LineDataSet dataSet = new LineDataSet(entries, "Average Highway Speed");
-        LineData lineData = new LineData(dataSet);
-        lineData.setValueTextSize(12);
-
-        // Update Chart Title
-        Description description = new Description();
-        description.setEnabled(false);
-        chart.setDescription(description);
-
-        Legend chartLegend = chart.getLegend();
-        chartLegend.setEnabled(false);
-
-        // Create Chart
-        chart.setData(lineData);
-        chart.invalidate();
-    }
-
-    private void updateDataFromCvst(final HistoricalChartData graph) {
-        Long timeDelta = graph.mEndTime - graph.mStartTime;
-        Long newEndTime = System.currentTimeMillis();
-        Long newStartTime = newEndTime - timeDelta;
-
-        final List<Long> startTimeNeeded = getStartTimeByDay(newStartTime, newEndTime);
-        final List<Integer> chartData = new ArrayList<>();
-
-        for (Long startDay : startTimeNeeded) {
-            Long endDayTime = startDay + 60 * 1000;
-            Long startTimeSecond = startDay / 1000;
-            Long endTimeSecond = endDayTime / 1000;
-
-            String url = "http://portal.cvst.ca/api/0.1/tomtom/hdf/nonfreeflowts1ts2/analyticsES?id=" + graph.mLinkId +
-                    "&starttime=" + startTimeSecond.toString() + "&endtime=" + endTimeSecond.toString();
-            JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
-                    new Response.Listener<JSONArray>() {
-                        @Override
-                        public void onResponse(JSONArray response) {
-                            // Retrieve Data from CVST
-                            if (isNonFreeflow(response)) {
-                                chartData.add(parseNonFreeflowData(response));
-                            } else {
-                                chartData.add(parseNonFreeflowData(response));
-                            }
-                            System.out.println("DATA RECEIVED!!" + chartData.toString());
-                            // Create new graph
-                            if (chartData.size() == startTimeNeeded.size()) {
-                                graph.mData = chartData;
-                                graph.mTimeSteps = startTimeNeeded;
-                                historicalChartAdapter.add(graph);
-                            }
-                        }
-                    }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    System.out.println("error = " + error);
-                }
-            });
-            NetworkManager.getInstance(this).addToRequestQueue(jsonObjectRequest);
-        }
-
+        // Insert the new row, returning the primary key value of the new row
+        long newRowId = db.insert(GraphContract.GraphEntry.TABLE_NAME, null, values);
     }
 
     private void fetchDataFromCvst(final String linkId, final String dataType, final String chartType,
@@ -409,7 +385,7 @@ public class HistoricalDashboardActivity extends AppCompatActivity {
                     System.out.println("error = " + error);
                 }
             });
-            NetworkManager.getInstance(this).addToRequestQueue(jsonObjectRequest);
+            NetworkManager.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
         }
     }
 
@@ -490,19 +466,22 @@ public class HistoricalDashboardActivity extends AppCompatActivity {
         return ret;
     }
 
-    public enum HistoricalChartTypes {
-        AirQuality("Air Quality"),
-        Speed("Speed");
-
-        private final String chartType;
-
-        HistoricalChartTypes(String type) {
-            this.chartType = type;
-        }
+    private void createHistoricalChart(String chartType, String chartDataTime, Long startTime,
+                                       Long endTime, List<Integer> chartData, List<Long> startTimeNeeded, String linkId) {
+        historicalChartAdapter.add(new HistoricalChartData(
+                chartType, chartType, startTime, endTime, chartDataTime, chartData,
+                startTimeNeeded, null, HistoricalChartStatus.NEEDS_PERSIST, linkId
+        ));
     }
+
 
     public enum HistoricalChartStatus {
         NEEDS_PERSIST, NEEDS_UPDATE, OKAY
+    }
+
+    public interface OnFragmentInteractionListener {
+        // TODO: Update argument type and name
+        void setActionBar(Toolbar toolbar);
     }
 
     public class HistoricalChartAdapter extends ArrayAdapter<HistoricalChartData> {
@@ -596,6 +575,4 @@ public class HistoricalDashboardActivity extends AppCompatActivity {
             return ((int) value) < timeValues.size() ? timeValues.get((int) value) : "";
         }
     }
-
-
 }
