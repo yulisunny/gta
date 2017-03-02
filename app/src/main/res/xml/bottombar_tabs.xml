@@ -6,7 +6,7 @@
         title="Past Notifications" />
     <tab
         id="@+id/tab_home"
-        icon="@drawable/ic_add_white_24dp"
+        icon="@drawable/ic_home_black_24dp"
         title="Home" />
     <tab
         id="@+id/tab_historical_data_dashboard"
