@@ -64,9 +64,10 @@
     <string name="title_activity_new_historical_chart">New Historical Chart</string>
     <string name="new_historical_chart_spinner_default">-</string>
     <string name="new_historical_chart_traffic_data_type">Type of Traffic Data: </string>
+    <string name="new_historical_chart_traffic_name">Name of the Chart: </string>
     <string-array name="new_historical_chart_traffic_data_array">
         <item>Air Quality</item>
-        <item>Free flow speed of Roads</item>
+        <item>Road Traffic</item>
     </string-array>
     <string name="new_historical_chart_time_range">Time range to plot: </string>
     <string-array name="new_historical_chart_time_range_array">
@@ -85,8 +86,10 @@
     </string-array>
     <string name="new_historical_chart_highway_type">Data Type: </string>
     <string-array name="new_historical_chart_graph_type">
-        <item>average speed</item>
-        <item>travel time</item>
+        <item>Average Speed</item>
+        <item>Travel Time</item>
+        <item>Flow</item>
+        <item>Density</item>
     </string-array>
     <string name="new_historical_chart_air_quality_location">Select an air sensor: </string>
     <string-array name="new_historical_chart_air_sensor_locations"></string-array>

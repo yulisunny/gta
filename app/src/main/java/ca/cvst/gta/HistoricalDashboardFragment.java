@@ -55,8 +55,8 @@ import static android.app.Activity.RESULT_OK;
 public class HistoricalDashboardFragment extends Fragment {
 
     private static final int NEW_HISTORICAL_CHART_REQUEST = 1;
-    private ArrayAdapter<HistoricalChartData> mHistoricalChartAdapter;
-    private ArrayList<HistoricalChartData> mHistoricalChartList;
+    private ArrayAdapter<HistoricalGraph> mHistoricalChartAdapter;
+    private ArrayList<HistoricalGraph> mHistoricalChartList;
     private DbHelper mDbHelper;
     private Gson gson = new Gson();
 
@@ -84,6 +84,7 @@ public class HistoricalDashboardFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_historical_dashboard, container, false);
 
         Toolbar toolbar = (Toolbar) root.findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.title_activity_historical_dashboard);
         mListener.setActionBar(toolbar);
 
         FloatingActionButton newChartBtn = (FloatingActionButton) root.findViewById(R.id.btn_new_historical_chart);
@@ -104,10 +105,10 @@ public class HistoricalDashboardFragment extends Fragment {
 
         // Init database
         mDbHelper = new DbHelper(getContext());
-        List<HistoricalChartData> existingGraphs = loadAllGraphsFromDB();
-        for (HistoricalChartData graph : existingGraphs) {
+        List<HistoricalGraph> existingGraphs = loadAllGraphsFromDB();
+        for (HistoricalGraph graph : existingGraphs) {
             if (graphNeedsUpdate(graph)) {
-                updateGraphInDB(graph);
+                updateDataFromCvst(graph);
             } else {
                 mHistoricalChartAdapter.add(graph);
             }
@@ -140,16 +141,19 @@ public class HistoricalDashboardFragment extends Fragment {
 
         // Check which graphs needs to be saved
         for (int i = 0; i < mHistoricalChartAdapter.getCount(); i++) {
-            HistoricalChartData graph = mHistoricalChartAdapter.getItem(i);
+            HistoricalGraph graph = mHistoricalChartAdapter.getItem(i);
             HistoricalChartStatus status = graph.mStatus;
             switch (status) {
                 case OKAY:
                     break;
                 case NEEDS_PERSIST:
-                    saveGraphsToDB(graph);
+                    saveGraphToDB(graph);
                     break;
                 case NEEDS_UPDATE:
                     updateGraphInDB(graph);
+                    break;
+                case NEEDS_DELETE:
+                    deleteGraphFromDb(graph);
             }
         }
 
@@ -178,6 +182,7 @@ public class HistoricalDashboardFragment extends Fragment {
             case 0: // EDIT
                 return true;
             case 1: // Delete
+                deleteGraphFromDb(mHistoricalChartList.get(info.position));
                 mHistoricalChartAdapter.remove(mHistoricalChartList.get(info.position));
                 mHistoricalChartAdapter.notifyDataSetChanged();
                 return true;
@@ -190,21 +195,20 @@ public class HistoricalDashboardFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == NEW_HISTORICAL_CHART_REQUEST) {
             if (resultCode == RESULT_OK) {
-                String chartType = data.getStringExtra("CHART_TYPE");
+                String chartType = data.getStringExtra("CHART_NAME");
                 String chartDataTime = data.getStringExtra("DATA_TIME");
                 Long startTime = data.getLongExtra("START_TIME", 0);
                 Long endTime = data.getLongExtra("END_TIME", 0);
                 String linkId = data.getStringExtra("LINK_ID");
                 Integer typePos = data.getIntExtra("DATA_TYPE_POS", 0);
                 String[] hwDataTypes = getResources().getStringArray(R.array.new_historical_chart_graph_type);
-
                 fetchDataFromCvst(linkId, hwDataTypes[typePos], chartType, chartDataTime, startTime, endTime);
             }
         }
     }
 
-    public void createLineChart(View v, HistoricalChartData chartData) {
-        List<Integer> trafficData = chartData.mData;
+    public void createLineChart(View v, HistoricalGraph chartData) {
+        List<Double> trafficData = chartData.mData;
 
         LineChart chart = (LineChart) v.findViewById(R.id.historical_dashboard_card_iv);
 
@@ -221,7 +225,7 @@ public class HistoricalDashboardFragment extends Fragment {
 
         List<Entry> entries = new ArrayList<>();
         for (int i = 0; i < trafficData.size(); i++) {
-            entries.add(new Entry((float) i, (float) trafficData.get(i)));
+            entries.add(new Entry((float) i,  trafficData.get(i).floatValue()));
         }
 
         LineDataSet dataSet = new LineDataSet(entries, "Average Highway Speed");
@@ -241,7 +245,7 @@ public class HistoricalDashboardFragment extends Fragment {
         chart.invalidate();
     }
 
-    private List<HistoricalChartData> loadAllGraphsFromDB() {
+    private List<HistoricalGraph> loadAllGraphsFromDB() {
         System.out.println("HISTORICAL CHART LOADING A CHART!!!");
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
@@ -277,7 +281,7 @@ public class HistoricalDashboardFragment extends Fragment {
         );
 
         // Read from cursor
-        List<HistoricalChartData> ret = new ArrayList<>();
+        List<HistoricalGraph> ret = new ArrayList<>();
         while (cursor.moveToNext()) {
             String graphId = cursor.getString(cursor.getColumnIndexOrThrow(GraphContract.GraphEntry.GRAPH_ID));
             String chartType = cursor.getString(cursor.getColumnIndex(GraphContract.GraphEntry.CHART_TYPE));
@@ -291,27 +295,27 @@ public class HistoricalDashboardFragment extends Fragment {
                     cursor.getString(cursor.getColumnIndex(GraphContract.GraphEntry.TIME_STEPS)),
                     new TypeToken<ArrayList<Long>>() {
                     }.getType());
-            List<Integer> dataList = gson.fromJson(
+            List<Double> dataList = gson.fromJson(
                     cursor.getString(cursor.getColumnIndex(GraphContract.GraphEntry.DATA_LIST)),
-                    new TypeToken<ArrayList<Integer>>() {
+                    new TypeToken<ArrayList<Double>>() {
                     }.getType());
 
-            ret.add(new HistoricalChartData(chartType, dataType, startTime, endTime, dataTime,
+            ret.add(new HistoricalGraph(chartType, dataType, startTime, endTime, dataTime,
                     dataList, timeSteps, graphId, HistoricalChartStatus.OKAY, linkId));
         }
         cursor.close();
         return ret;
     }
 
-    private Boolean graphNeedsUpdate(HistoricalChartData graph) {
+    private Boolean graphNeedsUpdate(HistoricalGraph graph) {
         LocalDateTime dateTime = new LocalDateTime(graph.mLastUpdatedTime);
         LocalDateTime updateTime = dateTime.plusDays(1);
         LocalDateTime currTime = new LocalDateTime();
         return currTime.isAfter(updateTime);
     }
 
-    private void updateGraphInDB(HistoricalChartData graph) {
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+    private void updateGraphInDB(HistoricalGraph graph) {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         // New value for one column
         ContentValues values = new ContentValues();
@@ -331,7 +335,17 @@ public class HistoricalDashboardFragment extends Fragment {
                 selectionArgs);
     }
 
-    private void saveGraphsToDB(HistoricalChartData graph) {
+    private void deleteGraphFromDb(HistoricalGraph graph) {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        // Define 'where' part of query.
+        String selection = GraphContract.GraphEntry.GRAPH_ID + " LIKE ?";
+        // Specify arguments in placeholder order.
+        String[] selectionArgs = { graph.mGraphId };
+        // Issue SQL statement.
+        db.delete(GraphContract.GraphEntry.TABLE_NAME, selection, selectionArgs);
+    }
+
+    private void saveGraphToDB(HistoricalGraph graph) {
         // Gets the data repository in write mode
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
@@ -352,10 +366,54 @@ public class HistoricalDashboardFragment extends Fragment {
         long newRowId = db.insert(GraphContract.GraphEntry.TABLE_NAME, null, values);
     }
 
+    private void updateDataFromCvst(final HistoricalGraph graph) {
+        Long timeDelta = graph.mEndTime - graph.mStartTime;
+        Long newEndTime = System.currentTimeMillis();
+        Long newStartTime = newEndTime - timeDelta;
+
+        final List<Long> startTimeNeeded = getStartTimeByDay(newStartTime, newEndTime);
+        final List<Double> chartData = new ArrayList<>();
+
+        for (Long startDay : startTimeNeeded) {
+            Long endDayTime = startDay + 60 * 1000;
+            Long startTimeSecond = startDay / 1000;
+            Long endTimeSecond = endDayTime / 1000;
+
+            String url = "http://portal.cvst.ca/api/0.1/tomtom/hdf/nonfreeflowts1ts2/analyticsES?id=" + graph.mLinkId +
+                    "&starttime=" + startTimeSecond.toString() + "&endtime=" + endTimeSecond.toString();
+            JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                    new Response.Listener<JSONArray>() {
+                        @Override
+                        public void onResponse(JSONArray response) {
+                            // Retrieve Data from CVST
+                            if (isNonFreeflow(response)) {
+                                chartData.add(parseNonFreeflowData(response, graph.mDataType));
+                            } else {
+                                chartData.add(parseFreeflowData(response, graph.mDataType));
+                            }
+                            System.out.println("DATA RECEIVED!!" + chartData.toString());
+                            // Create new graph
+                            if (chartData.size() == startTimeNeeded.size()) {
+                                graph.mData = chartData;
+                                graph.mTimeSteps = startTimeNeeded;
+                                mHistoricalChartAdapter.add(graph);
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    System.out.println("historical dashboard error = " + error);
+                }
+            });
+            NetworkManager.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
+        }
+
+    }
+
     private void fetchDataFromCvst(final String linkId, final String dataType, final String chartType,
                                    final String chartDataTime, final Long startTime, final Long endTime) {
         final List<Long> startTimeNeeded = getStartTimeByDay(startTime, endTime);
-        final List<Integer> chartData = new ArrayList<>();
+        final List<Double> chartData = new ArrayList<>();
 
         for (Long startDay : startTimeNeeded) {
             Long endDayTime = startDay + 60 * 1000;
@@ -370,14 +428,14 @@ public class HistoricalDashboardFragment extends Fragment {
                         public void onResponse(JSONArray response) {
                             // Retrieve Data from CVST
                             if (isNonFreeflow(response)) {
-                                chartData.add(parseNonFreeflowData(response));
+                                chartData.add(parseNonFreeflowData(response, dataType));
                             } else {
-                                chartData.add(parseNonFreeflowData(response));
+                                chartData.add(parseNonFreeflowData(response, dataType));
                             }
                             System.out.println("DATA RECEIVED!!" + chartData.toString());
                             // Create new graph
                             if (chartData.size() == startTimeNeeded.size()) {
-                                createHistoricalChart(chartType, chartDataTime, startTime, endTime, chartData, startTimeNeeded, linkId);
+                                createHistoricalChart(chartType, dataType, chartDataTime, startTime, endTime, chartData, startTimeNeeded, linkId);
                             }
                         }
                     }, new Response.ErrorListener() {
@@ -413,23 +471,46 @@ public class HistoricalDashboardFragment extends Fragment {
         return ret;
     }
 
-    private Integer parseFreeflowData(JSONArray response) {
-        List<Integer> chartData = new ArrayList<>();
-        Integer ret = 0;
-        for (int i = 0; i < response.length(); i++) {
-            try {
-                JSONObject obj = response.getJSONObject(i);
-                Double data = obj.getJSONArray("freeFlowSpeed").getDouble(0);
-                chartData.add(data.intValue());
-                ret = data.intValue();
-            } catch (JSONException e) {
-                System.out.println("Invalid Json argument: " + e.toString());
-            }
+    private Double parseFreeflowData(JSONArray response, String dataType) {
+        /*
+         {
+            "density": [
+                0.9267567099456242
+            ],
+            "fid": [
+                "Obc775a71f1592229917fb6a34a1d"
+            ],
+            "flow": [
+                74.14053679564994
+            ],
+            "freeFlowSpeed": [
+                "80.0"
+            ],
+            "freeFlowtraveltime": [
+                "62.46"
+            ]
         }
-        return ret;
+         */
+
+        try {
+            JSONObject obj = response.getJSONObject(0);
+
+            if (dataType.equals("Average Speed")) {
+                return obj.getJSONArray("freeFlowSpeed").getDouble(0);
+            } else if (dataType.equals("Travel Time")){
+                return obj.getJSONArray("freeFlowtraveltime").getDouble(0);
+            } else if (dataType.equals("Flow")){
+                return obj.getJSONArray("flow").getDouble(0);
+            } else if (dataType.equals("Density")){
+                return obj.getJSONArray("density").getDouble(0);
+            }
+        } catch (JSONException e) {
+            System.out.println("Invalid Json argument: " + e.toString());
+        }
+        return 0.0;
     }
 
-    private Integer parseNonFreeflowData(JSONArray response) {
+    private Double parseNonFreeflowData(JSONArray response, String dataType) {
         /*  Sample response element
             {
             "TravelTime": "236.0",
@@ -453,47 +534,52 @@ public class HistoricalDashboardFragment extends Fragment {
             "timestamp": 1486740300.0
         }
          */
-        List<Integer> chartData = new ArrayList<>();
-        Integer ret = 0;
         try {
             JSONObject obj = response.getJSONObject(0);
-            Integer data = obj.getInt("averageSpeed");
-            chartData.add(data);
-            ret = data;
+            if (dataType.equals("Average Speed")) {
+                return obj.getDouble("averageSpeed");
+            } else if (dataType.equals("Travel Time")){
+                return obj.getDouble("TravelTime");
+            } else if (dataType.equals("Flow")){
+                return obj.getDouble("flow");
+            } else if (dataType.equals("Density")){
+                return obj.getDouble("density");
+            }
         } catch (JSONException e) {
             System.out.println("Invalid Json argument: " + e.toString());
-            ret = parseFreeflowData(response);
+            return parseFreeflowData(response, dataType);
         }
-        return ret;
+        return 0.0;
     }
 
-    private void createHistoricalChart(String chartType, String chartDataTime, Long startTime,
-                                       Long endTime, List<Integer> chartData, List<Long> startTimeNeeded, String linkId) {
-        mHistoricalChartAdapter.add(new HistoricalChartData(
-                chartType, chartType, startTime, endTime, chartDataTime, chartData,
+    private void createHistoricalChart(String chartType, String dataType, String chartDataTime, Long startTime,
+                                       Long endTime, List<Double> chartData, List<Long> startTimeNeeded, String linkId) {
+        mHistoricalChartAdapter.add(new HistoricalGraph(
+                chartType, dataType, startTime, endTime, chartDataTime, chartData,
                 startTimeNeeded, null, HistoricalChartStatus.NEEDS_PERSIST, linkId
         ));
     }
 
 
     public enum HistoricalChartStatus {
-        NEEDS_PERSIST, NEEDS_UPDATE, OKAY
+        NEEDS_PERSIST, NEEDS_UPDATE, NEEDS_DELETE, OKAY
     }
+
 
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void setActionBar(Toolbar toolbar);
     }
 
-    public class HistoricalChartAdapter extends ArrayAdapter<HistoricalChartData> {
+    public class HistoricalChartAdapter extends ArrayAdapter<HistoricalGraph> {
 
-        public HistoricalChartAdapter(Context context, ArrayList<HistoricalChartData> objects) {
+        public HistoricalChartAdapter(Context context, ArrayList<HistoricalGraph> objects) {
             super(context, 0, objects);
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            HistoricalChartData chartData = getItem(position);
+            HistoricalGraph chartData = getItem(position);
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(
                         R.layout.historical_chart_card, parent, false);
@@ -501,23 +587,22 @@ public class HistoricalDashboardFragment extends Fragment {
             }
             TextView tvCaptions = (TextView) convertView.findViewById(
                     R.id.historical_dashboard_card_tv_captions);
-
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm");
             Date startDate = new Date(chartData.mStartTime);
             Date endDate = new Date(chartData.mEndTime);
-            tvCaptions.setText(chartData.mDataType + "\nfrom " + sdf.format(startDate) + " to " + sdf.format(endDate));
+            tvCaptions.setText(chartData.mChartType + "\nfrom " + sdf.format(startDate) + " to " + sdf.format(endDate));
             createLineChart(convertView, chartData);
             return convertView;
         }
     }
 
-    public class HistoricalChartData {
+    public class HistoricalGraph {
         HistoricalChartStatus mStatus;
         String mGraphId;
         String mChartType;
         String mDataType;
         List<Long> mTimeSteps;
-        List<Integer> mData;
+        List<Double> mData;
         String mDataTime; // HH:mm format
 
         Long mLastUpdatedTime;
@@ -528,9 +613,9 @@ public class HistoricalDashboardFragment extends Fragment {
         String mLinkId;
         String mAddress;
 
-        HistoricalChartData(String chartType, String dataType, Long startTime, Long endTime,
-                            String dataTime, List<Integer> data, List<Long> startTimeNeeded,
-                            String graphId, HistoricalChartStatus status, String linkId) {
+        HistoricalGraph(String chartType, String dataType, Long startTime, Long endTime,
+                        String dataTime, List<Double> data, List<Long> startTimeNeeded,
+                        String graphId, HistoricalChartStatus status, String linkId) {
             mDataTime = dataTime;
             mDataType = dataType;
             mChartType = chartType;
@@ -552,7 +637,7 @@ public class HistoricalDashboardFragment extends Fragment {
         @Override
         public String toString() {
             return String.format(
-                    "HistoricalChartData: dataType=%s, startTime=%s" +
+                    "HistoricalGraph: dataType=%s, startTime=%s" +
                             "endTime=%s, dataTime=%s, data=%s",
                     mDataType, mStartTime.toString(), mEndTime.toString(), mDataTime, mData.toString());
         }
