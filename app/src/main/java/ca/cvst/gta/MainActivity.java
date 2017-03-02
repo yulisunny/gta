@@ -24,7 +24,8 @@ import layout.UpdatesListenerIntentService;
 
 public class MainActivity extends AppCompatActivity implements
         HomeMapFragment.OnFragmentInteractionListener,
-        HistoricalDashboardFragment.OnFragmentInteractionListener {
+        HistoricalDashboardFragment.OnFragmentInteractionListener,
+        PastNotificationFragment.OnFragmentInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +46,8 @@ public class MainActivity extends AppCompatActivity implements
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.contentContainer, mapFragment).commit();
                 } else {
-                    Toast.makeText(getApplicationContext(), "Please swap in your fragment", Toast.LENGTH_SHORT).show();
+                    PastNotificationFragment pastNotificationFragment = PastNotificationFragment.newInstance();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.contentContainer, pastNotificationFragment).commit();
                 }
             }
         });

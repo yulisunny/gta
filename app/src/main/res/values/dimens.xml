@@ -9,4 +9,6 @@
     <dimen name="card_padding">5dp</dimen>
     <dimen name="card_side_margin">5dp</dimen>
     <dimen name="card_bottom_margin">10dp</dimen>
+
+    <dimen name="card_past_notification_margin">20dp</dimen>
 </resources>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/card_past_notification_margin"
+    android:layout_marginLeft="@dimen/card_past_notification_margin"
+    android:layout_marginRight="@dimen/card_past_notification_margin"
+    android:layout_marginTop="@dimen/card_past_notification_margin"
+    card_view:contentPadding="@dimen/card_padding">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/text_past_notification_title"
+            style="@android:style/TextAppearance.DeviceDefault.Large"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start" />
+
+        <TextView
+            android:id="@+id/text_past_notification_content"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="end" />
+    </LinearLayout>
+
+
+</android.support.v7.widget.CardView>
