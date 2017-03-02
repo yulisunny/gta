@@ -55,8 +55,8 @@ import static android.app.Activity.RESULT_OK;
 public class HistoricalDashboardFragment extends Fragment {
 
     private static final int NEW_HISTORICAL_CHART_REQUEST = 1;
-    private ArrayAdapter<HistoricalChartData> historicalChartAdapter;
-    private ArrayList<HistoricalChartData> historicalChartList;
+    private ArrayAdapter<HistoricalChartData> mHistoricalChartAdapter;
+    private ArrayList<HistoricalChartData> mHistoricalChartList;
     private DbHelper mDbHelper;
     private Gson gson = new Gson();
 
@@ -91,14 +91,15 @@ public class HistoricalDashboardFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getContext(), NewHistoricalChartActivity.class);
+
                 startActivityForResult(intent, NEW_HISTORICAL_CHART_REQUEST);
             }
         });
 
-        historicalChartList = new ArrayList<>();
-        historicalChartAdapter = new HistoricalChartAdapter(getContext(), historicalChartList);
+        mHistoricalChartList = new ArrayList<>();
+        mHistoricalChartAdapter = new HistoricalChartAdapter(getContext(), mHistoricalChartList);
         ListView listview = (ListView) root.findViewById(R.id.historical_dashboard_listview);
-        listview.setAdapter(historicalChartAdapter);
+        listview.setAdapter(mHistoricalChartAdapter);
         registerForContextMenu(listview);
 
         // Init database
@@ -108,7 +109,7 @@ public class HistoricalDashboardFragment extends Fragment {
             if (graphNeedsUpdate(graph)) {
                 updateGraphInDB(graph);
             } else {
-                historicalChartAdapter.add(graph);
+                mHistoricalChartAdapter.add(graph);
             }
         }
 
@@ -138,8 +139,8 @@ public class HistoricalDashboardFragment extends Fragment {
         super.onDestroy();
 
         // Check which graphs needs to be saved
-        for (int i = 0; i < historicalChartAdapter.getCount(); i++) {
-            HistoricalChartData graph = historicalChartAdapter.getItem(i);
+        for (int i = 0; i < mHistoricalChartAdapter.getCount(); i++) {
+            HistoricalChartData graph = mHistoricalChartAdapter.getItem(i);
             HistoricalChartStatus status = graph.mStatus;
             switch (status) {
                 case OKAY:
@@ -161,7 +162,7 @@ public class HistoricalDashboardFragment extends Fragment {
         super.onCreateContextMenu(menu, v, menuInfo);
         if (v.getId() == R.id.historical_dashboard_listview) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-            menu.setHeaderTitle(historicalChartList.get(info.position).mChartType);
+            menu.setHeaderTitle(mHistoricalChartList.get(info.position).mChartType);
             String[] menuItems = getResources().getStringArray(R.array.historical_dashboard_graph_menu_items);
             for (int i = 0; i < menuItems.length; i++) {
                 menu.add(Menu.NONE, i, i, menuItems[i]);
@@ -177,8 +178,8 @@ public class HistoricalDashboardFragment extends Fragment {
             case 0: // EDIT
                 return true;
             case 1: // Delete
-                historicalChartAdapter.remove(historicalChartList.get(info.position));
-                historicalChartAdapter.notifyDataSetChanged();
+                mHistoricalChartAdapter.remove(mHistoricalChartList.get(info.position));
+                mHistoricalChartAdapter.notifyDataSetChanged();
                 return true;
             default:
                 return super.onContextItemSelected(item);
@@ -468,7 +469,7 @@ public class HistoricalDashboardFragment extends Fragment {
 
     private void createHistoricalChart(String chartType, String chartDataTime, Long startTime,
                                        Long endTime, List<Integer> chartData, List<Long> startTimeNeeded, String linkId) {
-        historicalChartAdapter.add(new HistoricalChartData(
+        mHistoricalChartAdapter.add(new HistoricalChartData(
                 chartType, chartType, startTime, endTime, chartDataTime, chartData,
                 startTimeNeeded, null, HistoricalChartStatus.NEEDS_PERSIST, linkId
         ));
