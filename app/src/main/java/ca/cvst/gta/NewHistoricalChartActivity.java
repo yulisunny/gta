@@ -82,7 +82,7 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String item = spinnerTrafficType.getSelectedItem().toString();
-                if (item.equals("Free flow speed of Roads")) {
+                if (item.equals("Road Traffic")) {
                     hwView.setVisibility(View.VISIBLE);
                     airQualityView.setVisibility(View.GONE);
                     completeFormBtn.setText(R.string.add_new_historical_chart_button_next);
@@ -105,12 +105,15 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
         final Spinner spinnerTrafficType = (Spinner) findViewById(R.id.spinner_new_historical_chart_type);
         final Spinner spinnerTimeRange = (Spinner) findViewById(R.id.spinner_new_historical_chart_time_range);
         final EditText dataTime = (EditText) findViewById(R.id.edit_new_historical_chart_data_time);
+        final EditText chartNameEdit = (EditText) findViewById(R.id.edit_new_historical_chart_name);
 
         String chartType = spinnerTrafficType.getSelectedItem().toString();
         String chartDataTime = dataTime.getText().toString();
+        String chartName = chartNameEdit.getText().toString();
         Date refTime = getCurrTime(chartDataTime);
 
         Intent intent = new Intent();
+        intent.putExtra("CHART_NAME", chartName);
         intent.putExtra("CHART_TYPE", chartType);
         intent.putExtra("DATA_TIME", chartDataTime);
         intent.putExtra("END_TIME", refTime.getTime());
