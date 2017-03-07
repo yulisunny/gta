@@ -6,6 +6,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,6 +24,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -48,8 +52,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -120,7 +126,6 @@ public class HomeMapFragment extends Fragment implements
                     .addApi(LocationServices.API)
                     .build();
         }
-
     }
 
     @Override
@@ -150,6 +155,14 @@ public class HomeMapFragment extends Fragment implements
         mMapView = (MapView) rootView.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
         mMapView.getMapAsync(this);
+
+        Button searchBtn = (Button) rootView.findViewById(R.id.home_search_button);
+        searchBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSearch(v);
+            }
+        });
 
         return rootView;
     }
@@ -485,6 +498,35 @@ public class HomeMapFragment extends Fragment implements
                 });
             }
         });
+    }
+
+    // Use google map api to search for coordinate of an address
+    public void onSearch(View view) {
+        EditText location = (EditText) getView().findViewById(R.id.home_search_input);
+        String inputLocation = location.getText().toString();
+        List<Address> addressList = null;
+        if (location != null || location.equals("")) {
+            Geocoder geocoder = new Geocoder(getContext());
+            try {
+                addressList = geocoder.getFromLocationName(inputLocation, 1);
+                System.out.println("FOUND THIS " + addressList.toString());
+            } catch (IOException e) {
+                System.out.println("Exception while fetching geocode for searched location.");
+            }
+            Address address = addressList.get(0);
+            LatLng latlng = new LatLng(address.getLatitude(), address.getLongitude());
+
+
+//            List<String> closestLinkIds = getClosestLinkIds(latlng);
+//            for(String linkId:closestLinkIds) {
+//                Marker marker = mMap.addMarker(new MarkerOptions()
+//                        .position(linkIdCoorMapping.get(linkId)));
+//                marker.setTag(linkId);
+//            }
+
+            // TODO: reserver geocoding to make sure that the latlng doesnt get out of toronto
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(latlng));
+        }
     }
 
     /**
