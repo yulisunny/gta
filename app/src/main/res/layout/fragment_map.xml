@@ -7,7 +7,7 @@
     tools:openDrawer="start">
 
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/content_main"
         android:layout_width="match_parent"
@@ -24,6 +24,7 @@
         <com.google.android.gms.maps.MapView
             xmlns:map="http://schemas.android.com/apk/res-auto"
             android:id="@+id/map"
+            android:layout_below="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             map:cameraTargetLat="43.6543"
@@ -31,7 +32,33 @@
             map:cameraZoom="14">
 
         </com.google.android.gms.maps.MapView>
-    </LinearLayout>
+
+        <EditText
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_below="@+id/toolbar"
+            android:layout_width="250dp"
+            android:layout_height="40dp"
+            android:layout_weight="0.9"
+            android:inputType="textPersonName"
+            android:ems="10"
+            android:background="@color/white"
+            android:alpha="0.8"
+            android:layout_gravity="center_horizontal|top"
+            android:id="@+id/home_search_input"
+            />
+
+        <Button
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_below="@+id/toolbar"
+            android:layout_toRightOf="@+id/home_search_input"
+            android:id="@+id/home_search_button"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="right"
+            android:text="Search" />
+    </RelativeLayout>
 
 
     <android.support.design.widget.NavigationView
