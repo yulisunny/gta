@@ -20,7 +20,7 @@ public class SubscriptionsActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), NewSubscriptionActivity.class);
+                Intent intent = new Intent(getApplicationContext(), NewSubscriptionTypeActivity.class);
                 startActivity(intent);
             }
         });

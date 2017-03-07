@@ -57,10 +57,26 @@
         <activity
             android:name=".NewSubscriptionActivity"
             android:label="@string/title_activity_new_subscription"
+            android:parentActivityName=".NewSubscriptionTypeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ca.cvst.gta.NewSubscriptionTypeActivity" />
+        </activity>
+        <activity
+            android:name=".NewSubscriptionTypeActivity"
+            android:label="@string/title_activity_new_subscription"
             android:parentActivityName=".SubscriptionsActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ca.cvst.gta.SubscriptionsActivity" />
+        </activity>
+        <activity
+            android:name=".NewIntersectionBasedActivity"
+            android:label="@string/title_activity_new_subscription"
+            android:parentActivityName=".NewSubscriptionTypeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ca.cvst.gta.NewSubscriptionTypeActivity" />
         </activity>
 
         <service
