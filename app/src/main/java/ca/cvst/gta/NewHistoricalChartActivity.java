@@ -18,17 +18,16 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TimePicker;
 
-import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 public class NewHistoricalChartActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener {
 
-    private static final int NEW_HISTORICAL_CHART_MAP_REQUEST = 2;
+    private static final int NEW_HISTORICAL_CHART_MAP_HIGHWAY_REQUEST = 2;
+    private static final int NEW_HISTORICAL_CHART_MAP_AIR_QUALITY_REQUEST = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +41,6 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
         // Disable keyboard pop up
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-
-
         // Picking a time to query historical data
         final EditText dataTime = (EditText) findViewById(R.id.edit_new_historical_chart_data_time);
         LocalTime currTime = new LocalTime();
@@ -55,22 +52,21 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
             }
         });
 
-
         // Complete Form
         final Button completeFormBtn = (Button) findViewById(R.id.btn_add_historical_chart);
         completeFormBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (spinnerTrafficType.getSelectedItemPosition() == 0) {
-                    Intent intent = createResultIntent();
-                    setResult(RESULT_OK, intent);
-                    finish();
-                } else {
-                    // Select a link for highway speed
-                    Intent linkSelectionIntent = new Intent(getApplicationContext(), NewHistoricalHighwayMapActivity.class);
-                    startActivityForResult(linkSelectionIntent, NEW_HISTORICAL_CHART_MAP_REQUEST);
-                }
+                Intent linkSelectionIntent = new Intent(getApplicationContext(), NewHistoricalMapActivity.class);
+            if (spinnerTrafficType.getSelectedItemPosition() == 0) {
+                // Select an air quality device
+                linkSelectionIntent.putExtra("TYPE", "AIR_QUALITY");
+                startActivityForResult(linkSelectionIntent, NEW_HISTORICAL_CHART_MAP_AIR_QUALITY_REQUEST);
+            } else {
+                // Select a link for highway speed
+                linkSelectionIntent.putExtra("TYPE", "HIGHWAY");
+                startActivityForResult(linkSelectionIntent, NEW_HISTORICAL_CHART_MAP_HIGHWAY_REQUEST);
+            }
             }
         });
 
@@ -79,6 +75,7 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
         hwView.setVisibility(View.GONE);
         final View airQualityView = findViewById(R.id.layout_chart_air_quality);
         airQualityView.setVisibility(View.GONE);
+
         spinnerTrafficType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -90,13 +87,12 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
                 } else {
                     hwView.setVisibility(View.GONE);
                     airQualityView.setVisibility(View.VISIBLE);
-                    completeFormBtn.setText(R.string.add_new_historical_chart_button_complete);
+                    completeFormBtn.setText(R.string.add_new_historical_chart_button_next);
                 }
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
             }
         });
     }
@@ -177,7 +173,7 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == NEW_HISTORICAL_CHART_MAP_REQUEST) {
+        if (requestCode == NEW_HISTORICAL_CHART_MAP_HIGHWAY_REQUEST) {
             if (resultCode == RESULT_OK) {
                 Intent intent = createResultIntent();
                 String linkId = data.getStringExtra("LINK_ID");
@@ -187,60 +183,17 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
                 setResult(RESULT_OK, intent);
                 finish();
             }
+        } else if (requestCode == NEW_HISTORICAL_CHART_MAP_AIR_QUALITY_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Intent intent = createResultIntent();
+                String linkId = data.getStringExtra("DEVICE_ID");
+                Spinner aqDataType = (Spinner) findViewById(R.id.spinner_new_historical_chart_air_quality_data_types);
+                intent.putExtra("DEVICE_ID", linkId);
+                intent.putExtra("DATA_TYPE_POS", aqDataType.getSelectedItemPosition());
+                setResult(RESULT_OK, intent);
+                finish();
+            }
         }
     }
-
-//    private void initLinkIds() {
-//        String url = "http://portal.cvst.ca/api/0.1/tomtom/hdf/linkids";
-//        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
-//                new Response.Listener<JSONArray>() {
-//                    @Override
-//                    public void onResponse(JSONArray linkIds) {
-//                        System.out.println(linkIds.length());
-//                        if (linkIds.length() > 0) {
-//                            for (int i = 0; i < linkIds.length(); i++) {
-//                                try {
-//                                    String linkId = linkIds.getString(i);
-//                                    addLinkIdToAddressMapping(linkId);
-//                                    System.out.println(linkIdAddressMapping.toString());
-//                                } catch (JSONException e) {
-//                                    System.out.println(e);
-//                                }
-//                            }
-//                        }
-//                    }
-//                }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                System.out.println("error = " + error);
-//            }
-//        });
-//
-//        NetworkManager.getInstance(this).addToRequestQueue(jsonArrayRequest);
-//    }
-//
-//    private void addLinkIdToAddressMapping(final String linkId) {
-//        String url = String.format("http://portal.cvst.ca/api/0.1/tomtom/hdf/linkLocations/analytics/%s", linkId);
-//
-//        RequestFuture<JSONObject> future = RequestFuture.newFuture();
-//        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, future, future);
-//        NetworkManager.getInstance(this).addToRequestQueue(request);
-//
-//        try {
-//            JSONObject response = future.get();
-//            String address = response.get("From").toString();
-//            linkIdAddressMapping.put(linkId, address);
-//        } catch (JSONException e) {
-//            System.out.println("Invalid Json argument: " + e.toString());
-//        } catch (InterruptedException e) {
-//            System.out.println("Received Interrupted Exception: " + e.toString());
-//        } catch (ExecutionException e) {
-//            System.out.println("Received Execution Exception: " + e.toString());
-//        }
-
-
-
-
-
 
 }

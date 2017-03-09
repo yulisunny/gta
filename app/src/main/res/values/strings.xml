@@ -92,8 +92,22 @@
         <item>Flow</item>
         <item>Density</item>
     </string-array>
-    <string name="new_historical_chart_air_quality_location">Select an air sensor: </string>
-    <string-array name="new_historical_chart_air_sensor_locations"></string-array>
+    <string name="new_historical_chart_air_quality_data_type_title">Air Quality Data Type: </string>
+    <string-array name="new_historical_chart_air_sensor_data_types">
+        <item>@string/item_co2</item>
+        <item>@string/item_co</item>
+        <item>@string/item_nox</item>
+        <item>@string/item_aqhi</item>
+        <item>@string/item_o3</item>
+        <item>@string/item_pm</item>
+    </string-array>
+    <string name="item_co2">Carbon Dioxide (CO2)</string>
+    <string name="item_co">Carbon Monoxide (CO)</string>
+    <string name="item_nox">Nitrogen Oxides (NOx)</string>
+    <string name="item_aqhi">Air Quality Health Index (AQHI)</string>
+    <string name="item_o3">Ozone (O3)</string>
+    <string name="item_pm">Particulate Matter (PM)</string>
+
     <string name="title_activity_new_historical_chart_map">Select a location of interest </string>
     <string-array name="historical_dashboard_graph_menu_items">
         <item>Edit</item>

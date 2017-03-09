@@ -25,7 +25,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.Legend;
@@ -34,9 +33,6 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -48,6 +44,7 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -56,6 +53,9 @@ import ca.cvst.gta.db.GraphContract;
 
 import static android.app.Activity.RESULT_OK;
 
+/**
+ * Entry point for the historical dashboard
+ */
 public class HistoricalDashboardFragment extends Fragment {
 
     private static final int NEW_HISTORICAL_CHART_REQUEST = 1;
@@ -170,7 +170,7 @@ public class HistoricalDashboardFragment extends Fragment {
         super.onCreateContextMenu(menu, v, menuInfo);
         if (v.getId() == R.id.historical_dashboard_listview) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-            menu.setHeaderTitle(mHistoricalChartList.get(info.position).mChartType);
+            menu.setHeaderTitle(mHistoricalChartList.get(info.position).mChartTitle);
             String[] menuItems = getResources().getStringArray(R.array.historical_dashboard_graph_menu_items);
             for (int i = 0; i < menuItems.length; i++) {
                 menu.add(Menu.NONE, i, i, menuItems[i]);
@@ -203,10 +203,19 @@ public class HistoricalDashboardFragment extends Fragment {
                 String chartDataTime = data.getStringExtra("DATA_TIME");
                 Long startTime = data.getLongExtra("START_TIME", 0);
                 Long endTime = data.getLongExtra("END_TIME", 0);
-                String linkId = data.getStringExtra("LINK_ID");
                 Integer typePos = data.getIntExtra("DATA_TYPE_POS", 0);
-                String[] hwDataTypes = getResources().getStringArray(R.array.new_historical_chart_graph_type);
-                fetchDataFromCvst(linkId, hwDataTypes[typePos], chartType, chartDataTime, startTime, endTime);
+                String linkId;
+                String[] dataTypes;
+                if (data.hasExtra("LINK_ID")) {
+                    linkId = data.getStringExtra("LINK_ID");
+                    dataTypes = getResources().getStringArray(R.array.new_historical_chart_graph_type);
+                    fetchDataFromCvst(linkId, dataTypes[typePos], chartType, chartDataTime, startTime, endTime, HistoricalChartTypes.ROAD_TRAFFIC);
+                } else {
+                    linkId =  data.getStringExtra("DEVICE_ID");
+                    dataTypes = getResources().getStringArray(R.array.new_historical_chart_air_sensor_data_types);
+                    fetchDataFromCvst(linkId, dataTypes[typePos], chartType, chartDataTime, startTime, endTime, HistoricalChartTypes.AIR_QUALITY);
+                }
+
             }
         }
     }
@@ -228,10 +237,10 @@ public class HistoricalDashboardFragment extends Fragment {
 
         List<BarEntry> entries = new ArrayList<>();
         for (int i = 0; i < trafficData.size(); i++) {
-            entries.add(new BarEntry((float) i,  trafficData.get(i).floatValue()));
+            entries.add(new BarEntry((float) i, trafficData.get(i).floatValue()));
         }
 
-        BarDataSet dataSet = new BarDataSet(entries, String.format("%s-%s", chartData.mChartType, chartData.mDataType));
+        BarDataSet dataSet = new BarDataSet(entries, String.format("%s-%s", chartData.mChartTitle, chartData.mDataType));
         BarData barData = new BarData(dataSet);
 
         barData.setValueTextSize(12);
@@ -276,13 +285,13 @@ public class HistoricalDashboardFragment extends Fragment {
         String sortOrder = GraphContract.GraphEntry.GRAPH_ID + " ASC";
 
         Cursor cursor = db.query(
-                GraphContract.GraphEntry.TABLE_NAME,      // The table to query
-                projection,                               // The columns to return
-                null,                                // The columns for the WHERE clause
-                null,                            // The values for the WHERE clause
-                null,                                     // don't group the rows
-                null,                                     // don't filter by row groups
-                sortOrder                                 // The sort order
+                GraphContract.GraphEntry.TABLE_NAME,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                sortOrder
         );
 
         // Read from cursor
@@ -345,7 +354,7 @@ public class HistoricalDashboardFragment extends Fragment {
         // Define 'where' part of query.
         String selection = GraphContract.GraphEntry.GRAPH_ID + " LIKE ?";
         // Specify arguments in placeholder order.
-        String[] selectionArgs = { graph.mGraphId };
+        String[] selectionArgs = {graph.mGraphId};
         // Issue SQL statement.
         db.delete(GraphContract.GraphEntry.TABLE_NAME, selection, selectionArgs);
     }
@@ -362,7 +371,7 @@ public class HistoricalDashboardFragment extends Fragment {
         values.put(GraphContract.GraphEntry.TIMESTAMP, graph.mLastUpdatedTime);
         values.put(GraphContract.GraphEntry.GRAPH_ID, graph.mGraphId);
         values.put(GraphContract.GraphEntry.DATA_TIME, graph.mDataTime);
-        values.put(GraphContract.GraphEntry.CHART_TYPE, graph.mChartType);
+        values.put(GraphContract.GraphEntry.CHART_TYPE, graph.mChartTitle);
         values.put(GraphContract.GraphEntry.START_TIME, graph.mStartTime);
         values.put(GraphContract.GraphEntry.END_TIME, graph.mEndTime);
         values.put(GraphContract.GraphEntry.LINK_ID, graph.mLinkId);
@@ -415,8 +424,9 @@ public class HistoricalDashboardFragment extends Fragment {
 
     }
 
-    private void fetchDataFromCvst(final String linkId, final String dataType, final String chartType,
-                                   final String chartDataTime, final Long startTime, final Long endTime) {
+    private void fetchDataFromCvst(final String linkId, final String dataType, final String chartTitle,
+                                   final String chartDataTime, final Long startTime, final Long endTime,
+                                   final HistoricalChartTypes chartType) {
         final List<Long> startTimeNeeded = getStartTimeByDay(startTime, endTime);
         final List<Double> chartData = new ArrayList<>();
 
@@ -425,32 +435,121 @@ public class HistoricalDashboardFragment extends Fragment {
             Long startTimeSecond = startDay / 1000;
             Long endTimeSecond = endDayTime / 1000;
 
-            String url = "http://portal.cvst.ca/api/0.1/tomtom/hdf/nonfreeflowts1ts2/analyticsES?id=" + linkId +
-                    "&starttime=" + startTimeSecond.toString() + "&endtime=" + endTimeSecond.toString();
-            JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
-                    new Response.Listener<JSONArray>() {
-                        @Override
-                        public void onResponse(JSONArray response) {
-                            // Retrieve Data from CVST
-                            if (isNonFreeflow(response)) {
-                                chartData.add(parseNonFreeflowData(response, dataType));
-                            } else {
-                                chartData.add(parseNonFreeflowData(response, dataType));
-                            }
-                            System.out.println("DATA RECEIVED!!" + chartData.toString());
-                            // Create new graph
-                            if (chartData.size() == startTimeNeeded.size()) {
-                                createHistoricalChart(chartType, dataType, chartDataTime, startTime, endTime, chartData, startTimeNeeded, linkId);
-                            }
-                        }
-                    }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    System.out.println("error = " + error);
-                }
-            });
-            NetworkManager.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
+            // FIXME: optimize parameters and if statements later
+            if (chartType.equals(HistoricalChartTypes.ROAD_TRAFFIC)) {
+                getCvstRoadTraffic(linkId, dataType, chartTitle, chartDataTime, startTime, endTime,
+                        startTimeNeeded, chartData, startTimeSecond, endTimeSecond);
+            }else {
+                getCvstAirQuality(linkId, dataType, chartTitle, chartDataTime, startTime, endTime,
+                        startTimeNeeded, chartData, startTimeSecond, endTimeSecond);
+            }
         }
+    }
+
+    private void getCvstRoadTraffic(final String linkId, final String dataType, final String chartTitle,
+                                    final String chartDataTime, final Long startTime, final Long endTime,
+                                    final List<Long> startTimeNeeded, final List<Double> chartData,
+                                    Long startTimeSecond, Long endTimeSecond) {
+        String url = "http://portal.cvst.ca/api/0.1/tomtom/hdf/nonfreeflowts1ts2/analyticsES?id=" + linkId +
+                "&starttime=" + startTimeSecond.toString() + "&endtime=" + endTimeSecond.toString();
+        JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        // Retrieve Data from CVST
+                        if (isNonFreeflow(response)) {
+                            chartData.add(parseNonFreeflowData(response, dataType));
+                        } else {
+                            chartData.add(parseNonFreeflowData(response, dataType));
+                        }
+                        System.out.println("DATA RECEIVED!!" + chartData.toString());
+                        // Create new graph
+                        if (chartData.size() == startTimeNeeded.size()) {
+                            createHistoricalChart(chartTitle, dataType, chartDataTime, startTime, endTime, chartData, startTimeNeeded, linkId);
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("error = " + error);
+            }
+        });
+        NetworkManager.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
+    }
+
+    private void getCvstAirQuality(final String linkId, final String dataType, final String chartTitle,
+                                    final String chartDataTime, final Long startTime, final Long endTime,
+                                    final List<Long> startTimeNeeded, final List<Double> chartData,
+                                    Long startTimeSecond, Long endTimeSecond) {
+        // Current API not updated
+//        String url = "http://portal.cvst.ca/api/0.1/airsense/" + linkId + "?" +
+//                "&starttime=" + startTimeSecond.toString() + "&endtime=" + endTimeSecond.toString();
+
+        String url = "http://portal.cvst.ca/api/0.1/airsense/1?starttime=1468606400&endtime=1468617700";
+        JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        // Retrieve Data from CVST
+                        chartData.add(parseAirQualityData(response, dataType));
+                        // Create new graph
+                        if (chartData.size() == startTimeNeeded.size()) {
+                            createHistoricalChart(chartTitle, dataType, chartDataTime, startTime, endTime, chartData, startTimeNeeded, linkId);
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("error = " + error);
+            }
+        });
+        NetworkManager.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
+    }
+
+    private Double parseAirQualityData(JSONArray resposne, String dataType) {
+        /*
+        [{
+            "address": "Unknown",
+            "ah": null,
+            "aqhi": 4.86982476289778,
+            "co": 745.72,
+            "co2": 444.81,
+            "coo": null,
+            "coordinates": [
+                -79.395516,
+                43.658791
+            ],
+            "date": "Fri, 19 Aug 2016 11:29:00 -0000",
+            "id": 2,
+            "monitor_name": "LTX",
+            "nox": 20.29,
+            "o3": 32.96,
+            "pm": 30.49,
+            "timestamp": 1471606140
+        } ]
+         */
+        String dataKey;
+        if (dataType.equals(getString(R.string.item_co2))) {
+            dataKey = "co2";
+        } else if (dataType.equals(getString(R.string.item_co))) {
+            dataKey = "co";
+        } else if (dataType.equals(getString(R.string.item_aqhi))) {
+            dataKey = "aqhi";
+        } else if (dataType.equals(getString(R.string.item_nox))) {
+            dataKey = "nox";
+        } else if (dataType.equals(getString(R.string.item_pm))) {
+            dataKey = "pm";
+        } else {
+            dataKey = "o3";
+        }
+
+        try {
+            JSONObject obj = resposne.getJSONObject(0);
+            return obj.getJSONArray(dataKey).getDouble(0);
+        } catch (JSONException e) {
+            System.out.println("Invalid Json argument: " + e.toString());
+        }
+        return 0.0;
     }
 
     private List<Long> getStartTimeByDay(Long startTime, Long endTime) {
@@ -502,11 +601,11 @@ public class HistoricalDashboardFragment extends Fragment {
 
             if (dataType.equals("Average Speed")) {
                 return obj.getJSONArray("freeFlowSpeed").getDouble(0);
-            } else if (dataType.equals("Travel Time")){
+            } else if (dataType.equals("Travel Time")) {
                 return obj.getJSONArray("freeFlowtraveltime").getDouble(0);
-            } else if (dataType.equals("Flow")){
+            } else if (dataType.equals("Flow")) {
                 return obj.getJSONArray("flow").getDouble(0);
-            } else if (dataType.equals("Density")){
+            } else if (dataType.equals("Density")) {
                 return obj.getJSONArray("density").getDouble(0);
             }
         } catch (JSONException e) {
@@ -543,11 +642,11 @@ public class HistoricalDashboardFragment extends Fragment {
             JSONObject obj = response.getJSONObject(0);
             if (dataType.equals("Average Speed")) {
                 return obj.getDouble("averageSpeed");
-            } else if (dataType.equals("Travel Time")){
+            } else if (dataType.equals("Travel Time")) {
                 return obj.getDouble("TravelTime");
-            } else if (dataType.equals("Flow")){
+            } else if (dataType.equals("Flow")) {
                 return obj.getDouble("flow");
-            } else if (dataType.equals("Density")){
+            } else if (dataType.equals("Density")) {
                 return obj.getDouble("density");
             }
         } catch (JSONException e) {
@@ -565,17 +664,28 @@ public class HistoricalDashboardFragment extends Fragment {
         ));
     }
 
-
+    /**
+     * Enum as chart status to determine whether chart needs to be saved to DB
+     */
     public enum HistoricalChartStatus {
         NEEDS_PERSIST, NEEDS_UPDATE, NEEDS_DELETE, OKAY
     }
 
+    public enum HistoricalChartTypes {
+        ROAD_TRAFFIC, AIR_QUALITY
+    }
 
+    /**
+     * Sets the bottom toolbar
+     */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void setActionBar(Toolbar toolbar);
     }
 
+    /**
+     * Array Adapter used to format the graphs into a vertical list view
+     */
     public class HistoricalChartAdapter extends ArrayAdapter<HistoricalGraph> {
 
         public HistoricalChartAdapter(Context context, ArrayList<HistoricalGraph> objects) {
@@ -595,16 +705,19 @@ public class HistoricalDashboardFragment extends Fragment {
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm");
             Date startDate = new Date(chartData.mStartTime);
             Date endDate = new Date(chartData.mEndTime);
-            tvCaptions.setText(chartData.mChartType + "\nfrom " + sdf.format(startDate) + " to " + sdf.format(endDate));
+            tvCaptions.setText(chartData.mChartTitle + "\nfrom " + sdf.format(startDate) + " to " + sdf.format(endDate));
             createLineChart(convertView, chartData);
             return convertView;
         }
     }
 
+    /**
+     * Data structure used to hold graph data
+     */
     public class HistoricalGraph {
         HistoricalChartStatus mStatus;
         String mGraphId;
-        String mChartType;
+        String mChartTitle;
         String mDataType;
         List<Long> mTimeSteps;
         List<Double> mData;
@@ -623,7 +736,7 @@ public class HistoricalDashboardFragment extends Fragment {
                         String graphId, HistoricalChartStatus status, String linkId) {
             mDataTime = dataTime;
             mDataType = dataType;
-            mChartType = chartType;
+            mChartTitle = chartType;
             mStartTime = startTime;
             mEndTime = endTime;
             mData = data;
@@ -648,6 +761,9 @@ public class HistoricalDashboardFragment extends Fragment {
         }
     }
 
+    /**
+     * Custom axis formmater to display the date on the graphs of the axis
+     */
     public class DateAxisFormatter implements IAxisValueFormatter {
 
         List<String> timeValues;

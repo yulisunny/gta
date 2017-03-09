@@ -97,7 +97,7 @@
             android:label="@string/title_activity_new_historical_chart"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".NewHistoricalHighwayMapActivity"
+            android:name=".NewHistoricalMapActivity"
             android:label="@string/title_activity_new_historical_chart_map">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
