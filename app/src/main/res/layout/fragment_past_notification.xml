@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:map="http://schemas.android.com/apk/res-auto"
     tools:context="ca.cvst.gta.PastNotificationFragment">
 
     <android.support.v7.widget.Toolbar
@@ -19,7 +20,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/recycler_past_notification_list"
-        android:layout_below="@+id/toolbar" />
+        android:layout_below="@+id/toolbar"
+        map:cameraTargetLat="43.6532"
+        map:cameraTargetLng="-79.3832"
+        map:cameraZoom="14"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_past_notification_list"

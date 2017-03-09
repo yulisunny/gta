@@ -2,6 +2,7 @@ package ca.cvst.gta;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -17,15 +18,19 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PastNotificationFragment extends Fragment implements
-        OnMapReadyCallback {
+        OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks {
 
     private OnFragmentInteractionListener mListener;
 
@@ -36,6 +41,9 @@ public class PastNotificationFragment extends Fragment implements
     private RecyclerView.LayoutManager mPastNotificationListLayoutManager;
     private List<PastNotification> mPastNotifications;
     private PastNotificationListAdapter mPastNotificationsAdapter;
+
+    private GoogleApiClient mGoogleApiClient;
+    private Location mLastLocation;
 
     public PastNotificationFragment() {
         // Required empty public constructor
@@ -51,6 +59,13 @@ public class PastNotificationFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(getContext())
+                    .addConnectionCallbacks(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
     }
 
     @Override
@@ -65,7 +80,7 @@ public class PastNotificationFragment extends Fragment implements
         mMapView = (MapView) root.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
         mMapView.getMapAsync(this);
-        mMapView.onCreate(savedInstanceState);
+        //mMapView.onCreate(savedInstanceState);
 
         mPastNotificationsRecyclerView = (RecyclerView) root.findViewById(R.id.recycler_past_notification_list);
         mPastNotificationListLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
@@ -82,6 +97,23 @@ public class PastNotificationFragment extends Fragment implements
     }
 
     @Override
+    public void onConnected(Bundle connectionHint) {
+        System.out.println("on connected called");
+        if (ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            System.out.println("Have permission to access to location");
+            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            if (mLastLocation != null) {
+                LatLng currentLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+            }
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.fragment_past_notificaton, menu);
@@ -94,14 +126,16 @@ public class PastNotificationFragment extends Fragment implements
 
     @Override
     public void onStart() {
-        super.onStart();
+        mGoogleApiClient.connect();
         mMapView.onStart();
+        super.onStart();
     }
 
     @Override
     public void onStop() {
-        super.onStop();
+        mGoogleApiClient.disconnect();
         mMapView.onStop();
+        super.onStop();
     }
 
     @Override
@@ -149,6 +183,7 @@ public class PastNotificationFragment extends Fragment implements
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
         if (ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
         }
