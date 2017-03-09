@@ -1,20 +1,32 @@
 package ca.cvst.gta;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -25,11 +37,17 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
 
     private GoogleMap mMap;
     private Marker mapLocation;
+    private LatLng topLeftPoint;
+    private LatLng botRightPoint;
+    private LatLng markerPoint;
+    private Marker previousMarker = null;
+    private Circle previousCircle = null;
+    private int radius = 1000;
 
     private final Map<String, LatLng> linkIdCoorMapping = new HashMap<>();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_area_based_subscription);
 
@@ -61,9 +79,35 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
             }
         });
 
+        Button increaseRadius = (Button)findViewById(R.id.new_area_based_subscription_increase_radius);
+        increaseRadius.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                radius = radius + 50;
+                previousCircle.setRadius(radius);
+            }
+        });
+
+        Button decreaseRadius = (Button)findViewById(R.id.new_area_based_subscription_decrease_radius);
+        decreaseRadius.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                radius = radius - 50;
+                previousCircle.setRadius(radius);
+            }
+        });
+
+        Button subcribeButton = (Button)findViewById(R.id.new_area_based_subscription_subscribe);
+        subcribeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println(markerPoint);
+            }
+        });
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_new_area_based_subscription);
         mapFragment.getMapAsync(this);
+
     }
 
     // Use google map api to search for coordinate of an address
@@ -89,6 +133,28 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         mMap = googleMap;
+        radius = 1000;
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
+            @Override
+            public void onMapClick(LatLng point) {
+                if (previousMarker != null) {
+                    previousMarker.remove();
+                }
+                if (previousCircle != null) {
+                    previousCircle.remove();
+                }
+                previousMarker = mMap.addMarker(new MarkerOptions().position(point));
+                markerPoint = point;
+                previousCircle = mMap.addCircle(new CircleOptions()
+                        .center(point)
+                        .radius(radius)
+                        .strokeColor(Color.RED)
+                        .fillColor(Color.TRANSPARENT));
+
+            }
+        });
     }
+
+
 }

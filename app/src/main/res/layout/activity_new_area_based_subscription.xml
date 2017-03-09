@@ -62,5 +62,35 @@
         android:layout_marginBottom="20dp"/>
 
 
+    <Button
+        android:id="@+id/new_area_based_subscription_subscribe"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:text="Subscribe"
+        android:layout_marginBottom="20dp"/>
+
+    <Button
+        android:id="@+id/new_area_based_subscription_increase_radius"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|left"
+        android:text="+"
+        android:layout_marginBottom="20dp"/>
+
+    <Button
+        android:id="@+id/new_area_based_subscription_decrease_radius"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:text="-"
+        android:layout_marginBottom="20dp"/>
+
+
+    <!--<ImageView-->
+        <!--android:id="@+id/new_area_based_image_view_on_map"-->
+        <!--style="@style/AppTheme"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="fill_parent"/>-->
 
 </android.support.design.widget.CoordinatorLayout>
