@@ -78,6 +78,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ca.cvst.gta.NewSubscriptionTypeActivity" />
         </activity>
+        <activity
+            android:name=".NewAreaBasedActivity"
+            android:label="@string/title_activity_new_subscription"
+            android:parentActivityName=".NewSubscriptionTypeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ca.cvst.gta.NewSubscriptionTypeActivity" />
+        </activity>
+
 
         <service
             android:name="layout.UpdatesListenerIntentService"

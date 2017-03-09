@@ -505,6 +505,19 @@ public class HomeMapFragment extends Fragment implements
         EditText location = (EditText) getView().findViewById(R.id.home_search_input);
         String inputLocation = location.getText().toString();
         List<Address> addressList = null;
+        String[] streetNames = null;
+        if (inputLocation.contains("and")) {
+            streetNames = inputLocation.split("and");
+        }
+        else if (inputLocation.contains("&")) {
+            streetNames = inputLocation.split("&");
+        }
+
+        if (streetNames != null) {
+
+        }
+
+
         if (location != null || location.equals("")) {
             Geocoder geocoder = new Geocoder(getContext());
             try {

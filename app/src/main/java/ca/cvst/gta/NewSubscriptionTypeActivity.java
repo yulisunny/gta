@@ -1,6 +1,5 @@
 package ca.cvst.gta;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -19,7 +18,7 @@ public class NewSubscriptionTypeActivity extends AppCompatActivity {
     }
 
     public void areaBasedSubscription(View view) {
-        Intent intent = new Intent(getApplicationContext(), NewSubscriptionActivity.class);
+        Intent intent = new Intent(getApplicationContext(), NewAreaBasedActivity.class);
         startActivity(intent);
     }
 

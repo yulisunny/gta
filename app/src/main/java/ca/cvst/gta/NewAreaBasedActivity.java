@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NewIntersectionBasedActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class NewAreaBasedActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private Marker mapLocation;
@@ -31,7 +31,7 @@ public class NewIntersectionBasedActivity extends AppCompatActivity implements O
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_intersection_based_subscription);
+        setContentView(R.layout.activity_new_area_based_subscription);
 
         // Toolbar
         if (getSupportActionBar() != null){
@@ -40,7 +40,7 @@ public class NewIntersectionBasedActivity extends AppCompatActivity implements O
         }
 
         // Complete Button
-        Button completeBtn = (Button)findViewById(R.id.new_intersection_based_subscription_complete);
+        Button completeBtn = (Button)findViewById(R.id.new_area_based_subscription_complete);
         completeBtn.setEnabled(false);
         completeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,7 +53,7 @@ public class NewIntersectionBasedActivity extends AppCompatActivity implements O
         });
 
         // Search Button
-        Button searchBtn = (Button)findViewById(R.id.new_intersection_based_subscription_search);
+        Button searchBtn = (Button)findViewById(R.id.new_area_based_subscription_search);
         searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -62,13 +62,13 @@ public class NewIntersectionBasedActivity extends AppCompatActivity implements O
         });
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_new_intersection_based_subscription);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_new_area_based_subscription);
         mapFragment.getMapAsync(this);
     }
 
     // Use google map api to search for coordinate of an address
     public void onSearch(View view) {
-        EditText location = (EditText)findViewById(R.id.new_intersection_based_subscription_address_input);
+        EditText location = (EditText)findViewById(R.id.new_area_based_subscription_address_input);
         String inputLocation = location.getText().toString();
         List<Address> addressList = null;
         if (location != null || location.equals("")) {
@@ -92,4 +92,3 @@ public class NewIntersectionBasedActivity extends AppCompatActivity implements O
 
     }
 }
-

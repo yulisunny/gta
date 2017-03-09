@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="ca.cvst.gta.NewAreaBasedActivity"
+    android:windowSoftInputMode="adjustPan">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+    </android.support.design.widget.AppBarLayout>
+
+    <fragment
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:id="@+id/map_new_area_based_subscription"
+        map:cameraTargetLat="43.6532"
+        map:cameraTargetLng="-79.3832"
+        map:cameraZoom="14"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </fragment>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp">
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_weight="0.9"
+            android:inputType="textPersonName"
+            android:ems="10"
+            android:background="@color/white"
+            android:layout_gravity="center_horizontal|top"
+            android:id="@+id/new_area_based_subscription_address_input"
+            />
+
+        <Button
+            android:id="@+id/new_area_based_subscription_search"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="right"
+            android:text="Search" />
+    </LinearLayout>
+
+
+    <Button
+        android:id="@+id/new_area_based_subscription_complete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:text="Confirm"
+        android:layout_marginBottom="20dp"/>
+
+
+
+</android.support.design.widget.CoordinatorLayout>
