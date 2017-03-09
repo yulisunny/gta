@@ -1,22 +1,14 @@
 package ca.cvst.gta;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.Point;
-import android.graphics.PorterDuff;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -25,10 +17,13 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.SphericalUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,12 +32,17 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
 
     private GoogleMap mMap;
     private Marker mapLocation;
-    private LatLng topLeftPoint;
-    private LatLng botRightPoint;
-    private LatLng markerPoint;
+    private LatLng centre;
     private Marker previousMarker = null;
     private Circle previousCircle = null;
     private int radius = 1000;
+    private LatLng southwestPoint;
+    private LatLng northeastPoint;
+
+    private Marker previousSouthwest = null;
+    private Marker previousNortheast = null;
+
+    private ArrayList<LatLngBounds> subscribedLocations;
 
     private final Map<String, LatLng> linkIdCoorMapping = new HashMap<>();
 
@@ -101,7 +101,19 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
         subcribeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                System.out.println(markerPoint);
+                LatLngBounds bounds = toBounds(centre, radius);
+                System.out.println("radius: " + radius);
+                System.out.println("centre coordinates: " + centre);
+                northeastPoint = bounds.northeast;
+                southwestPoint = bounds.southwest;
+
+                subscribedLocations.add(bounds);
+                previousCircle = null;
+
+                // just to check if the algorithm works
+                previousSouthwest = mMap.addMarker(new MarkerOptions().position(northeastPoint));
+                previousNortheast = mMap.addMarker(new MarkerOptions().position(southwestPoint));
+
             }
         });
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -133,11 +145,17 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         mMap = googleMap;
-        radius = 1000;
+        radius = 1000; //default value
+        subscribedLocations = new ArrayList<>();
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
             @Override
             public void onMapClick(LatLng point) {
+                if (previousNortheast != null) {
+                    previousNortheast.remove();
+                    previousSouthwest.remove();
+                }
+
                 if (previousMarker != null) {
                     previousMarker.remove();
                 }
@@ -145,7 +163,7 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
                     previousCircle.remove();
                 }
                 previousMarker = mMap.addMarker(new MarkerOptions().position(point));
-                markerPoint = point;
+                centre = point;
                 previousCircle = mMap.addCircle(new CircleOptions()
                         .center(point)
                         .radius(radius)
@@ -156,5 +174,9 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
         });
     }
 
-
+    public LatLngBounds toBounds(LatLng center, double radius) {
+        LatLng southwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 225);
+        LatLng northeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 45);
+        return new LatLngBounds(southwest, northeast);
+    }
 }
