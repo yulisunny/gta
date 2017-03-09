@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.view.WindowManager;
@@ -148,6 +149,7 @@ public class NewHistoricalChartActivity extends AppCompatActivity implements Tim
         EditText dataTime = (EditText) findViewById(R.id.edit_new_historical_chart_data_time);
         LocalTime time = new LocalTime(selectedHour, selectedMinute);
         dataTime.setText(DateTimeFormat.forPattern("HH:mm").print(time));
+        dataTime.setInputType(InputType.TYPE_NULL);
     }
 
     public void showTimePickerDialog() {
