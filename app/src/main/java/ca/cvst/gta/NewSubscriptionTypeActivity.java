@@ -14,7 +14,7 @@ public class NewSubscriptionTypeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.subscription_types);
+        setContentView(R.layout.activity_new_subscription_types);
     }
 
     public void areaBasedSubscription(View view) {

@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -32,7 +33,7 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
 
     private GoogleMap mMap;
     private Marker mapLocation;
-    private LatLng centre;
+    private LatLng centre = null;
     private Marker previousMarker = null;
     private Circle previousCircle = null;
     private int radius = 1000;
@@ -83,8 +84,14 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
         increaseRadius.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                radius = radius + 50;
-                previousCircle.setRadius(radius);
+                if (previousCircle != null) {
+                    radius = radius + 50;
+                    previousCircle.setRadius(radius);
+                }
+                else {
+                    Toast.makeText(getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
 
@@ -92,27 +99,38 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
         decreaseRadius.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                radius = radius - 50;
-                previousCircle.setRadius(radius);
+                if (previousCircle != null) {
+                    radius = radius - 50;
+                    previousCircle.setRadius(radius);
+                }
+                else {
+                    Toast.makeText(getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
-        Button subcribeButton = (Button)findViewById(R.id.new_area_based_subscription_subscribe);
-        subcribeButton.setOnClickListener(new View.OnClickListener() {
+        Button subscribeButton = (Button)findViewById(R.id.new_area_based_subscription_subscribe);
+        subscribeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LatLngBounds bounds = toBounds(centre, radius);
-                System.out.println("radius: " + radius);
-                System.out.println("centre coordinates: " + centre);
-                northeastPoint = bounds.northeast;
-                southwestPoint = bounds.southwest;
+                if (centre != null) {
+                    LatLngBounds bounds = toBounds(centre, radius);
+                    System.out.println("radius: " + radius);
+                    System.out.println("centre coordinates: " + centre);
+                    northeastPoint = bounds.northeast;
+                    southwestPoint = bounds.southwest;
 
-                subscribedLocations.add(bounds);
-                previousCircle = null;
+                    subscribedLocations.add(bounds);
+                    previousCircle = null;
 
-                // just to check if the algorithm works
-                previousSouthwest = mMap.addMarker(new MarkerOptions().position(northeastPoint));
-                previousNortheast = mMap.addMarker(new MarkerOptions().position(southwestPoint));
+                    Toast.makeText(getApplicationContext(), "Subscribed", Toast.LENGTH_SHORT).show();
+                    // just to check if the algorithm works
+                    previousSouthwest = mMap.addMarker(new MarkerOptions().position(northeastPoint));
+                    previousNortheast = mMap.addMarker(new MarkerOptions().position(southwestPoint));
+                }
+                else {
+                    Toast.makeText(getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
