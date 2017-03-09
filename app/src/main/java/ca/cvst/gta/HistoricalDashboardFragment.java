@@ -24,12 +24,16 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -210,7 +214,7 @@ public class HistoricalDashboardFragment extends Fragment {
     public void createLineChart(View v, HistoricalGraph chartData) {
         List<Double> trafficData = chartData.mData;
 
-        LineChart chart = (LineChart) v.findViewById(R.id.historical_dashboard_card_iv);
+        BarChart chart = (BarChart) v.findViewById(R.id.historical_dashboard_card_iv);
 
         // Set Axis
         XAxis xAxis = chart.getXAxis();
@@ -219,18 +223,19 @@ public class HistoricalDashboardFragment extends Fragment {
         xAxis.setDrawAxisLine(true);
         xAxis.setDrawGridLines(false);
         xAxis.setDrawLabels(true);
-
         YAxis yRightAxis = chart.getAxisRight();
         yRightAxis.setEnabled(false);
 
-        List<Entry> entries = new ArrayList<>();
+        List<BarEntry> entries = new ArrayList<>();
         for (int i = 0; i < trafficData.size(); i++) {
-            entries.add(new Entry((float) i,  trafficData.get(i).floatValue()));
+            entries.add(new BarEntry((float) i,  trafficData.get(i).floatValue()));
         }
 
-        LineDataSet dataSet = new LineDataSet(entries, "Average Highway Speed");
-        LineData lineData = new LineData(dataSet);
-        lineData.setValueTextSize(12);
+        BarDataSet dataSet = new BarDataSet(entries, String.format("%s-%s", chartData.mChartType, chartData.mDataType));
+        BarData barData = new BarData(dataSet);
+
+        barData.setValueTextSize(12);
+        dataSet.setDrawValues(false);
 
         // Update Chart Title
         Description description = new Description();
@@ -241,7 +246,7 @@ public class HistoricalDashboardFragment extends Fragment {
         chartLegend.setEnabled(false);
 
         // Create Chart
-        chart.setData(lineData);
+        chart.setData(barData);
         chart.invalidate();
     }
 
