@@ -20,10 +20,12 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Description;
@@ -46,10 +48,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.GraphContract;
+import layout.UpdatesListenerIntentService;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -86,6 +91,8 @@ public class HistoricalDashboardFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_historical_dashboard, container, false);
+
+        loginCvstPortal();
 
         Toolbar toolbar = (Toolbar) root.findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.title_activity_historical_dashboard);
@@ -380,6 +387,38 @@ public class HistoricalDashboardFragment extends Fragment {
         long newRowId = db.insert(GraphContract.GraphEntry.TABLE_NAME, null, values);
     }
 
+
+    private void loginCvstPortal() {
+        StringRequest loginRequest = new StringRequest(Request.Method.POST, "http://portal.cvst.ca/login", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                System.out.println("response = " + response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("error = " + error);
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("username", "yulisunny");
+                params.put("password", "fang9443");
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/x-www-form-urlencoded");
+                return params;
+            }
+
+        };
+        NetworkManager.getInstance(getContext()).addToRequestQueue(loginRequest);
+    }
+
     private void updateDataFromCvst(final HistoricalGraph graph) {
         Long timeDelta = graph.mEndTime - graph.mStartTime;
         Long newEndTime = System.currentTimeMillis();
@@ -544,8 +583,9 @@ public class HistoricalDashboardFragment extends Fragment {
         }
 
         try {
+            System.out.println("RECEIVE AIR QUALITY DATA: " + resposne.toString());
             JSONObject obj = resposne.getJSONObject(0);
-            return obj.getJSONArray(dataKey).getDouble(0);
+            return obj.getDouble(dataKey);
         } catch (JSONException e) {
             System.out.println("Invalid Json argument: " + e.toString());
         }
