@@ -29,8 +29,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NewAreaBasedActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class NewAreaBasedActivity extends AppCompatActivity implements
+        OnMapReadyCallback,
+        View.OnClickListener {
 
+    private final Map<String, LatLng> linkIdCoorMapping = new HashMap<>();
     private GoogleMap mMap;
     private Marker mapLocation;
     private LatLng centre = null;
@@ -39,13 +42,9 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
     private int radius = 1000;
     private LatLng southwestPoint;
     private LatLng northeastPoint;
-
     private Marker previousSouthwest = null;
     private Marker previousNortheast = null;
-
     private ArrayList<LatLngBounds> subscribedLocations;
-
-    private final Map<String, LatLng> linkIdCoorMapping = new HashMap<>();
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -53,13 +52,13 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
         setContentView(R.layout.activity_new_area_based_subscription);
 
         // Toolbar
-        if (getSupportActionBar() != null){
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
         // Complete Button
-        Button completeBtn = (Button)findViewById(R.id.new_area_based_subscription_complete);
+        Button completeBtn = (Button) findViewById(R.id.new_area_based_subscription_complete);
         completeBtn.setEnabled(false);
         completeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,7 +71,7 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
         });
 
         // Search Button
-        Button searchBtn = (Button)findViewById(R.id.new_area_based_subscription_search);
+        Button searchBtn = (Button) findViewById(R.id.new_area_based_subscription_search);
         searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -80,60 +79,35 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
             }
         });
 
-        Button increaseRadius = (Button)findViewById(R.id.new_area_based_subscription_increase_radius);
+        Button increaseRadius = (Button) findViewById(R.id.new_area_based_subscription_increase_radius);
         increaseRadius.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (previousCircle != null) {
                     radius = radius + 50;
                     previousCircle.setRadius(radius);
-                }
-                else {
+                } else {
                     Toast.makeText(getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
                 }
 
             }
         });
 
-        Button decreaseRadius = (Button)findViewById(R.id.new_area_based_subscription_decrease_radius);
+        Button decreaseRadius = (Button) findViewById(R.id.new_area_based_subscription_decrease_radius);
         decreaseRadius.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (previousCircle != null) {
                     radius = radius - 50;
                     previousCircle.setRadius(radius);
-                }
-                else {
+                } else {
                     Toast.makeText(getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
-        Button subscribeButton = (Button)findViewById(R.id.new_area_based_subscription_subscribe);
-        subscribeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (centre != null) {
-                    LatLngBounds bounds = toBounds(centre, radius);
-                    System.out.println("radius: " + radius);
-                    System.out.println("centre coordinates: " + centre);
-                    northeastPoint = bounds.northeast;
-                    southwestPoint = bounds.southwest;
-
-                    subscribedLocations.add(bounds);
-                    previousCircle = null;
-
-                    Toast.makeText(getApplicationContext(), "Subscribed", Toast.LENGTH_SHORT).show();
-                    // just to check if the algorithm works
-                    previousSouthwest = mMap.addMarker(new MarkerOptions().position(northeastPoint));
-                    previousNortheast = mMap.addMarker(new MarkerOptions().position(southwestPoint));
-                }
-                else {
-                    Toast.makeText(getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
+        Button subscribeButton = (Button) findViewById(R.id.new_area_based_subscription_subscribe);
+        subscribeButton.setOnClickListener(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_new_area_based_subscription);
         mapFragment.getMapAsync(this);
@@ -142,7 +116,7 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
 
     // Use google map api to search for coordinate of an address
     public void onSearch(View view) {
-        EditText location = (EditText)findViewById(R.id.new_area_based_subscription_address_input);
+        EditText location = (EditText) findViewById(R.id.new_area_based_subscription_address_input);
         String inputLocation = location.getText().toString();
         List<Address> addressList = null;
         if (location != null || location.equals("")) {
@@ -192,9 +166,37 @@ public class NewAreaBasedActivity extends AppCompatActivity implements OnMapRead
         });
     }
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.new_area_based_subscription_subscribe:
+                handleSubscribe();
+        }
+    }
+
     public LatLngBounds toBounds(LatLng center, double radius) {
         LatLng southwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 225);
         LatLng northeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 45);
         return new LatLngBounds(southwest, northeast);
+    }
+
+    private void handleSubscribe() {
+        if (centre != null) {
+            LatLngBounds bounds = toBounds(centre, radius);
+            System.out.println("radius: " + radius);
+            System.out.println("centre coordinates: " + centre);
+            northeastPoint = bounds.northeast;
+            southwestPoint = bounds.southwest;
+
+            subscribedLocations.add(bounds);
+            previousCircle = null;
+
+            Toast.makeText(getApplicationContext(), "Subscribed", Toast.LENGTH_SHORT).show();
+            // just to check if the algorithm works
+            previousSouthwest = mMap.addMarker(new MarkerOptions().position(northeastPoint));
+            previousNortheast = mMap.addMarker(new MarkerOptions().position(southwestPoint));
+        } else {
+            Toast.makeText(getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
+        }
     }
 }
