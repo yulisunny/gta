@@ -29,8 +29,8 @@ public class CvstCookieStore implements CookieStore {
         }
         targetCookies.remove(cookie);
         targetCookies.add(cookie);
-        System.out.println("Adding uri = " + uri);
-        System.out.println("Adding cookie = " + cookie);
+//        System.out.println("Adding uri = " + uri);
+//        System.out.println("Adding cookie = " + cookie);
     }
 
     private static URI cookieUri(URI uri, HttpCookie cookie) {
@@ -66,8 +66,8 @@ public class CvstCookieStore implements CookieStore {
                 }
             }
         }
-        System.out.println("Getting uri = " + uri);
-        System.out.println("Getting targetCookies = " + targetCookies);
+//        System.out.println("Getting uri = " + uri);
+//        System.out.println("Getting targetCookies = " + targetCookies);
         return targetCookies;
     }
 

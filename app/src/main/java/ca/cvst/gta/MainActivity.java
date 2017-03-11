@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-//        loginAndListenForNotif();
+        loginAndListenForNotif(false);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements
         setSupportActionBar(toolbar);
     }
 
-    private void loginAndListenForNotif() {
+    private void loginAndListenForNotif(boolean listenForNotif) {
         StringRequest loginRequest = new StringRequest(Request.Method.POST, "http://subs.portal.cvst.ca/login", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -126,8 +126,10 @@ public class MainActivity extends AppCompatActivity implements
 
         };
         NetworkManager.getInstance(this).addToRequestQueue(loginRequest);
-        Intent updatesIntent = new Intent(getApplicationContext(), UpdatesListenerIntentService.class);
-        startService(updatesIntent);
+        if (listenForNotif) {
+            Intent updatesIntent = new Intent(getApplicationContext(), UpdatesListenerIntentService.class);
+            startService(updatesIntent);
+        }
     }
 
 }
