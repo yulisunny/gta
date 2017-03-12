@@ -40,10 +40,9 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".SplashScreen"
-            android:label="GTA"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:name=".LoginActivity"
+            android:label="CVST for the GTA"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -86,7 +85,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ca.cvst.gta.NewSubscriptionTypeActivity" />
         </activity>
-
 
         <service
             android:name="layout.UpdatesListenerIntentService"
