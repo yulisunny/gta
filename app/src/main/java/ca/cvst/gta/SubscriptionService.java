@@ -19,41 +19,18 @@ import com.koushikdutta.async.http.WebSocket;
 import java.util.concurrent.CountDownLatch;
 
 public class SubscriptionService extends Service {
+    private static final String ACTION_SUBSCRIBE = "ca.cvst.gta.action.SUBSCRIBE";
+    private static final String EXTRA_PARAM1 = "ca.cvst.gta.extra.PARAM1";
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
-
-    private static final String ACTION_SUBSCRIBE = "ca.cvst.gta.action.SUBSCRIBE";
     private WebSocket ws;
     private CountDownLatch latch = new CountDownLatch(1);
-    private static final String EXTRA_PARAM1 = "ca.cvst.gta.extra.PARAM1";
 
     public static void startActionSubscribe(Context context, String payload) {
         Intent intent = new Intent(context, SubscriptionService.class);
         intent.setAction(ACTION_SUBSCRIBE);
         intent.putExtra(EXTRA_PARAM1, payload);
         context.startService(intent);
-    }
-
-    // Handler that receives messages from the thread
-    private final class ServiceHandler extends Handler {
-        public ServiceHandler(Looper looper) {
-            super(looper);
-        }
-        @Override
-        public void handleMessage(Message msg) {
-            Intent intent = (Intent) msg.obj;
-            initializeWebSocket();
-            final String action = intent.getAction();
-            if (ACTION_SUBSCRIBE.equals(action)) {
-                String payload = intent.getStringExtra(EXTRA_PARAM1);
-                try {
-                    latch.await();
-                    ws.send(payload);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     @Override
@@ -122,6 +99,29 @@ public class SubscriptionService extends Service {
                     });
                 }
             });
+        }
+    }
+
+    // Handler that receives messages from the thread
+    private final class ServiceHandler extends Handler {
+        public ServiceHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            Intent intent = (Intent) msg.obj;
+            initializeWebSocket();
+            final String action = intent.getAction();
+            if (ACTION_SUBSCRIBE.equals(action)) {
+                String payload = intent.getStringExtra(EXTRA_PARAM1);
+                try {
+                    latch.await();
+                    ws.send(payload);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
