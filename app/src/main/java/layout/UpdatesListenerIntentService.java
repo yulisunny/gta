@@ -28,25 +28,27 @@ public class UpdatesListenerIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        AsyncHttpClient.getDefaultInstance().websocket("ws://subs.portal.cvst.ca/liveupdate/yulisunny", null, new AsyncHttpClient.WebSocketConnectCallback() {
+        AsyncHttpClient.getDefaultInstance().websocket("ws://subs.portal.cvst.ca:8888", null, new AsyncHttpClient.WebSocketConnectCallback() {
             @Override
             public void onCompleted(final Exception ex, WebSocket webSocket) {
                 if (ex != null) {
+                    System.out.println("websocket on completed");
                     ex.printStackTrace();
+                    System.out.println("websocket on completed returning");
                     return;
                 }
                 webSocket.setStringCallback(new WebSocket.StringCallback() {
                     public void onStringAvailable(String s) {
-                        try {
-                            JSONObject root = new JSONObject(s);
-                            JSONObject data = root.getJSONObject("data");
-                            switch (data.getString("category")) {
-                                case "ttc":
-                                    handleTtc(root);
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+//                        try {
+//                            JSONObject root = new JSONObject(s);
+//                            JSONObject data = root.getJSONObject("data");
+//                            switch (data.getString("category")) {
+//                                case "ttc":
+//                                    handleTtc(root);
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
 
                         System.out.println("s = " + s);
 //                        NotificationCompat.Builder mBuilder =
