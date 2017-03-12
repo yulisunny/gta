@@ -17,6 +17,10 @@ import org.json.JSONObject;
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
 
+/**
+ * This mimics the demo portal. For the proper way of doing this according to Daiqing
+ * @see ca.cvst.gta.SubscriptionService
+ */
 public class UpdatesListenerIntentService extends IntentService {
 
     private static int notificationId = 1;

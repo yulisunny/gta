@@ -110,6 +110,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ca.cvst.gta.MainActivity" />
         </activity>
+
+        <service
+            android:name=".SubscriptionService"
+            android:enabled="true"
+            android:exported="false"></service>
     </application>
 
 </manifest>
