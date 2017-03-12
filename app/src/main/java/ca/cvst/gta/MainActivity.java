@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        listenForNotif(false);
+        listenForNotif(true);
     }
 
     @Override
