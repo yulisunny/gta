@@ -90,6 +90,16 @@ public class PastNotificationFragment extends Fragment implements
         mPastNotifications.add(new PastNotification("Highway Traffic", "Incident on DVP northbound"));
         mPastNotificationsAdapter = new PastNotificationListAdapter(mPastNotifications);
         mPastNotificationsRecyclerView.setAdapter(mPastNotificationsAdapter);
+        mPastNotificationsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    int current_item = ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+                    System.out.println("current_item = " + current_item);
+                }
+            }
+        });
         SnapHelper snapHelper = new LinearSnapHelper();
         snapHelper.attachToRecyclerView(mPastNotificationsRecyclerView);
 
