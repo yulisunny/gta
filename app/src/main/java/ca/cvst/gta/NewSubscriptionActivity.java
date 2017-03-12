@@ -179,19 +179,7 @@ public class NewSubscriptionActivity extends AppCompatActivity implements Adapte
     }
 
     private void attemptSubscribe() {
-//        if (mSubscribeTask != null) {
-//            return;
-//        }
-//        // Reset errors.
-//        mEmailView.setError(null);
-//        mPasswordView.setError(null);
-//
-//        View focusView = null;
-//        focusView.requestFocus();
-        showProgress(true);
-//        mSubscribeTask = new SubscribeTask(mPublishersSpinner.getSelectedItem().toString(), mFilters, this);
-//        mSubscribeTask.execute((Void) null);
-        JSONObject payload = null;
+//        showProgress(true);
         try {
             JSONArray mustArray = new JSONArray();
             for (Filter filter : mFilters) {
@@ -213,40 +201,44 @@ public class NewSubscriptionActivity extends AppCompatActivity implements Adapte
             }
             JSONObject boolObject = new JSONObject().put("must", mustArray);
             JSONObject subscriptionObject = new JSONObject().put("bool", boolObject);
-            payload = new JSONObject();
+            final JSONObject payload = new JSONObject();
             payload.put("publisherName", mPublishersSpinner.getSelectedItem().toString());
             payload.put("subscription", subscriptionObject);
-            payload.put("ttl", "5m");
+            payload.put("action", "subscribe");
+//            payload.put("ttl", "5m");
+            System.out.println("payload = " + payload);
+            SubscriptionService.startActionSubscribe(getApplicationContext(), payload.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        System.out.println("payload = " + payload);
-        JsonObjectRequest request = new JsonObjectRequest("http://subs.portal.cvst.ca/api/subscribe", payload, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                System.out.println("response = " + response);
-                showProgress(false);
-                String status = "error";
-                String message = "There was an error, please try again.";
-                try {
-                    status = response.getString("status");
-                    message = response.getString("message");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                if (status.equals("success")) {
-                    finish();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println("error = " + error);
-                Toast.makeText(getApplicationContext(), "Subscription failed.", Toast.LENGTH_LONG).show();
-            }
-        });
-        NetworkManager.getInstance(this).addToRequestQueue(request);
+//        Demo portal code.
+//        JsonObjectRequest request = new JsonObjectRequest("http://subs.portal.cvst.ca/api/subscribe", payload, new Response.Listener<JSONObject>() {
+//            @Override
+//            public void onResponse(JSONObject response) {
+//                System.out.println("response = " + response);
+//                showProgress(false);
+//                String status = "error";
+//                String message = "There was an error, please try again.";
+//                try {
+//                    status = response.getString("status");
+//                    message = response.getString("message");
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+//                if (status.equals("success")) {
+//                    finish();
+//                }
+//            }
+//        }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                System.out.println("error = " + error);
+//                Toast.makeText(getApplicationContext(), "Subscription failed.", Toast.LENGTH_LONG).show();
+//            }
+//        });
+//        NetworkManager.getInstance(this).addToRequestQueue(request);
+
 
     }
 
