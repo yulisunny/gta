@@ -1,8 +1,10 @@
 package ca.cvst.gta;
 
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -16,7 +18,13 @@ import com.koushikdutta.async.callback.DataCallback;
 import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.WebSocket;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.concurrent.CountDownLatch;
+
+import ca.cvst.gta.db.DbHelper;
+import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
 
 public class SubscriptionService extends Service {
     private static final String ACTION_SUBSCRIBE = "ca.cvst.gta.action.SUBSCRIBE";
@@ -89,6 +97,16 @@ public class SubscriptionService extends Service {
                     webSocket.setStringCallback(new WebSocket.StringCallback() {
                         public void onStringAvailable(String s) {
                             System.out.println("s = " + s);
+                            try {
+                                JSONObject root = new JSONObject(s);
+                                JSONObject data = root.getJSONObject("data");
+                                switch (data.getString("category")) {
+                                    case "ttc":
+                                        handleTtc(root);
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
                     });
                     webSocket.setDataCallback(new DataCallback() {
@@ -100,6 +118,32 @@ public class SubscriptionService extends Service {
                 }
             });
         }
+    }
+
+    private void handleTtc(JSONObject root) {
+        DbHelper dbHelper = new DbHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        try {
+            JSONObject data = root.getJSONObject("data");
+            values.put(TtcNotificationEntry.TIMESTAMP, data.getInt("timestamp"));
+            values.put(TtcNotificationEntry.DIR_TAG, data.getString("dirTag"));
+            values.put(TtcNotificationEntry.NAME, data.getString("name"));
+            values.put(TtcNotificationEntry.GPS_TIME, data.getInt("GPStime"));
+            values.put(TtcNotificationEntry.LAST_TIME, data.getString("lastTime"));
+            values.put(TtcNotificationEntry.LATITUDE, data.getJSONArray("coordinates").getDouble(1));
+            values.put(TtcNotificationEntry.LONGITUDE, data.getJSONArray("coordinates").getDouble(0));
+            values.put(TtcNotificationEntry.DATE_TIME, data.getString("dateTime"));
+            values.put(TtcNotificationEntry.HEADING, data.getString("heading"));
+            values.put(TtcNotificationEntry.PREDICTABLE, data.getBoolean("predictable"));
+            values.put(TtcNotificationEntry.ROUTE_NUMBER, data.getString("routeNumber"));
+            values.put(TtcNotificationEntry.SUBSCRIPTION_IDS, root.getJSONArray("subscriptionIds").join(","));
+            db.insert(TtcNotificationEntry.TABLE_NAME, null, values);
+            db.close();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     // Handler that receives messages from the thread
