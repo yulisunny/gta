@@ -88,7 +88,7 @@ public class UpdatesListenerIntentService extends IntentService {
             values.put(TtcNotificationEntry.GPS_TIME, data.getInt("GPStime"));
             values.put(TtcNotificationEntry.LAST_TIME, data.getString("lastTime"));
             values.put(TtcNotificationEntry.LATITUDE, data.getJSONArray("coordinates").getDouble(1));
-            values.put(TtcNotificationEntry.LONGITUDE, data.getJSONArray("coordinates").getDouble(1));
+            values.put(TtcNotificationEntry.LONGITUDE, data.getJSONArray("coordinates").getDouble(0));
             values.put(TtcNotificationEntry.DATE_TIME, data.getString("dateTime"));
             values.put(TtcNotificationEntry.HEADING, data.getString("heading"));
             values.put(TtcNotificationEntry.PREDICTABLE, data.getBoolean("predictable"));

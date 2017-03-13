@@ -9,7 +9,7 @@ import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
 
 public class DbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 5;
+    public static final int DATABASE_VERSION = 6;
     public static final String DATABASE_NAME = "cvst_gta.db";
     private static final String CREATE_HISTORICAL_GRAPHS_TABLE =
             "CREATE TABLE " + GraphEntry.TABLE_NAME + " (" +

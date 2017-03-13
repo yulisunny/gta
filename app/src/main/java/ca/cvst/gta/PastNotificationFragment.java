@@ -20,14 +20,18 @@ import android.view.ViewGroup;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import static com.google.android.gms.maps.CameraUpdateFactory.newLatLng;
 
 public class PastNotificationFragment extends Fragment implements
         OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks {
@@ -36,6 +40,7 @@ public class PastNotificationFragment extends Fragment implements
 
     private MapView mMapView;
     private GoogleMap mMap;
+    private Marker marker;
 
     private RecyclerView mPastNotificationsRecyclerView;
     private RecyclerView.LayoutManager mPastNotificationListLayoutManager;
@@ -85,9 +90,7 @@ public class PastNotificationFragment extends Fragment implements
         mPastNotificationsRecyclerView = (RecyclerView) root.findViewById(R.id.recycler_past_notification_list);
         mPastNotificationListLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         mPastNotificationsRecyclerView.setLayoutManager(mPastNotificationListLayoutManager);
-        mPastNotifications = new ArrayList<>();
-        mPastNotifications.add(new PastNotification("TTC", "Route 501 arriving at Queen's Park"));
-        mPastNotifications.add(new PastNotification("Highway Traffic", "Incident on DVP northbound"));
+        mPastNotifications = PastNotification.loadNFromDb(getActivity().getApplicationContext(), 10);
         mPastNotificationsAdapter = new PastNotificationListAdapter(mPastNotifications);
         mPastNotificationsRecyclerView.setAdapter(mPastNotificationsAdapter);
         mPastNotificationsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -95,7 +98,15 @@ public class PastNotificationFragment extends Fragment implements
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    int current_item = ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+                    int current_item = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+                    PastNotification current_notif = mPastNotifications.get(current_item);
+                    LatLng latLng = new LatLng(current_notif.getLatitude(), current_notif.getLongitude());
+                    CameraUpdate update = CameraUpdateFactory.newLatLng(latLng);
+                    mMap.animateCamera(update);
+                    if (marker != null) {
+                        marker.remove();
+                    }
+                    marker = mMap.addMarker(new MarkerOptions().position(latLng));
                     System.out.println("current_item = " + current_item);
                 }
             }
@@ -114,7 +125,7 @@ public class PastNotificationFragment extends Fragment implements
             mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             if (mLastLocation != null) {
                 LatLng currentLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+                mMap.moveCamera(newLatLng(currentLocation));
             }
         }
     }
