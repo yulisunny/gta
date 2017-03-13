@@ -27,9 +27,19 @@ public class PastNotificationListAdapter extends RecyclerView.Adapter<PastNotifi
     public void onBindViewHolder(ViewHolder holder, int position) {
         PastNotification pastNotification = mDataSet.get(position);
         String title = pastNotification.getTitle();
-        String content = pastNotification.getContent();
+        String line1name = pastNotification.getLine1name();
+        String line1value = pastNotification.getLine1value();
         holder.mTitle.setText(title);
-        holder.mContent.setText(content);
+        holder.line1name.setText(line1name + ": ");
+        holder.line1value.setText(line1value);
+
+        String line2name = pastNotification.getLine2name();
+        String line2value = pastNotification.getLine2value();
+        if (line2name != null && line1value != null) {
+            holder.line2name.setText(line2name + ": ");
+            holder.line2value.setText(line2value);
+        }
+
     }
 
     @Override
@@ -39,12 +49,18 @@ public class PastNotificationListAdapter extends RecyclerView.Adapter<PastNotifi
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView mTitle;
-        public TextView mContent;
+        public TextView line1name;
+        public TextView line1value;
+        public TextView line2name;
+        public TextView line2value;
 
         public ViewHolder(CardView v) {
             super(v);
             mTitle = (TextView) v.findViewById(R.id.text_past_notification_title);
-            mContent = (TextView) v.findViewById(R.id.text_past_notification_content);
+            line1name = (TextView) v.findViewById(R.id.text_past_notification_line_1_name);
+            line1value = (TextView) v.findViewById(R.id.text_past_notification_line_1_value);
+            line2name = (TextView) v.findViewById(R.id.text_past_notification_line_2_name);
+            line2value = (TextView) v.findViewById(R.id.text_past_notification_line_2_value);
 
         }
     }

@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import ca.cvst.gta.db.DbHelper;
@@ -13,13 +14,17 @@ import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
 public class PastNotification {
 
     private String title;
-    private String content;
+    private String line1name;
+    private String line1value;
+    private String line2name;
+    private String line2value;
     private float latitude;
     private float longitude;
 
-    public PastNotification(String title, String content, float latitude, float longitude) {
+    public PastNotification(String title, String line1name, String line1value, float latitude, float longitude) {
         this.title = title;
-        this.content = content;
+        this.line1name = line1name;
+        this.line1value = line1value;
         this.latitude = latitude;
         this.longitude = longitude;
     }
@@ -31,7 +36,8 @@ public class PastNotification {
         String[] projection = {
                 TtcNotificationEntry.LATITUDE,
                 TtcNotificationEntry.LONGITUDE,
-                TtcNotificationEntry.TIMESTAMP
+                TtcNotificationEntry.TIMESTAMP,
+                TtcNotificationEntry.ROUTE_NUMBER
         };
 
         Cursor cursor = db.query(TtcNotificationEntry.TABLE_NAME, projection, null, null, null, null, null, String.valueOf(n));
@@ -40,12 +46,28 @@ public class PastNotification {
             float lat = cursor.getFloat(cursor.getColumnIndexOrThrow(TtcNotificationEntry.LATITUDE));
             float lon = cursor.getFloat(cursor.getColumnIndexOrThrow(TtcNotificationEntry.LONGITUDE));
             int timestamp = cursor.getInt(cursor.getColumnIndexOrThrow(TtcNotificationEntry.TIMESTAMP));
-            ret.add(new PastNotification("TTC title", String.valueOf(timestamp), lat, lon));
+            String routeNumber = cursor.getString(cursor.getColumnIndexOrThrow(TtcNotificationEntry.ROUTE_NUMBER));
+            PastNotification pn = new PastNotification("TTC", "Time", new Date(Long.valueOf(timestamp) * 1000).toString(), lat, lon);
+            pn.setLine2("Route Number", routeNumber);
+            ret.add(pn);
+
         }
         cursor.close();
         db.close();
         return ret;
 
+    }
+
+    public String getLine2name() {
+        return line2name;
+    }
+
+    public String getLine2value() {
+        return line2value;
+    }
+
+    public String getLine1value() {
+        return line1value;
     }
 
     public float getLatitude() {
@@ -56,12 +78,17 @@ public class PastNotification {
         return longitude;
     }
 
+    public void setLine2(String line2name, String line2value) {
+        this.line2name = line2name;
+        this.line2value = line2value;
+    }
+
     public String getTitle() {
         return title;
     }
 
-    public String getContent() {
-        return content;
+    public String getLine1name() {
+        return line1name;
     }
 
 }
