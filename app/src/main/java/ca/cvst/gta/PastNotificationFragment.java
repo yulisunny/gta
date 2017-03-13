@@ -91,8 +91,6 @@ public class PastNotificationFragment extends Fragment implements
         mPastNotificationListLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         mPastNotificationsRecyclerView.setLayoutManager(mPastNotificationListLayoutManager);
         mPastNotifications = PastNotification.loadNFromDb(getActivity().getApplicationContext(), 10);
-//        mPastNotifications.add(new PastNotification("TTC", "Route 501 arriving at Queen's Park"));
-//        mPastNotifications.add(new PastNotification("Highway Traffic", "Incident on DVP northbound"));
         mPastNotificationsAdapter = new PastNotificationListAdapter(mPastNotifications);
         mPastNotificationsRecyclerView.setAdapter(mPastNotificationsAdapter);
         mPastNotificationsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
