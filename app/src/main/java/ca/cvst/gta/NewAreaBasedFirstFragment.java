@@ -37,7 +37,8 @@ import java.util.List;
  * Created by harryyu on 2017-03-13.
  */
 
-public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener {
+public class NewAreaBasedFirstFragment extends Fragment implements
+        OnMapReadyCallback {
 
     private MapView mMapView;
     private GoogleMap mMap;
@@ -52,6 +53,9 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
     private ArrayList<LatLngBounds> subscribedLocations;
     private View root;
     private Polygon previousSquare;
+    private LatLngBounds areaBounds = null;
+
+    private OnFragmentInteractionListener mListener;
 
     public NewAreaBasedFirstFragment() {
         // Rquried empty public constructor
@@ -103,6 +107,7 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
                 if (previousSquare != null) {
                     radius = radius + 50;
                     FourCorners corners = toBounds(centre, radius);
+                    areaBounds = toBoundsCircle(centre, radius);
                     ArrayList<LatLng> points = new ArrayList<>();
                     points.add(corners.topLeft);
                     points.add(corners.topRight);
@@ -126,6 +131,7 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
                 if (previousSquare != null) {
                     radius = radius - 50;
                     FourCorners corners = toBounds(centre, radius);
+                    areaBounds = toBoundsCircle(centre, radius);
                     ArrayList<LatLng> points = new ArrayList<>();
                     points.add(corners.topLeft);
                     points.add(corners.topRight);
@@ -141,7 +147,17 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
         });
 
         Button subscribeButton = (Button) root.findViewById(R.id.new_area_based_subscription_subscribe);
-        subscribeButton.setOnClickListener(this);
+        subscribeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (areaBounds != null) {
+                    mListener.setCoordinates(areaBounds);
+                    mListener.nextPage();
+                } else {
+                    Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
         mMapView = (MapView) root.findViewById(R.id.map_new_area_based_subscription);
         mMapView.onCreate(savedInstanceState);
         mMapView.getMapAsync(this);
@@ -169,12 +185,12 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-//        if (context instanceof HomeMapFragment.OnFragmentInteractionListener) {
-//            mListener = (HomeMapFragment.OnFragmentInteractionListener) context;
-//        } else {
-//            throw new RuntimeException(context.toString()
-//                    + " must implement OnFragmentInteractionListener");
-//        }
+        if (context instanceof NewAreaBasedFirstFragment.OnFragmentInteractionListener) {
+            mListener = (NewAreaBasedFirstFragment.OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
     }
 
     @Override
@@ -259,20 +275,22 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
 //                LatLngBounds cornersopposite = toBoundsOpposite(point, radius);
 
                 FourCorners corners = toBounds(point, radius);
+                areaBounds = toBoundsCircle(centre, radius);
                 previousSquare = mMap.addPolygon(new PolygonOptions()
                         .add(corners.topLeft, corners.topRight, corners.botRight, corners.botLeft, corners.topLeft)
                         .strokeColor(Color.RED).fillColor(Color.TRANSPARENT));
+
             }
         });
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.new_area_based_subscription_subscribe:
-                handleSubscribe();
-        }
-    }
+//    @Override
+//    public void onClick(View v) {
+//        switch (v.getId()) {
+//            case R.id.new_area_based_subscription_subscribe:
+//                handleSubscribe();
+//        }
+//    }
 
     public FourCorners toBounds(LatLng center, double radius) {
         LatLng southwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 225);
@@ -308,4 +326,11 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
             Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
         }
     }
+
+    public interface OnFragmentInteractionListener {
+        void setCoordinates(LatLngBounds bounds);
+
+        void nextPage();
+    }
+
 }
