@@ -18,7 +18,7 @@ public class NewSubscriptionTypeActivity extends AppCompatActivity {
     }
 
     public void areaBasedSubscription(View view) {
-        Intent intent = new Intent(getApplicationContext(), NewAreaBasedActivity.class);
+        Intent intent = new Intent(getApplicationContext(), NewAreaBasedMainActivity.class);
         startActivity(intent);
     }
 
