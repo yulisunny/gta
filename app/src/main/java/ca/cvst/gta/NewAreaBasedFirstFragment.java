@@ -25,6 +25,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.maps.android.SphericalUtil;
 
 import java.io.IOException;
@@ -49,6 +51,7 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
     private Marker previousNortheast = null;
     private ArrayList<LatLngBounds> subscribedLocations;
     private View root;
+    private Polygon previousSquare;
 
     public NewAreaBasedFirstFragment() {
         // Rquried empty public constructor
@@ -57,6 +60,20 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
     public static NewAreaBasedFirstFragment newInstance() {
         NewAreaBasedFirstFragment fragment = new NewAreaBasedFirstFragment();
         return fragment;
+    }
+
+    public class FourCorners {
+        public LatLng topLeft;
+        public LatLng topRight;
+        public LatLng botLeft;
+        public LatLng botRight;
+
+        public FourCorners(LatLng pTopLeft, LatLng pTopRight, LatLng pBotLeft, LatLng pBotRight) {
+            topLeft = pTopLeft;
+            topRight = pTopRight;
+            botLeft = pBotLeft;
+            botRight = pBotRight;
+        }
     }
 
     @Override
@@ -83,9 +100,18 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
         increaseRadius.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (previousCircle != null) {
+                if (previousSquare != null) {
                     radius = radius + 50;
-                    previousCircle.setRadius(radius);
+                    FourCorners corners = toBounds(centre, radius);
+                    ArrayList<LatLng> points = new ArrayList<>();
+                    points.add(corners.topLeft);
+                    points.add(corners.topRight);
+                    points.add(corners.botRight);
+                    points.add(corners.botLeft);
+                    points.add(corners.topLeft);
+                    previousSquare.setPoints(points);
+//                    previousSquare.setPoints(corners.topLeft, corners.topRight, corners.botRight, corners.botLeft, corners.topLeft);
+//                    previousCircle.setRadius(radius);
                 } else {
                     Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
                 }
@@ -97,9 +123,17 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
         decreaseRadius.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (previousCircle != null) {
+                if (previousSquare != null) {
                     radius = radius - 50;
-                    previousCircle.setRadius(radius);
+                    FourCorners corners = toBounds(centre, radius);
+                    ArrayList<LatLng> points = new ArrayList<>();
+                    points.add(corners.topLeft);
+                    points.add(corners.topRight);
+                    points.add(corners.botRight);
+                    points.add(corners.botLeft);
+                    points.add(corners.topLeft);
+                    previousSquare.setPoints(points);
+//                    previousCircle.setRadius(radius);
                 } else {
                     Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
                 }
@@ -202,25 +236,32 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
 
             @Override
             public void onMapClick(LatLng point) {
-                if (previousNortheast != null) {
-                    previousNortheast.remove();
-                    previousSouthwest.remove();
-                }
+//                if (previousNortheast != null) {
+//                    previousNortheast.remove();
+//                    previousSouthwest.remove();
+//                }
 
                 if (previousMarker != null) {
                     previousMarker.remove();
                 }
-                if (previousCircle != null) {
-                    previousCircle.remove();
+                if (previousSquare != null) {
+                    previousSquare.remove();
                 }
                 previousMarker = mMap.addMarker(new MarkerOptions().position(point));
                 centre = point;
-                previousCircle = mMap.addCircle(new CircleOptions()
-                        .center(point)
-                        .radius(radius)
-                        .strokeColor(Color.RED)
-                        .fillColor(Color.TRANSPARENT));
+//                previousCircle = mMap.addCircle(new CircleOptions()
+//                        .center(point)
+//                        .radius(radius)
+//                        .strokeColor(Color.RED)
+//                        .fillColor(Color.TRANSPARENT));
 
+//                LatLngBounds corners = toBounds(point, radius);
+//                LatLngBounds cornersopposite = toBoundsOpposite(point, radius);
+
+                FourCorners corners = toBounds(point, radius);
+                previousSquare = mMap.addPolygon(new PolygonOptions()
+                        .add(corners.topLeft, corners.topRight, corners.botRight, corners.botLeft, corners.topLeft)
+                        .strokeColor(Color.RED).fillColor(Color.TRANSPARENT));
             }
         });
     }
@@ -233,7 +274,16 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
         }
     }
 
-    public LatLngBounds toBounds(LatLng center, double radius) {
+    public FourCorners toBounds(LatLng center, double radius) {
+        LatLng southwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 225);
+        LatLng northeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 45);
+        LatLng northwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 135);
+        LatLng southeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 315);
+//        return new LatLngBounds(southwest, northeast);
+        return new FourCorners(northwest, northeast, southwest, southeast);
+    }
+
+    public LatLngBounds toBoundsCircle(LatLng center, double radius) {
         LatLng southwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 225);
         LatLng northeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 45);
         return new LatLngBounds(southwest, northeast);
@@ -241,19 +291,19 @@ public class NewAreaBasedFirstFragment extends Fragment implements OnMapReadyCal
 
     private void handleSubscribe() {
         if (centre != null) {
-            LatLngBounds bounds = toBounds(centre, radius);
-            System.out.println("radius: " + radius);
-            System.out.println("centre coordinates: " + centre);
-            northeastPoint = bounds.northeast;
-            southwestPoint = bounds.southwest;
+            LatLngBounds bounds = toBoundsCircle(centre, radius);
+//            System.out.println("radius: " + radius);
+//            System.out.println("centre coordinates: " + centre);
+//            northeastPoint = bounds.northeast;
+//            southwestPoint = bounds.southwest;
 
             subscribedLocations.add(bounds);
-            previousCircle = null;
-
+//            previousCircle = null;
+            previousSquare = null;
             Toast.makeText(getActivity().getApplicationContext(), "Subscribed", Toast.LENGTH_SHORT).show();
             // just to check if the algorithm works
-            previousSouthwest = mMap.addMarker(new MarkerOptions().position(northeastPoint));
-            previousNortheast = mMap.addMarker(new MarkerOptions().position(southwestPoint));
+//            previousSouthwest = mMap.addMarker(new MarkerOptions().position(northeastPoint));
+//            previousNortheast = mMap.addMarker(new MarkerOptions().position(southwestPoint));
         } else {
             Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
         }
