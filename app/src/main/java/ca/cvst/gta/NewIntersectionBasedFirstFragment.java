@@ -18,14 +18,12 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.maps.android.SphericalUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,18 +34,10 @@ public class NewIntersectionBasedFirstFragment extends Fragment implements OnMap
 
     private MapView mMapView;
     private GoogleMap mMap;
-    private LatLng centre = null;
-    private Marker previousMarker = null;
-    private Circle previousCircle = null;
     private Marker previousSearchedMarker = null;
-    private int radius = 1000;
-    private LatLng southwestPoint;
-    private LatLng northeastPoint;
-    private Marker previousSouthwest = null;
-    private Marker previousNortheast = null;
     private ArrayList<LatLngBounds> subscribedLocations;
     private View root;
-    private Polygon previousSquare;
+    private Polygon previousSquare = null;
     private LatLngBounds areaBounds = null;
 
     private OnFragmentInteractionListener mListener;
@@ -85,59 +75,11 @@ public class NewIntersectionBasedFirstFragment extends Fragment implements OnMap
 
         root = inflater.inflate(R.layout.fragment_intersection_based_subscriptions_first_page, container, false);
 
-        //Toolbar toolbar = (Toolbar) root.findViewById(R.id.toolbar);
-        // Search Button
         Button searchBtn = (Button) root.findViewById(R.id.new_intersection_based_subscription_search);
         searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onSearch(v);
-            }
-        });
-
-        Button increaseRadius = (Button) root.findViewById(R.id.new_intersection_based_subscription_increase_radius);
-        increaseRadius.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (previousSquare != null) {
-                    radius = radius + 50;
-                    FourCorners corners = toBounds(centre, radius);
-                    areaBounds = toBoundsCircle(centre, radius);
-                    ArrayList<LatLng> points = new ArrayList<>();
-                    points.add(corners.topLeft);
-                    points.add(corners.topRight);
-                    points.add(corners.botRight);
-                    points.add(corners.botLeft);
-                    points.add(corners.topLeft);
-                    previousSquare.setPoints(points);
-//                    previousSquare.setPoints(corners.topLeft, corners.topRight, corners.botRight, corners.botLeft, corners.topLeft);
-//                    previousCircle.setRadius(radius);
-                } else {
-                    Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
-
-        Button decreaseRadius = (Button) root.findViewById(R.id.new_intersection_based_subscription_decrease_radius);
-        decreaseRadius.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (previousSquare != null) {
-                    radius = radius - 50;
-                    FourCorners corners = toBounds(centre, radius);
-                    areaBounds = toBoundsCircle(centre, radius);
-                    ArrayList<LatLng> points = new ArrayList<>();
-                    points.add(corners.topLeft);
-                    points.add(corners.topRight);
-                    points.add(corners.botRight);
-                    points.add(corners.botLeft);
-                    points.add(corners.topLeft);
-                    previousSquare.setPoints(points);
-//                    previousCircle.setRadius(radius);
-                } else {
-                    Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
-                }
             }
         });
 
@@ -220,7 +162,7 @@ public class NewIntersectionBasedFirstFragment extends Fragment implements OnMap
 
     // Use online geocode api to search for coordinate of an address
     public void onSearch(View view) {
-        EditText location = (EditText) root.findViewById(R.id.new_area_based_subscription_address_input);
+        EditText location = (EditText) root.findViewById(R.id.new_intersection_based_subscription_address_input);
         String inputLocation = location.getText().toString();
 
         String url = "http://maps.googleapis.com/maps/api/geocode/json?address="+inputLocation.replace(" ", "%20").replace("&", "AND");
@@ -231,14 +173,42 @@ public class NewIntersectionBasedFirstFragment extends Fragment implements OnMap
                         try {
                             double lat = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lat");
                             double lng = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lng");
-                            LatLng latlng = new LatLng(lat, lng);
-                            mMap.animateCamera(CameraUpdateFactory.newLatLng(latlng));
+
+                            String formatted_address = intersectionInfo.getJSONArray("results").getJSONObject(0).getString("formatted_address");
+                            double upperLat = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("viewport").getJSONObject("northeast").getDouble("lat");
+                            double lowerLat = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("viewport").getJSONObject("southwest").getDouble("lat");
+                            double upperLng = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("viewport").getJSONObject("northeast").getDouble("lng");
+                            double lowerLng = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("viewport").getJSONObject("southwest").getDouble("lng");
+
+                            LatLng topRight = new LatLng(upperLat, upperLng); // northeast
+                            LatLng topLeft = new LatLng(lowerLat, upperLng);
+                            LatLng botLeft = new LatLng(lowerLat, lowerLng); // southwest
+                            LatLng botRight = new LatLng(upperLat, lowerLng);
+                            FourCorners corners = new FourCorners(topLeft, topRight, botLeft, botRight);
+
+                            areaBounds = new LatLngBounds(botLeft, topRight);
+
+                            if (previousSquare == null) {
+                                previousSquare = mMap.addPolygon(new PolygonOptions()
+                                        .add(corners.topLeft, corners.topRight, corners.botRight, corners.botLeft, corners.topLeft)
+                                        .strokeColor(Color.RED).fillColor(Color.TRANSPARENT));
+                            }
+                            else {
+                                previousSquare.remove();
+                                previousSquare = mMap.addPolygon(new PolygonOptions()
+                                        .add(corners.topLeft, corners.topRight, corners.botRight, corners.botLeft, corners.topLeft)
+                                        .strokeColor(Color.RED).fillColor(Color.TRANSPARENT));
+                            }
+
+
+                            LatLng intersection = new LatLng(lat, lng);
+                            mMap.animateCamera(CameraUpdateFactory.newLatLng(intersection));
                             if (previousSearchedMarker == null) {
-                                previousSearchedMarker = mMap.addMarker(new MarkerOptions().position(latlng));
+                                previousSearchedMarker = mMap.addMarker(new MarkerOptions().position(intersection));
                             }
                             else {
                                 previousSearchedMarker.remove();
-                                previousSearchedMarker = mMap.addMarker(new MarkerOptions().position(latlng));
+                                previousSearchedMarker = mMap.addMarker(new MarkerOptions().position(intersection));
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -256,88 +226,8 @@ public class NewIntersectionBasedFirstFragment extends Fragment implements OnMap
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        radius = 1000; //default value
-        subscribedLocations = new ArrayList<>();
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-
-            @Override
-            public void onMapClick(LatLng point) {
-//                if (previousNortheast != null) {
-//                    previousNortheast.remove();
-//                    previousSouthwest.remove();
-//                }
-
-                if (previousMarker != null) {
-                    previousMarker.remove();
-                }
-                if (previousSquare != null) {
-                    previousSquare.remove();
-                }
-                previousMarker = mMap.addMarker(new MarkerOptions().position(point));
-                centre = point;
-//                previousCircle = mMap.addCircle(new CircleOptions()
-//                        .center(point)
-//                        .radius(radius)
-//                        .strokeColor(Color.RED)
-//                        .fillColor(Color.TRANSPARENT));
-
-//                LatLngBounds corners = toBounds(point, radius);
-//                LatLngBounds cornersopposite = toBoundsOpposite(point, radius);
-
-                FourCorners corners = toBounds(point, radius);
-                areaBounds = toBoundsCircle(centre, radius);
-                previousSquare = mMap.addPolygon(new PolygonOptions()
-                        .add(corners.topLeft, corners.topRight, corners.botRight, corners.botLeft, corners.topLeft)
-                        .strokeColor(Color.RED).fillColor(Color.TRANSPARENT));
-
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(point));
-
-            }
-        });
     }
 
-//    @Override
-//    public void onClick(View v) {
-//        switch (v.getId()) {
-//            case R.id.new_area_based_subscription_subscribe:
-//                handleSubscribe();
-//        }
-//    }
-
-    public FourCorners toBounds(LatLng center, double radius) {
-        LatLng southwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 225);
-        LatLng northeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 45);
-        LatLng northwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 135);
-        LatLng southeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 315);
-//        return new LatLngBounds(southwest, northeast);
-        return new FourCorners(northwest, northeast, southwest, southeast);
-    }
-
-    public LatLngBounds toBoundsCircle(LatLng center, double radius) {
-        LatLng southwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 225);
-        LatLng northeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 45);
-        return new LatLngBounds(southwest, northeast);
-    }
-
-    private void handleSubscribe() {
-        if (centre != null) {
-            LatLngBounds bounds = toBoundsCircle(centre, radius);
-//            System.out.println("radius: " + radius);
-//            System.out.println("centre coordinates: " + centre);
-//            northeastPoint = bounds.northeast;
-//            southwestPoint = bounds.southwest;
-
-            subscribedLocations.add(bounds);
-//            previousCircle = null;
-            previousSquare = null;
-            Toast.makeText(getActivity().getApplicationContext(), "Subscribed", Toast.LENGTH_SHORT).show();
-            // just to check if the algorithm works
-//            previousSouthwest = mMap.addMarker(new MarkerOptions().position(northeastPoint));
-//            previousNortheast = mMap.addMarker(new MarkerOptions().position(southwestPoint));
-        } else {
-            Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
-        }
-    }
 
     public interface OnFragmentInteractionListener {
         void setCoordinates(LatLngBounds bounds);

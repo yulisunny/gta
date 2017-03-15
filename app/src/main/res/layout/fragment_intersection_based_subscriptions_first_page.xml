@@ -63,28 +63,28 @@
 
     <Button
         android:id="@+id/new_intersection_based_subscription_subscribe"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
         android:text="Submit"
         android:layout_marginBottom="20dp"
         style="@style/Widget.AppCompat.Button.Colored" />
 
-    <Button
-        android:id="@+id/new_intersection_based_subscription_increase_radius"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|left"
-        android:text="+"
-        android:layout_marginBottom="20dp"/>
+    <!--<Button-->
+        <!--android:id="@+id/new_intersection_based_subscription_increase_radius"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="bottom|left"-->
+        <!--android:text="+"-->
+        <!--android:layout_marginBottom="20dp"/>-->
 
-    <Button
-        android:id="@+id/new_intersection_based_subscription_decrease_radius"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
-        android:text="-"
-        android:layout_marginBottom="20dp"
-        />
+    <!--<Button-->
+        <!--android:id="@+id/new_intersection_based_subscription_decrease_radius"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="bottom|right"-->
+        <!--android:text="-"-->
+        <!--android:layout_marginBottom="20dp"-->
+        <!--/>-->
 
 </android.support.design.widget.CoordinatorLayout>
