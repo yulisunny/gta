@@ -5,10 +5,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-/**
- * Created by harryyu on 2017-03-06.
- */
-
 public class NewSubscriptionTypeActivity extends AppCompatActivity {
 
     @Override
@@ -23,7 +19,7 @@ public class NewSubscriptionTypeActivity extends AppCompatActivity {
     }
 
     public void intersectionBasedSubscription(View view) {
-        Intent intent = new Intent(getApplicationContext(), NewIntersectionBasedActivity.class);
+        Intent intent = new Intent(getApplicationContext(), NewIntersectionBasedMainActivity.class);
         startActivity(intent);
     }
 

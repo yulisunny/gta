@@ -19,23 +19,25 @@ import org.json.JSONObject;
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
-public class NewAreaBasedMainActivity extends AppCompatActivity
-        implements NewAreaBasedFirstFragment.OnFragmentInteractionListener,
-        NewAreaBasedSecondFragment.OnFragmentInteractionListener, NewAreaBasedThirdFragment.OnFragmentInteractionListener {
+public class NewIntersectionBasedMainActivity extends AppCompatActivity
+        implements NewIntersectionBasedFirstFragment.OnFragmentInteractionListener,
+        NewAreaBasedSecondFragment.OnFragmentInteractionListener,
+        NewAreaBasedThirdFragment.OnFragmentInteractionListener{
 
     private LatLngBounds AreaBounds;
     private String publisher;
     private int[] mondayToSundayArray;
     private int notificationEnabled;
     private int[] startAndEndTime;
+    private String intersectionName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_area_based_subscription_main_page);
+        setContentView(R.layout.activity_intersection_based_subscripton_main_page);
 
-        NewAreaBasedFirstFragment firstFragment = NewAreaBasedFirstFragment.newInstance();
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_area_based_content_container, firstFragment).commit();
+        NewIntersectionBasedFirstFragment firstFragment = NewIntersectionBasedFirstFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_intersection_based_content_container, firstFragment).commit();
     }
 
     @Override
@@ -64,34 +66,37 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
     }
 
     @Override
+    public void setIntersectionName(String name) {
+        this.intersectionName = name;
+    }
+
+    @Override
     public void submitSubscription() {
         attemptSubscribe();
-//        Intent intent = new Intent(getApplicationContext(), SubscriptionsActivity.class);
-//        startActivity(intent);
     }
 
     @Override
     public void goToFirstSubscriptionPageFromSecondPage() {
-        NewAreaBasedFirstFragment firstFragment = NewAreaBasedFirstFragment.newInstance();
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_area_based_content_container, firstFragment).commit();
+        NewIntersectionBasedFirstFragment firstFragment = NewIntersectionBasedFirstFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_intersection_based_content_container, firstFragment).commit();
     }
 
     @Override
     public void goToThirdSubscriptionPageFromSecondPage() {
         NewAreaBasedThirdFragment thirdFragment = NewAreaBasedThirdFragment.newInstance();
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_area_based_content_container, thirdFragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_intersection_based_content_container, thirdFragment).commit();
     }
 
     @Override
     public void goToSecondSubscriptionPageFromThirdPage() {
         NewAreaBasedSecondFragment secondFragment = NewAreaBasedSecondFragment.newInstance();
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_area_based_content_container, secondFragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_intersection_based_content_container, secondFragment).commit();
     }
 
     @Override
     public void goToSecondSubscriptionPageFromFirstPage() {
         NewAreaBasedSecondFragment secondFragment = NewAreaBasedSecondFragment.newInstance();
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_area_based_content_container, secondFragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_intersection_based_content_container, secondFragment).commit();
     }
 
     private void attemptSubscribe() {
@@ -168,7 +173,7 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
                     if (publisher.equals("TTC")) {
                         try {
                             cv.put(TtcSubscriptionEntry.TIMESTAMP, System.currentTimeMillis()/1000L);
-                            cv.put(TtcSubscriptionEntry.NAME, response.getString("subscription_id"));
+                            cv.put(TtcSubscriptionEntry.NAME, intersectionName);
                             cv.put(TtcSubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
                             cv.put(TtcSubscriptionEntry.UPPER_LATITUDE, upperLatitude);
                             cv.put(TtcSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
@@ -184,7 +189,7 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
                             cv.put(TtcSubscriptionEntry.START_TIME, startAndEndTime[0]);
                             cv.put(TtcSubscriptionEntry.END_TIME, startAndEndTime[1]);
                             cv.put(TtcSubscriptionEntry.NOTIFICATION_ENABLED, notificationEnabled);
-                            cv.put(TtcSubscriptionEntry.SUBSCRIPTION_TYPE, "Area Based");
+                            cv.put(TtcSubscriptionEntry.SUBSCRIPTION_TYPE, "Intersection Based");
                             cv.put(TtcSubscriptionEntry.SUBSCRIPTION_ID, response.getString("subscription_id"));
                             db.insert(TtcSubscriptionEntry.TABLE_NAME, null, cv);
                             db.close();
@@ -210,37 +215,4 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
 
 
     }
-//03-14 23:01:42.436 15442-15442/ca.cvst.gta I/System.out: payload = {"action":"subscribe","subscription":{"bool":{"must":[{"range":{"coordinates":{"gt":-79.39498620191746,"lt":-79.3701255891568}}},{"range":{"coordinates":{"gt":43.64761995081081,"lt":43.665606357245096}}}]}},"publisherName":"TTC"}
-//    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-//    private void showProgress(final boolean show) {
-//        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-//        // for very easy animations. If available, use these APIs to fade-in
-//        // the progress spinner.
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-//            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-//
-//            mSubscriptionFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-//            mSubscriptionFormView.animate().setDuration(shortAnimTime).alpha(
-//                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-//                @Override
-//                public void onAnimationEnd(Animator animation) {
-//                    mSubscriptionFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-//                }
-//            });
-//
-//            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-//            mProgressView.animate().setDuration(shortAnimTime).alpha(
-//                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-//                @Override
-//                public void onAnimationEnd(Animator animation) {
-//                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-//                }
-//            });
-//        } else {
-//            // The ViewPropertyAnimator APIs are not available, so simply show
-//            // and hide the relevant UI components.
-//            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-//            mSubscriptionFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-//        }
-//    }
 }
