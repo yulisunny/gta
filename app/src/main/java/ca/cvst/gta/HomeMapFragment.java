@@ -32,6 +32,7 @@ import android.widget.TextView;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -87,6 +88,7 @@ public class HomeMapFragment extends Fragment implements
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private Marker previousSearchedMarker = null;
 
     private OnFragmentInteractionListener mListener;
 
@@ -500,47 +502,41 @@ public class HomeMapFragment extends Fragment implements
         });
     }
 
-    // Use google map api to search for coordinate of an address
+    // Use online geocode api to search for coordinate of an address
     public void onSearch(View view) {
         EditText location = (EditText) getView().findViewById(R.id.home_search_input);
         String inputLocation = location.getText().toString();
-        List<Address> addressList = null;
-        String[] streetNames = null;
-        if (inputLocation.contains("and")) {
-            streetNames = inputLocation.split("and");
-        }
-        else if (inputLocation.contains("&")) {
-            streetNames = inputLocation.split("&");
-        }
 
-        if (streetNames != null) {
-
-        }
-
-
-        if (location != null || location.equals("")) {
-            Geocoder geocoder = new Geocoder(getContext());
-            try {
-                addressList = geocoder.getFromLocationName(inputLocation, 1);
-                System.out.println("FOUND THIS " + addressList.toString());
-            } catch (IOException e) {
-                System.out.println("Exception while fetching geocode for searched location.");
+        String url = "http://maps.googleapis.com/maps/api/geocode/json?address="+inputLocation.replace(" ", "%20");
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject intersectionInfo) {
+                        try {
+                            double lat = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lat");
+                            double lng = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lng");
+                            LatLng latlng = new LatLng(lat, lng);
+                            mMap.animateCamera(CameraUpdateFactory.newLatLng(latlng));
+                            if (previousSearchedMarker == null) {
+                                previousSearchedMarker = mMap.addMarker(new MarkerOptions().position(latlng));
+                            }
+                            else {
+                                previousSearchedMarker.remove();
+                                previousSearchedMarker = mMap.addMarker(new MarkerOptions().position(latlng));
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("error = " + error);
             }
-            Address address = addressList.get(0);
-            LatLng latlng = new LatLng(address.getLatitude(), address.getLongitude());
-
-
-//            List<String> closestLinkIds = getClosestLinkIds(latlng);
-//            for(String linkId:closestLinkIds) {
-//                Marker marker = mMap.addMarker(new MarkerOptions()
-//                        .position(linkIdCoorMapping.get(linkId)));
-//                marker.setTag(linkId);
-//            }
-
-            // TODO: reserver geocoding to make sure that the latlng doesnt get out of toronto
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(latlng));
-        }
+        });
+        NetworkManager.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
     }
+
 
     /**
      * This interface must be implemented by activities that contain this
