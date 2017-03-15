@@ -5,14 +5,12 @@ import android.support.v4.app.DialogFragment;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.InputType;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -22,18 +20,9 @@ import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-import android.app.FragmentManager;
-
-
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.model.LatLng;
-
 import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
-
-import java.util.ArrayList;
 import java.util.Calendar;
-
 
 public class NewAreaBasedSecondFragment extends Fragment implements AdapterView.OnItemSelectedListener {
 
@@ -224,7 +213,7 @@ public class NewAreaBasedSecondFragment extends Fragment implements AdapterView.
     @Override
     public void onDetach() {
         super.onDetach();
-//        mListener = null;
+        mListener = null;
     }
 
     @Override

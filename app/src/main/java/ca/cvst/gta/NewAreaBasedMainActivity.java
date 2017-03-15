@@ -3,6 +3,10 @@ package ca.cvst.gta;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.ContentValues;
+import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +21,10 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import ca.cvst.gta.db.DbHelper;
+import ca.cvst.gta.db.TtcSubscriptionsContract;
+import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
 public class NewAreaBasedMainActivity extends AppCompatActivity
         implements NewAreaBasedFirstFragment.OnFragmentInteractionListener, NewAreaBasedSecondFragment.OnFragmentInteractionListener {
@@ -46,7 +54,8 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
     @Override
     public void submitSubscription() {
         attemptSubscribe();
-        finish();
+        Intent intent = new Intent(getApplicationContext(), SubscriptionsActivity.class);
+        startActivity(intent);
     }
 
     @Override
@@ -58,6 +67,10 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
     private void attemptSubscribe() {
 //        showProgress(true);
         final JSONObject payload = new JSONObject();
+        final double upperLongitude = AreaBounds.northeast.longitude;
+        final double lowerLongitude = AreaBounds.southwest.longitude;
+        final double upperLatitude = AreaBounds.northeast.latitude;
+        final double lowerLatitude = AreaBounds.southwest.latitude;
 
         try {
 //            JSONArray mustArray = new JSONArray();
@@ -78,12 +91,6 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
 //                    mustArray.put(o3);
 //                }
 //            }
-
-
-            double upperLongitude = AreaBounds.northeast.longitude;
-            double lowerLongitude = AreaBounds.southwest.longitude;
-            double upperLatitude = AreaBounds.northeast.latitude;
-            double lowerLatitude = AreaBounds.southwest.latitude;
 
             JSONObject lngObject = new JSONObject().put("gt", lowerLongitude).put("lt", upperLongitude);
             JSONObject latObject = new JSONObject().put("gt", lowerLatitude).put("lt", upperLatitude);
@@ -125,7 +132,30 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
                 }
                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
                 if (status.equals("success")) {
-                    finish();
+                    DbHelper helper = new DbHelper(getApplicationContext());
+                    SQLiteDatabase db = helper.getWritableDatabase();
+                    ContentValues cv = new ContentValues();
+                    if (publisher == "TTC") {
+                        try {
+                            cv.put(TtcSubscriptionEntry.TIMESTAMP, System.currentTimeMillis()/1000L);
+                            cv.put(TtcSubscriptionEntry.NAME, response.getString("subscription_id"));
+                            cv.put(TtcSubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
+                            cv.put(TtcSubscriptionEntry.UPPER_LATITUDE, upperLatitude);
+                            cv.put(TtcSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
+                            cv.put(TtcSubscriptionEntry.UPPER_LONGITUDE, upperLongitude);
+                            cv.put(TtcSubscriptionEntry.ROUTE_NUMBER, "9");
+                            cv.put(TtcSubscriptionEntry.SUBSCRIPTION_ID, response.getString("subscription_id"));
+                            db.insert(TtcSubscriptionEntry.TABLE_NAME, null, cv);
+                            db.close();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                    
+                    Intent intent = new Intent(getApplicationContext(), SubscriptionsActivity.class);
+                    startActivity(intent);
+                    //finish();
                 }
             }
         }, new Response.ErrorListener() {
