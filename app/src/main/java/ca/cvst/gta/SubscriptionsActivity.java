@@ -4,10 +4,19 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import java.util.List;
+
 public class SubscriptionsActivity extends AppCompatActivity {
+
+    private RecyclerView mSubscriptionsRecycler;
+    private RecyclerView.LayoutManager mSubscriptionsLayoutManager;
+    private List<Subscription> mSubscriptions;
+    private SubscriptionListAdapter mSubscriptionListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +34,13 @@ public class SubscriptionsActivity extends AppCompatActivity {
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        mSubscriptionsRecycler = (RecyclerView) findViewById(R.id.recycler_subscriptions_list);
+        mSubscriptionsLayoutManager = new LinearLayoutManager(this);
+        mSubscriptionsRecycler.setLayoutManager(mSubscriptionsLayoutManager);
+        mSubscriptions = Subscription.loadAll(getApplicationContext());
+        mSubscriptionListAdapter = new SubscriptionListAdapter(mSubscriptions);
+        mSubscriptionsRecycler.setAdapter(mSubscriptionListAdapter);
     }
 
 }
