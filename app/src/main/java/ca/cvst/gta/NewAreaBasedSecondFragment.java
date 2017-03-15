@@ -41,6 +41,7 @@ public class NewAreaBasedSecondFragment extends Fragment implements AdapterView.
     private static View root;
     private ArrayAdapter<CharSequence> mPublishersAdapter;
     private Spinner mPublishersSpinner;
+    private String publisher = null;
 
     public NewAreaBasedSecondFragment() {
         // Rquried empty public constructor
@@ -181,6 +182,19 @@ public class NewAreaBasedSecondFragment extends Fragment implements AdapterView.
             }
         });
 
+        Button subscribeButton = (Button) root.findViewById(R.id.btn_subscribe);
+        subscribeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (publisher != null) {
+                    mListener.setPublisher(mPublishersSpinner.getSelectedItem().toString());
+                    mListener.submitSubscription();
+                } else {
+                    Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
         return root;
         //return super.onCreateView(inflater, container, savedInstanceState);
     }
@@ -236,6 +250,7 @@ public class NewAreaBasedSecondFragment extends Fragment implements AdapterView.
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         if (parent.getId() == R.id.spinner_publisher) {
+            publisher = mPublishersSpinner.getSelectedItem().toString();
         }
     }
 
@@ -306,7 +321,8 @@ public class NewAreaBasedSecondFragment extends Fragment implements AdapterView.
     }
 
     public interface OnFragmentInteractionListener {
-        void nextPage();
+        void setPublisher(String publisher);
+        void submitSubscription();
     }
 
 }

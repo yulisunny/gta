@@ -12,6 +12,8 @@ import android.widget.Toast;
 import com.roughike.bottombar.BottomBar;
 import com.roughike.bottombar.OnTabSelectListener;
 
+import layout.UpdatesListenerIntentService;
+
 public class MainActivity extends AppCompatActivity implements
         HomeMapFragment.OnFragmentInteractionListener,
         HistoricalDashboardFragment.OnFragmentInteractionListener,
@@ -89,8 +91,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private void listenForNotif(boolean listenForNotif) {
         if (listenForNotif) {
-//            Intent updatesIntent = new Intent(getApplicationContext(), UpdatesListenerIntentService.class);
-            Intent updatesIntent = new Intent(getApplicationContext(), SubscriptionService.class);
+            Intent updatesIntent = new Intent(getApplicationContext(), UpdatesListenerIntentService.class);
+//            Intent updatesIntent = new Intent(getApplicationContext(), SubscriptionService.class);
             startService(updatesIntent);
         }
     }
