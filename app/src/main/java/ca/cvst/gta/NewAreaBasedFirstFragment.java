@@ -13,6 +13,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -25,6 +29,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.maps.android.SphericalUtil;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -221,19 +229,52 @@ public class NewAreaBasedFirstFragment extends Fragment implements
     public void onSearch(View view) {
         EditText location = (EditText) root.findViewById(R.id.new_area_based_subscription_address_input);
         String inputLocation = location.getText().toString();
-        List<Address> addressList = null;
-        if (location != null || location.equals("")) {
-            Geocoder geocoder = new Geocoder(getActivity().getApplicationContext());
-            try {
-                addressList = geocoder.getFromLocationName(inputLocation, 1);
-                System.out.println("FOUND THIS " + addressList.toString());
-            } catch (IOException e) {
-                System.out.println("Exception while fetching geocode for searched location.");
-            }
-            Address address = addressList.get(0);
-            LatLng latlng = new LatLng(address.getLatitude(), address.getLongitude());
 
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(latlng));
+        if (inputLocation.toUpperCase().contains("AND") || inputLocation.contains("&")) {
+            String[] intersection;
+            if (inputLocation.toUpperCase().contains("AND")) {
+                intersection = inputLocation.toUpperCase().split("AND");
+            }
+            else {
+                intersection = inputLocation.split("&");
+            }
+            String url = "http://maps.googleapis.com/maps/api/geocode/json?address="+intersection[0].replace(" ", "%20")+"AND"+intersection[1].replace(" ", "%20");
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject intersectionInfo) {
+                            try {
+                                double lat = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lat");
+                                double lng = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lng");
+                                LatLng latlng = new LatLng(lat, lng);
+                                mMap.animateCamera(CameraUpdateFactory.newLatLng(latlng));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    System.out.println("error = " + error);
+                }
+            });
+            NetworkManager.getInstance(getActivity().getApplicationContext()).addToRequestQueue(jsonObjectRequest);
+        }
+        else {
+            List<Address> addressList = null;
+            if (location != null || location.equals("")) {
+                Geocoder geocoder = new Geocoder(getActivity().getApplicationContext());
+                try {
+                    addressList = geocoder.getFromLocationName(inputLocation, 1);
+                    System.out.println("FOUND THIS " + addressList.toString());
+                } catch (IOException e) {
+                    System.out.println("Exception while fetching geocode for searched location.");
+                }
+                Address address = addressList.get(0);
+                LatLng latlng = new LatLng(address.getLatitude(), address.getLongitude());
+
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(latlng));
+            }
         }
     }
 

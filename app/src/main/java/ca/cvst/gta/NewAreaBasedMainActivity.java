@@ -1,16 +1,10 @@
 package ca.cvst.gta;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.widget.Toast;
 
 import com.android.volley.Response;
@@ -23,7 +17,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ca.cvst.gta.db.DbHelper;
-import ca.cvst.gta.db.TtcSubscriptionsContract;
 import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
 public class NewAreaBasedMainActivity extends AppCompatActivity
