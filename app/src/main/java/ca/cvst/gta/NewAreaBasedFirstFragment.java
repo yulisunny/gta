@@ -280,6 +280,8 @@ public class NewAreaBasedFirstFragment extends Fragment implements
                         .add(corners.topLeft, corners.topRight, corners.botRight, corners.botLeft, corners.topLeft)
                         .strokeColor(Color.RED).fillColor(Color.TRANSPARENT));
 
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(point));
+
             }
         });
     }

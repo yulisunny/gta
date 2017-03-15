@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/textView1"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="5dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:textSize="20sp">
@@ -20,7 +20,7 @@
     <LinearLayout android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="10dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp">
 
@@ -79,7 +79,7 @@
     <LinearLayout android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="30dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp">
 
@@ -102,7 +102,7 @@
         android:layout_height="wrap_content"
         android:text="Time Range for Notification"
         android:textSize="20sp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="30dp"
         android:layout_marginRight="5dp"
         android:layout_marginLeft="5dp"/>
 
@@ -111,7 +111,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp">
         <TextView
@@ -120,19 +120,20 @@
             android:text="Start Time: "
             android:layout_weight="1"
             android:layout_gravity="center"
-            android:textSize="20dp"/>
+            android:textSize="20sp"/>
         <EditText
+            android:id="@+id/startTime"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="20dp"/>
+            android:textSize="20sp"/>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp">
         <TextView
@@ -141,19 +142,52 @@
             android:text="End Time: "
             android:layout_weight="1"
             android:layout_gravity="center"
-            android:textSize="20dp"/>
+            android:textSize="20sp"/>
         <EditText
+            android:id="@+id/endTime"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="20dp"/>
+            android:textSize="20sp"/>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Traffic Data Type:"
+            android:textSize="20sp"
+            android:layout_weight="1"/>
+
+        <Spinner
+            android:id="@+id/spinner_publisher"
+            android:layout_width="0dp"
+            android:textAlignment="center"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            style="@android:style/Widget.Spinner"
+            android:spinnerMode="dropdown" />
     </LinearLayout>
 
     <Button
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:text="Next"/>
+        android:textSize="20sp"
+        android:text="Next"
+        android:id="@+id/btn_subscribe"
+        style="@style/Widget.AppCompat.Button.Colored" />
 
 
 </LinearLayout>

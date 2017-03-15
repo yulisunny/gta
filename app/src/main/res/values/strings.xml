@@ -22,7 +22,7 @@
 
     <string-array name="publishers_array">
         <item>TTC</item>
-        <item>roadtraffic</item>
+        <item>Road Traffic</item>
     </string-array>
 
     <string-array name="ttc_field_names_array">
