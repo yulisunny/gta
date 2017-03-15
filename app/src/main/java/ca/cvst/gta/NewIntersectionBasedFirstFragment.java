@@ -41,6 +41,7 @@ public class NewIntersectionBasedFirstFragment extends Fragment implements OnMap
     private LatLngBounds areaBounds = null;
 
     private OnFragmentInteractionListener mListener;
+    private String intersectionName;
 
     public NewIntersectionBasedFirstFragment() {
         // Rquried empty public constructor
@@ -89,6 +90,7 @@ public class NewIntersectionBasedFirstFragment extends Fragment implements OnMap
             public void onClick(View v) {
                 if (areaBounds != null) {
                     mListener.setCoordinates(areaBounds);
+                    mListener.setIntersectionName(intersectionName);
                     mListener.goToSecondSubscriptionPageFromFirstPage();
                 } else {
                     Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
@@ -174,7 +176,7 @@ public class NewIntersectionBasedFirstFragment extends Fragment implements OnMap
                             double lat = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lat");
                             double lng = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lng");
 
-                            String formatted_address = intersectionInfo.getJSONArray("results").getJSONObject(0).getString("formatted_address");
+                            intersectionName = intersectionInfo.getJSONArray("results").getJSONObject(0).getString("formatted_address");
                             double upperLat = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("viewport").getJSONObject("northeast").getDouble("lat");
                             double lowerLat = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("viewport").getJSONObject("southwest").getDouble("lat");
                             double upperLng = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("viewport").getJSONObject("northeast").getDouble("lng");
@@ -210,6 +212,18 @@ public class NewIntersectionBasedFirstFragment extends Fragment implements OnMap
                                 previousSearchedMarker.remove();
                                 previousSearchedMarker = mMap.addMarker(new MarkerOptions().position(intersection));
                             }
+
+//                            double upperLatT = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("bounds").getJSONObject("northeast").getDouble("lat");
+//                            double lowerLatT = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("bounds").getJSONObject("southwest").getDouble("lat");
+//                            double upperLngT = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("bounds").getJSONObject("northeast").getDouble("lng");
+//                            double lowerLngT = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("bounds").getJSONObject("southwest").getDouble("lng");
+//
+//                            LatLng northeastT = new LatLng(upperLatT, upperLngT);
+//                            LatLng southwestT = new LatLng(lowerLatT, lowerLngT);
+//
+//                            mMap.addMarker(new MarkerOptions().position(northeastT));
+//                            mMap.addMarker(new MarkerOptions().position(southwestT));
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -233,6 +247,8 @@ public class NewIntersectionBasedFirstFragment extends Fragment implements OnMap
         void setCoordinates(LatLngBounds bounds);
 
         void goToSecondSubscriptionPageFromFirstPage();
+
+        void setIntersectionName(String name);
     }
 
 }

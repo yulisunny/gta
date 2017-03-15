@@ -17,7 +17,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ca.cvst.gta.db.DbHelper;
-import ca.cvst.gta.db.TtcSubscriptionsContract;
 import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
 public class NewIntersectionBasedMainActivity extends AppCompatActivity
@@ -30,6 +29,7 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
     private int[] mondayToSundayArray;
     private int notificationEnabled;
     private int[] startAndEndTime;
+    private String intersectionName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,10 +66,13 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
     }
 
     @Override
+    public void setIntersectionName(String name) {
+        this.intersectionName = name;
+    }
+
+    @Override
     public void submitSubscription() {
         attemptSubscribe();
-//        Intent intent = new Intent(getApplicationContext(), SubscriptionsActivity.class);
-//        startActivity(intent);
     }
 
     @Override
@@ -170,7 +173,7 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
                     if (publisher.equals("TTC")) {
                         try {
                             cv.put(TtcSubscriptionEntry.TIMESTAMP, System.currentTimeMillis()/1000L);
-                            cv.put(TtcSubscriptionEntry.NAME, response.getString("subscription_id"));
+                            cv.put(TtcSubscriptionEntry.NAME, intersectionName);
                             cv.put(TtcSubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
                             cv.put(TtcSubscriptionEntry.UPPER_LATITUDE, upperLatitude);
                             cv.put(TtcSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
