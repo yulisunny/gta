@@ -172,11 +172,11 @@ public class NewAreaBasedSecondFragment extends Fragment implements AdapterView.
             }
         });
 
-        mPublishersSpinner = (Spinner) root.findViewById(R.id.spinner_publisher);
-        mPublishersAdapter = ArrayAdapter.createFromResource(root.getContext(), R.array.publishers_array, android.R.layout.simple_spinner_item);
-        mPublishersAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mPublishersSpinner.setAdapter(mPublishersAdapter);
-        mPublishersSpinner.setOnItemSelectedListener(this);
+//        mPublishersSpinner = (Spinner) root.findViewById(R.id.spinner_publisher);
+//        mPublishersAdapter = ArrayAdapter.createFromResource(root.getContext(), R.array.publishers_array, android.R.layout.simple_spinner_item);
+//        mPublishersAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//        mPublishersSpinner.setAdapter(mPublishersAdapter);
+//        mPublishersSpinner.setOnItemSelectedListener(this);
 
         EditText startTime = (EditText) root.findViewById(R.id.startTime);
 //        LocalTime currTime = new LocalTime();
