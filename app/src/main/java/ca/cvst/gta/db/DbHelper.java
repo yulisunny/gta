@@ -72,6 +72,16 @@ public class DbHelper extends SQLiteOpenHelper {
                     TtcSubscriptionEntry.LOWER_LATITUDE + " REAL," +
                     TtcSubscriptionEntry.LOWER_LONGITUDE + " REAL," +
                     TtcSubscriptionEntry.ROUTE_NUMBER + " TEXT," +
+                    TtcSubscriptionEntry.MONDAY + " INTEGER," +
+                    TtcSubscriptionEntry.TUESDAY + " INTEGER," +
+                    TtcSubscriptionEntry.WEDNESDAY + " INTEGER," +
+                    TtcSubscriptionEntry.THURSDAY + " INTEGER," +
+                    TtcSubscriptionEntry.FRIDAY + " INTEGER," +
+                    TtcSubscriptionEntry.SATURDAY + " INTEGER," +
+                    TtcSubscriptionEntry.SUNDAY + " INTEGER," +
+                    TtcSubscriptionEntry.START_TIME + " INTEGER," +
+                    TtcSubscriptionEntry.END_TIME + " INTEGER," +
+                    TtcSubscriptionEntry.NOTIFICATION_ENABLED + " INTEGER," +
                     TtcSubscriptionEntry.SUBSCRIPTION_ID + " TEXT)";
 
     private static final String DROP_HISTORICAL_GRAPHS_TABLE =

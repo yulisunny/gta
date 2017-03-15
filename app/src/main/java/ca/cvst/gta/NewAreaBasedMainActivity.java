@@ -31,6 +31,9 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
 
     private LatLngBounds AreaBounds;
     private String publisher;
+    private int[] mondayToSundayArray;
+    private int notificationEnabled;
+    private int[] startAndEndTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,10 +55,25 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
     }
 
     @Override
+    public void setMondayToSunday(int[] mondayToSundayArray) {
+        this.mondayToSundayArray = mondayToSundayArray;
+    }
+
+    @Override
+    public void setNotificationEnabled(int enabled) {
+        this.notificationEnabled = enabled;
+    }
+
+    @Override
+    public void setStartAndEndTime(int[] startAndEndTime) {
+        this.startAndEndTime = startAndEndTime;
+    }
+
+    @Override
     public void submitSubscription() {
         attemptSubscribe();
-        Intent intent = new Intent(getApplicationContext(), SubscriptionsActivity.class);
-        startActivity(intent);
+//        Intent intent = new Intent(getApplicationContext(), SubscriptionsActivity.class);
+//        startActivity(intent);
     }
 
     @Override
@@ -135,7 +153,7 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
                     DbHelper helper = new DbHelper(getApplicationContext());
                     SQLiteDatabase db = helper.getWritableDatabase();
                     ContentValues cv = new ContentValues();
-                    if (publisher == "TTC") {
+                    if (publisher.equals("TTC")) {
                         try {
                             cv.put(TtcSubscriptionEntry.TIMESTAMP, System.currentTimeMillis()/1000L);
                             cv.put(TtcSubscriptionEntry.NAME, response.getString("subscription_id"));
@@ -144,6 +162,16 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
                             cv.put(TtcSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
                             cv.put(TtcSubscriptionEntry.UPPER_LONGITUDE, upperLongitude);
                             cv.put(TtcSubscriptionEntry.ROUTE_NUMBER, "9");
+                            cv.put(TtcSubscriptionEntry.MONDAY, mondayToSundayArray[0]);
+                            cv.put(TtcSubscriptionEntry.TUESDAY, mondayToSundayArray[1]);
+                            cv.put(TtcSubscriptionEntry.WEDNESDAY, mondayToSundayArray[2]);
+                            cv.put(TtcSubscriptionEntry.THURSDAY, mondayToSundayArray[3]);
+                            cv.put(TtcSubscriptionEntry.FRIDAY, mondayToSundayArray[4]);
+                            cv.put(TtcSubscriptionEntry.SATURDAY, mondayToSundayArray[5]);
+                            cv.put(TtcSubscriptionEntry.SUNDAY, mondayToSundayArray[6]);
+                            cv.put(TtcSubscriptionEntry.START_TIME, startAndEndTime[0]);
+                            cv.put(TtcSubscriptionEntry.END_TIME, startAndEndTime[1]);
+                            cv.put(TtcSubscriptionEntry.NOTIFICATION_ENABLED, notificationEnabled);
                             cv.put(TtcSubscriptionEntry.SUBSCRIPTION_ID, response.getString("subscription_id"));
                             db.insert(TtcSubscriptionEntry.TABLE_NAME, null, cv);
                             db.close();
@@ -152,7 +180,7 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
                         }
 
                     }
-                    
+
                     Intent intent = new Intent(getApplicationContext(), SubscriptionsActivity.class);
                     startActivity(intent);
                     //finish();
