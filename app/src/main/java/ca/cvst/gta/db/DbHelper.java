@@ -4,12 +4,13 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import ca.cvst.gta.db.AirsenseNotificationsContract.AirsenseNotificationEntry;
 import ca.cvst.gta.db.GraphContract.GraphEntry;
 import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
 
 public class DbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 6;
+    public static final int DATABASE_VERSION = 7;
     public static final String DATABASE_NAME = "cvst_gta.db";
     private static final String CREATE_HISTORICAL_GRAPHS_TABLE =
             "CREATE TABLE " + GraphEntry.TABLE_NAME + " (" +
@@ -41,11 +42,32 @@ public class DbHelper extends SQLiteOpenHelper {
                     TtcNotificationEntry.ROUTE_NUMBER + " TEXT," +
                     TtcNotificationEntry.SUBSCRIPTION_IDS + " TEXT)";
 
+    private static final String CREATE_AIRSENSE_NOTIFICATIONS_TABLE =
+            "CREATE TABLE " + AirsenseNotificationEntry.TABLE_NAME + " (" +
+                    AirsenseNotificationEntry._ID + " INTEGER PRIMARY KEY," +
+                    AirsenseNotificationEntry.TIMESTAMP + " INTEGER," +
+                    AirsenseNotificationEntry.MONITOR_NAME + " TEXT," +
+                    AirsenseNotificationEntry.DATE + " TEXT," +
+                    AirsenseNotificationEntry.LATITUDE + " REAL," +
+                    AirsenseNotificationEntry.LONGITUDE + " REAL," +
+                    AirsenseNotificationEntry.NOX + " REAL," +
+                    AirsenseNotificationEntry.O3 + " REAL," +
+                    AirsenseNotificationEntry.CO2 + " REAL," +
+                    AirsenseNotificationEntry.AQHI + " REAL," +
+                    AirsenseNotificationEntry.PM + " REAL," +
+                    AirsenseNotificationEntry.AH + " REAL," +
+                    AirsenseNotificationEntry.CO + " REAL," +
+                    AirsenseNotificationEntry.COO + " REAL," +
+                    AirsenseNotificationEntry.ADDRESS + " TEXT," +
+                    AirsenseNotificationEntry.SUBSCRIPTION_IDS + " TEXT)";
+
 
     private static final String DROP_HISTORICAL_GRAPHS_TABLE =
             "DROP TABLE IF EXISTS " + GraphEntry.TABLE_NAME;
     private static final String DROP_TTC_NOTIFICATIONS_TABLE =
             "DROP TABLE IF EXISTS " + TtcNotificationEntry.TABLE_NAME;
+    private static final String DROP_AIRSENSE_NOTIFICATIONS_TABLE =
+            "DROP TABLE IF EXISTS " + AirsenseNotificationEntry.TABLE_NAME;
 
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -54,6 +76,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_HISTORICAL_GRAPHS_TABLE);
         db.execSQL(CREATE_TTC_NOTIFICATIONS_TABLE);
+        db.execSQL(CREATE_AIRSENSE_NOTIFICATIONS_TABLE);
     }
 
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -61,6 +84,7 @@ public class DbHelper extends SQLiteOpenHelper {
         // to simply to discard the data and start over
         db.execSQL(DROP_HISTORICAL_GRAPHS_TABLE);
         db.execSQL(DROP_TTC_NOTIFICATIONS_TABLE);
+        db.execSQL(DROP_AIRSENSE_NOTIFICATIONS_TABLE);
         onCreate(db);
     }
 
