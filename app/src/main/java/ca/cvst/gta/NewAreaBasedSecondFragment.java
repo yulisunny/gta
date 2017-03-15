@@ -204,21 +204,21 @@ public class NewAreaBasedSecondFragment extends Fragment implements AdapterView.
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (publisher != null) {
+//                if (publisher != null) {
 //                    mListener.setPublisher(mPublishersSpinner.getSelectedItem().toString());
-                    mListener.setMondayToSunday(mondayToSundayArray);
-                    mListener.setNotificationEnabled(isNotificationEnabled);
-                    EditText startTime = (EditText) root.findViewById(R.id.startTime);
-                    EditText endTime = (EditText) root.findViewById(R.id.endTime);
-                    int startTimeInSec = convertToSeconds(startTime.getText().toString());
-                    int endTimeInSec = convertToSeconds(endTime.getText().toString());
-                    int[] startAndEndTime = new int[] {startTimeInSec, endTimeInSec};
-                    mListener.setStartAndEndTime(startAndEndTime);
-                    mListener.goToThirdSubscriptionPageFromSecondPage();
+                mListener.setMondayToSunday(mondayToSundayArray);
+                mListener.setNotificationEnabled(isNotificationEnabled);
+                EditText startTime = (EditText) root.findViewById(R.id.startTime);
+                EditText endTime = (EditText) root.findViewById(R.id.endTime);
+                int startTimeInSec = convertToSeconds(startTime.getText().toString());
+                int endTimeInSec = convertToSeconds(endTime.getText().toString());
+                int[] startAndEndTime = new int[] {startTimeInSec, endTimeInSec};
+                mListener.setStartAndEndTime(startAndEndTime);
+                mListener.goToThirdSubscriptionPageFromSecondPage();
                     //mListener.submitSubscription();
-                } else {
-                    Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
-                }
+//                } else {
+//                    Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
+//                }
             }
         });
 
