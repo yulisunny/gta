@@ -23,6 +23,7 @@ import org.json.JSONObject;
 
 import java.util.concurrent.CountDownLatch;
 
+import ca.cvst.gta.db.AirsenseNotificationsContract.AirsenseNotificationEntry;
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
 
@@ -100,9 +101,10 @@ public class SubscriptionService extends Service {
                             try {
                                 JSONObject root = new JSONObject(s);
                                 JSONObject data = root.getJSONObject("data");
-                                switch (data.getString("category")) {
-                                    case "ttc":
-                                        handleTtc(root);
+                                if (data.has("category")) {
+                                    handleTtc(root);
+                                } else {
+                                    handleAirsense(root);
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -145,6 +147,35 @@ public class SubscriptionService extends Service {
         }
 
     }
+
+    private void handleAirsense(JSONObject root) {
+        DbHelper dbHelper = new DbHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        try {
+            JSONObject data = root.getJSONObject("data");
+            values.put(AirsenseNotificationEntry.TIMESTAMP, data.getInt("timestamp"));
+            values.put(AirsenseNotificationEntry.MONITOR_NAME, data.getString("monitor_name"));
+            values.put(AirsenseNotificationEntry.DATE, data.getString("date"));
+            values.put(AirsenseNotificationEntry.LATITUDE, data.getJSONArray("coordinates").getDouble(1));
+            values.put(AirsenseNotificationEntry.LONGITUDE, data.getJSONArray("coordinates").getDouble(0));
+            values.put(AirsenseNotificationEntry.NOX, data.getDouble("nox"));
+            values.put(AirsenseNotificationEntry.O3, data.getDouble("o3"));
+            values.put(AirsenseNotificationEntry.CO2, data.getDouble("co2"));
+            values.put(AirsenseNotificationEntry.AQHI, data.getDouble("aqhi"));
+            values.put(AirsenseNotificationEntry.PM, data.getDouble("pm"));
+            values.put(AirsenseNotificationEntry.AH, data.getDouble("ah"));
+            values.put(AirsenseNotificationEntry.CO, data.getDouble("co"));
+            values.put(AirsenseNotificationEntry.COO, data.getDouble("coo"));
+            values.put(AirsenseNotificationEntry.ADDRESS, data.getString("address"));
+            values.put(AirsenseNotificationEntry.SUBSCRIPTION_IDS, root.getJSONArray("subscriptionIds").join(","));
+            db.insert(AirsenseNotificationEntry.TABLE_NAME, null, values);
+            db.close();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
