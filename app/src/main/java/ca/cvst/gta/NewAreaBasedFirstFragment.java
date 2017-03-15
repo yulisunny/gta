@@ -146,7 +146,7 @@ public class NewAreaBasedFirstFragment extends Fragment implements
             public void onClick(View v) {
                 if (areaBounds != null) {
                     mListener.setCoordinates(areaBounds);
-                    mListener.nextPage();
+                    mListener.goToSecondSubscriptionPageFromFirstPage();
                 } else {
                     Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
                 }
@@ -326,7 +326,7 @@ public class NewAreaBasedFirstFragment extends Fragment implements
     public interface OnFragmentInteractionListener {
         void setCoordinates(LatLngBounds bounds);
 
-        void nextPage();
+        void goToSecondSubscriptionPageFromFirstPage();
     }
 
 }

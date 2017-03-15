@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="ca.cvst.gta.NewAreaBasedMainActivity">
+
+    <!--<TextView android:text="Select the days of the week you would like to receive subscription events"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/textView1"-->
+        <!--android:layout_marginTop="5dp"-->
+        <!--android:layout_marginLeft="5dp"-->
+        <!--android:layout_marginRight="5dp"-->
+        <!--android:textSize="20sp">-->
+    <!--</TextView>-->
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Traffic Data Type:"
+            android:textSize="20sp"
+            android:layout_weight="1"/>
+
+        <Spinner
+            android:id="@+id/spinner_publisher"
+            android:layout_width="0dp"
+            android:textAlignment="center"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            style="@android:style/Widget.Spinner"
+            android:spinnerMode="dropdown" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Optional Field: "
+            android:layout_weight="1"
+            android:textSize="20sp"/>
+
+        <Spinner
+            android:id="@+id/spinner_field_names"
+            android:layout_width="0dp"
+            style="@android:style/Widget.Spinner"
+            android:layout_weight="1"
+            android:spinnerMode="dropdown"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Field Value Input: "
+            android:layout_weight="1"
+            android:textSize="20sp"/>
+
+        <EditText
+            android:id="@+id/edit_text_field_value"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:imeActionId="@+id/add_filter"
+            android:imeActionLabel="@string/new_subscription_action_add_filter_short"
+            android:imeOptions="actionUnspecified"
+            android:inputType="text"
+            android:maxLines="1"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
+        android:weightSum="6">
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="Back"
+            android:layout_weight="2"
+            android:id="@+id/btn_previous"
+            style="@style/Widget.AppCompat.Button.Colored" />
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="Enter"
+            android:layout_weight="2"
+            android:id="@+id/btn_enter"
+            style="@style/Widget.AppCompat.Button.Colored"/>
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="Subscribe"
+            android:layout_weight="2"
+            android:id="@+id/btn_subscribe"
+            style="@style/Widget.AppCompat.Button.Colored" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -22,7 +22,22 @@
 
     <string-array name="publishers_array">
         <item>TTC</item>
-        <item>Road Traffic</item>
+        <item>Air Sensor</item>
+    </string-array>
+
+    <string-array name="ttc_field_array">
+        <item>Everything</item>
+        <item>Route Number</item>
+    </string-array>
+
+    <string-array name="air_sensor_field_array">
+        <item>Everything</item>
+        <item>@string/item_co2</item>
+        <item>@string/item_co</item>
+        <item>@string/item_nox</item>
+        <item>@string/item_aqhi</item>
+        <item>@string/item_o3</item>
+        <item>@string/item_pm</item>
     </string-array>
 
     <string-array name="ttc_field_names_array">

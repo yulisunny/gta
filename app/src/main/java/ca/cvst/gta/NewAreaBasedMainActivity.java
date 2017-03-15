@@ -27,7 +27,8 @@ import ca.cvst.gta.db.TtcSubscriptionsContract;
 import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
 public class NewAreaBasedMainActivity extends AppCompatActivity
-        implements NewAreaBasedFirstFragment.OnFragmentInteractionListener, NewAreaBasedSecondFragment.OnFragmentInteractionListener {
+        implements NewAreaBasedFirstFragment.OnFragmentInteractionListener,
+        NewAreaBasedSecondFragment.OnFragmentInteractionListener, NewAreaBasedThirdFragment.OnFragmentInteractionListener {
 
     private LatLngBounds AreaBounds;
     private String publisher;
@@ -77,7 +78,25 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
     }
 
     @Override
-    public void nextPage() {
+    public void goToFirstSubscriptionPageFromSecondPage() {
+        NewAreaBasedFirstFragment firstFragment = NewAreaBasedFirstFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_area_based_content_container, firstFragment).commit();
+    }
+
+    @Override
+    public void goToThirdSubscriptionPageFromSecondPage() {
+        NewAreaBasedThirdFragment thirdFragment = NewAreaBasedThirdFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_area_based_content_container, thirdFragment).commit();
+    }
+
+    @Override
+    public void goToSecondSubscriptionPageFromThirdPage() {
+        NewAreaBasedSecondFragment secondFragment = NewAreaBasedSecondFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_area_based_content_container, secondFragment).commit();
+    }
+
+    @Override
+    public void goToSecondSubscriptionPageFromFirstPage() {
         NewAreaBasedSecondFragment secondFragment = NewAreaBasedSecondFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_area_based_content_container, secondFragment).commit();
     }

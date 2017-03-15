@@ -152,11 +152,6 @@ public class NewAreaBasedSecondFragment extends Fragment implements AdapterView.
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     mondayToSundayArray[5] = 1;
-//                    System.out.println(mPublishersSpinner.getSelectedItem().toString());
-//                    EditText startTime = (EditText) root.findViewById(R.id.startTime);
-//                    System.out.println(startTime.getText().toString());
-//                    EditText endTime = (EditText) root.findViewById(R.id.endTime);
-//                    System.out.println(endTime.getText().toString());
                     // toggle enabled
                 } else {
                     mondayToSundayArray[5] = 0;
@@ -205,12 +200,12 @@ public class NewAreaBasedSecondFragment extends Fragment implements AdapterView.
             }
         });
 
-        Button subscribeButton = (Button) root.findViewById(R.id.btn_subscribe);
-        subscribeButton.setOnClickListener(new View.OnClickListener() {
+        Button nextButton = (Button) root.findViewById(R.id.btn_next);
+        nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (publisher != null) {
-                    mListener.setPublisher(mPublishersSpinner.getSelectedItem().toString());
+//                    mListener.setPublisher(mPublishersSpinner.getSelectedItem().toString());
                     mListener.setMondayToSunday(mondayToSundayArray);
                     mListener.setNotificationEnabled(isNotificationEnabled);
                     EditText startTime = (EditText) root.findViewById(R.id.startTime);
@@ -219,10 +214,19 @@ public class NewAreaBasedSecondFragment extends Fragment implements AdapterView.
                     int endTimeInSec = convertToSeconds(endTime.getText().toString());
                     int[] startAndEndTime = new int[] {startTimeInSec, endTimeInSec};
                     mListener.setStartAndEndTime(startAndEndTime);
-                    mListener.submitSubscription();
+                    mListener.goToThirdSubscriptionPageFromSecondPage();
+                    //mListener.submitSubscription();
                 } else {
                     Toast.makeText(getActivity().getApplicationContext(), "Please select an area on the map", Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+
+        Button previousButton = (Button) root.findViewById(R.id.btn_previous);
+        previousButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.goToFirstSubscriptionPageFromSecondPage();
             }
         });
 
@@ -239,7 +243,6 @@ public class NewAreaBasedSecondFragment extends Fragment implements AdapterView.
     public void onStop() {
         super.onStop();
     }
-
 
     @Override
     public void onAttach(Context context) {
@@ -360,11 +363,13 @@ public class NewAreaBasedSecondFragment extends Fragment implements AdapterView.
     }
 
     public interface OnFragmentInteractionListener {
-        void setPublisher(String publisher);
-        void submitSubscription();
+//        void setPublisher(String publisher);
+//        void submitSubscription();
         void setMondayToSunday(int[] mondayToSundayArray);
         void setNotificationEnabled(int enabled);
         void setStartAndEndTime(int[] startAndEndTime);
+        void goToThirdSubscriptionPageFromSecondPage();
+        void goToFirstSubscriptionPageFromSecondPage();
     }
 
 }
