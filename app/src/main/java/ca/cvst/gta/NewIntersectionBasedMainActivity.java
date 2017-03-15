@@ -18,6 +18,7 @@ import org.json.JSONObject;
 
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.TtcSubscriptionsContract;
+import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
 public class NewIntersectionBasedMainActivity extends AppCompatActivity
         implements NewIntersectionBasedFirstFragment.OnFragmentInteractionListener,
@@ -168,25 +169,26 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
                     ContentValues cv = new ContentValues();
                     if (publisher.equals("TTC")) {
                         try {
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.TIMESTAMP, System.currentTimeMillis()/1000L);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.NAME, response.getString("subscription_id"));
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.UPPER_LATITUDE, upperLatitude);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.UPPER_LONGITUDE, upperLongitude);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.ROUTE_NUMBER, "9");
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.MONDAY, mondayToSundayArray[0]);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.TUESDAY, mondayToSundayArray[1]);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.WEDNESDAY, mondayToSundayArray[2]);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.THURSDAY, mondayToSundayArray[3]);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.FRIDAY, mondayToSundayArray[4]);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.SATURDAY, mondayToSundayArray[5]);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.SUNDAY, mondayToSundayArray[6]);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.START_TIME, startAndEndTime[0]);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.END_TIME, startAndEndTime[1]);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.NOTIFICATION_ENABLED, notificationEnabled);
-                            cv.put(TtcSubscriptionsContract.TtcSubscriptionEntry.SUBSCRIPTION_ID, response.getString("subscription_id"));
-                            db.insert(TtcSubscriptionsContract.TtcSubscriptionEntry.TABLE_NAME, null, cv);
+                            cv.put(TtcSubscriptionEntry.TIMESTAMP, System.currentTimeMillis()/1000L);
+                            cv.put(TtcSubscriptionEntry.NAME, response.getString("subscription_id"));
+                            cv.put(TtcSubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
+                            cv.put(TtcSubscriptionEntry.UPPER_LATITUDE, upperLatitude);
+                            cv.put(TtcSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
+                            cv.put(TtcSubscriptionEntry.UPPER_LONGITUDE, upperLongitude);
+                            cv.put(TtcSubscriptionEntry.ROUTE_NUMBER, "9");
+                            cv.put(TtcSubscriptionEntry.MONDAY, mondayToSundayArray[0]);
+                            cv.put(TtcSubscriptionEntry.TUESDAY, mondayToSundayArray[1]);
+                            cv.put(TtcSubscriptionEntry.WEDNESDAY, mondayToSundayArray[2]);
+                            cv.put(TtcSubscriptionEntry.THURSDAY, mondayToSundayArray[3]);
+                            cv.put(TtcSubscriptionEntry.FRIDAY, mondayToSundayArray[4]);
+                            cv.put(TtcSubscriptionEntry.SATURDAY, mondayToSundayArray[5]);
+                            cv.put(TtcSubscriptionEntry.SUNDAY, mondayToSundayArray[6]);
+                            cv.put(TtcSubscriptionEntry.START_TIME, startAndEndTime[0]);
+                            cv.put(TtcSubscriptionEntry.END_TIME, startAndEndTime[1]);
+                            cv.put(TtcSubscriptionEntry.NOTIFICATION_ENABLED, notificationEnabled);
+                            cv.put(TtcSubscriptionEntry.SUBSCRIPTION_TYPE, "Intersection Based");
+                            cv.put(TtcSubscriptionEntry.SUBSCRIPTION_ID, response.getString("subscription_id"));
+                            db.insert(TtcSubscriptionEntry.TABLE_NAME, null, cv);
                             db.close();
                         } catch (JSONException e) {
                             e.printStackTrace();

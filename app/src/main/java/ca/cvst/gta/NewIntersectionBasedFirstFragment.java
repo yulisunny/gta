@@ -32,10 +32,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-/**
- * Created by harryyu on 2017-03-15.
- */
-
 public class NewIntersectionBasedFirstFragment extends Fragment implements OnMapReadyCallback {
 
     private MapView mMapView;

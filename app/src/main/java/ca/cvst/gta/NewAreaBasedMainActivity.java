@@ -184,6 +184,7 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
                             cv.put(TtcSubscriptionEntry.START_TIME, startAndEndTime[0]);
                             cv.put(TtcSubscriptionEntry.END_TIME, startAndEndTime[1]);
                             cv.put(TtcSubscriptionEntry.NOTIFICATION_ENABLED, notificationEnabled);
+                            cv.put(TtcSubscriptionEntry.SUBSCRIPTION_TYPE, "Area Based");
                             cv.put(TtcSubscriptionEntry.SUBSCRIPTION_ID, response.getString("subscription_id"));
                             db.insert(TtcSubscriptionEntry.TABLE_NAME, null, cv);
                             db.close();
