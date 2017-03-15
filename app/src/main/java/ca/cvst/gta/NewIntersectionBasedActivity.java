@@ -66,6 +66,7 @@ public class NewIntersectionBasedActivity extends AppCompatActivity implements O
         mapFragment.getMapAsync(this);
     }
 
+    
     // Use google map api to search for coordinate of an address
     public void onSearch(View view) {
         EditText location = (EditText)findViewById(R.id.new_intersection_based_subscription_address_input);

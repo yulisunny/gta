@@ -507,7 +507,7 @@ public class HomeMapFragment extends Fragment implements
         EditText location = (EditText) getView().findViewById(R.id.home_search_input);
         String inputLocation = location.getText().toString();
 
-        String url = "http://maps.googleapis.com/maps/api/geocode/json?address="+inputLocation.replace(" ", "%20");
+        String url = "http://maps.googleapis.com/maps/api/geocode/json?address="+inputLocation.replace(" ", "%20").replace("&", "AND");
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url, null,
                 new Response.Listener<JSONObject>() {
                     @Override
