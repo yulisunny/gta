@@ -39,7 +39,7 @@ public class SubscriptionsActivity extends AppCompatActivity {
         mSubscriptionsLayoutManager = new LinearLayoutManager(this);
         mSubscriptionsRecycler.setLayoutManager(mSubscriptionsLayoutManager);
         mSubscriptions = Subscription.loadAll(getApplicationContext());
-        mSubscriptionListAdapter = new SubscriptionListAdapter(mSubscriptions);
+        mSubscriptionListAdapter = new SubscriptionListAdapter(mSubscriptions, getApplicationContext());
         mSubscriptionsRecycler.setAdapter(mSubscriptionListAdapter);
     }
 
