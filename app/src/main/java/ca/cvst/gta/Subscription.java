@@ -21,9 +21,10 @@ public class Subscription {
     private String content;
     private int timestamp;
 
-    public Subscription(String title, String content) {
+    public Subscription(String title, String content, int timestamp) {
         this.title = title;
         this.content = content;
+        this.timestamp = timestamp;
     }
 
     public static List<Subscription> loadAll(Context context) {
@@ -62,8 +63,9 @@ public class Subscription {
         while (cursor.moveToNext()) {
             int timestamp = cursor.getInt(cursor.getColumnIndexOrThrow(TtcSubscriptionEntry.TIMESTAMP));
             Date date = new Date(timestamp * 1000L);
-            SimpleDateFormat format = new SimpleDateFormat("HH:mm MMM dd", Locale.CANADA);
-            Subscription sub = new Subscription("TTC", format.format(date));
+            SimpleDateFormat format = new SimpleDateFormat("HH:mm, MMM dd", Locale.CANADA);
+            String createAt = "Created at: " + format.format(date);
+            Subscription sub = new Subscription("TTC", createAt, timestamp);
             ret.add(sub);
         }
         cursor.close();
