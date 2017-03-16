@@ -310,7 +310,9 @@ public class UpdatesListenerIntentService extends IntentService {
                     if ((seconds > startTime) && (seconds < endTime)) {
                         if ((day == Calendar.MONDAY) && (mon > 0)) {
                             validSubs.add(name);
-                            fieldsOfInterest.add(airType);
+                            if (!airType.equals("-1")) {
+                                fieldsOfInterest.add(airType);
+                            }
                             break;
                         }
 
@@ -322,30 +324,40 @@ public class UpdatesListenerIntentService extends IntentService {
 
                         if ((day == Calendar.WEDNESDAY) && (wed > 0)) {
                             validSubs.add(name);
-                            fieldsOfInterest.add(airType);
+                            if (!airType.equals("-1")) {
+                                fieldsOfInterest.add(airType);
+                            }
                             break;
                         }
 
                         if ((day == Calendar.THURSDAY) && (thur > 0)) {
                             validSubs.add(name);
-                            fieldsOfInterest.add(airType);
+                            if (!airType.equals("-1")) {
+                                fieldsOfInterest.add(airType);
+                            }
                             break;
                         }
 
                         if ((day == Calendar.FRIDAY) && (fri > 0)) {
                             validSubs.add(name);
-                            fieldsOfInterest.add(airType);
+                            if (!airType.equals("-1")) {
+                                fieldsOfInterest.add(airType);
+                            }
                             break;
                         }
 
                         if ((day == Calendar.SATURDAY) && (sat > 0)) {
                             validSubs.add(name);
-                            fieldsOfInterest.add(airType);
+                            if (!airType.equals("-1")) {
+                                fieldsOfInterest.add(airType);
+                            }
                             break;
                         }
                         if ((day == Calendar.SUNDAY) && (sun > 0)) {
                             validSubs.add(name);
-                            fieldsOfInterest.add(airType);
+                            if (!airType.equals("-1")) {
+                                fieldsOfInterest.add(airType);
+                            }
                             break;
                         }
 
@@ -363,7 +375,7 @@ public class UpdatesListenerIntentService extends IntentService {
                         .setContentTitle("Airsense Update: " + TextUtils.join(",", validSubs));
                 String content = "";
                 for (String field : fieldsOfInterest) {
-                    content += (field + ": " + data.getString(field) + ". ");
+                    content += (field + ": " + data.getString(field.toLowerCase()) + ". ");
                 }
                 mBuilder.setContentText(content);
                 NotificationManager notificationManager =
