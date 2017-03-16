@@ -54,6 +54,7 @@ public class Subscription {
         return all;
     }
 
+    // TODO: Render name as title, type as content, botton align, day of week and time if realtime
     private static List<Subscription> loadAllTtc(Context context) {
         DbHelper helper = new DbHelper(context);
         SQLiteDatabase db = helper.getReadableDatabase();
@@ -86,6 +87,8 @@ public class Subscription {
 
         String[] projection = {
                 AirsenseSubscriptionEntry.NAME,
+                AirsenseSubscriptionEntry.AIR_TYPE,
+                AirsenseSubscriptionEntry.AIR_VALUE,
                 AirsenseSubscriptionEntry.TIMESTAMP,
                 AirsenseSubscriptionEntry.SUBSCRIPTION_ID
         };
@@ -95,10 +98,15 @@ public class Subscription {
         while (cursor.moveToNext()) {
             int timestamp = cursor.getInt(cursor.getColumnIndexOrThrow(AirsenseSubscriptionEntry.TIMESTAMP));
             String subscriptionId = cursor.getString(cursor.getColumnIndexOrThrow(AirsenseSubscriptionEntry.SUBSCRIPTION_ID));
+            String airType = cursor.getString(cursor.getColumnIndexOrThrow(AirsenseSubscriptionEntry.AIR_TYPE));
+            float airValue = cursor.getFloat(cursor.getColumnIndexOrThrow(AirsenseSubscriptionEntry.AIR_VALUE));
             Date date = new Date(timestamp * 1000L);
             SimpleDateFormat format = new SimpleDateFormat("HH:mm, MMM dd", Locale.CANADA);
-            String createAt = "Created at: " + format.format(date);
-            Subscription sub = new Subscription(Type.AIRSENSE, "Airsense", createAt, timestamp, subscriptionId);
+            String content = "Created at: " + format.format(date);
+            if (!airType.equals("-1")) {
+                content += "\n" + airType + " greater than " + String.valueOf(airValue);
+            }
+            Subscription sub = new Subscription(Type.AIRSENSE, "Airsense", content, timestamp, subscriptionId);
             ret.add(sub);
         }
         cursor.close();
