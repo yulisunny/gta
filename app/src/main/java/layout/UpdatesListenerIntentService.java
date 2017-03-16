@@ -1,11 +1,15 @@
 package layout;
 
 import android.app.IntentService;
+import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
 
 import com.koushikdutta.async.ByteBufferList;
 import com.koushikdutta.async.DataEmitter;
@@ -13,13 +17,19 @@ import com.koushikdutta.async.callback.DataCallback;
 import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.WebSocket;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 import ca.cvst.gta.R;
 import ca.cvst.gta.db.AirsenseNotificationsContract.AirsenseNotificationEntry;
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
+import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
 /**
  * This mimics the demo portal. For the proper way of doing this according to Daiqing
@@ -102,8 +112,96 @@ public class UpdatesListenerIntentService extends IntentService {
             values.put(TtcNotificationEntry.HEADING, data.getString("heading"));
             values.put(TtcNotificationEntry.PREDICTABLE, data.getBoolean("predictable"));
             values.put(TtcNotificationEntry.ROUTE_NUMBER, data.getString("routeNumber"));
-            values.put(TtcNotificationEntry.SUBSCRIPTION_IDS, root.getJSONArray("subscriptionIds").join(","));
+            JSONArray subscriptionIds = root.getJSONArray("subscriptionIds");
+            values.put(TtcNotificationEntry.SUBSCRIPTION_IDS, subscriptionIds.join(","));
             db.insert(TtcNotificationEntry.TABLE_NAME, null, values);
+
+            String[] columns = {
+                    TtcSubscriptionEntry.NAME,
+                    TtcSubscriptionEntry.MONDAY,
+                    TtcSubscriptionEntry.TUESDAY,
+                    TtcSubscriptionEntry.WEDNESDAY,
+                    TtcSubscriptionEntry.THURSDAY,
+                    TtcSubscriptionEntry.FRIDAY,
+                    TtcSubscriptionEntry.SATURDAY,
+                    TtcSubscriptionEntry.SUNDAY,
+                    TtcSubscriptionEntry.START_TIME,
+                    TtcSubscriptionEntry.END_TIME,
+                    TtcSubscriptionEntry.NOTIFICATION_ENABLED
+            };
+
+            List<String> validSubs = new ArrayList<>();
+            for (int i = 0; i < subscriptionIds.length(); i++) {
+                String[] subscriptionId = {subscriptionIds.getString(i)};
+                Cursor cursor = db.query(TtcSubscriptionEntry.TABLE_NAME, columns, TtcSubscriptionEntry.SUBSCRIPTION_ID + "= ?", subscriptionId, null, null, null);
+                while (cursor.moveToNext()) {
+                    String name = cursor.getString(cursor.getColumnIndex(TtcSubscriptionEntry.NAME));
+                    int mon = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.MONDAY));
+                    int tues = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.TUESDAY));
+                    int wed = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.WEDNESDAY));
+                    int thur = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.THURSDAY));
+                    int fri = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.FRIDAY));
+                    int sat = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.SATURDAY));
+                    int sun = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.SUNDAY));
+                    int startTime = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.START_TIME));
+                    int endTime = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.END_TIME));
+                    int notif_enabled = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.NOTIFICATION_ENABLED));
+                    if (notif_enabled == 0) {
+                        break;
+                    }
+
+                    Calendar calendar = Calendar.getInstance();
+                    int day = calendar.get(Calendar.DAY_OF_WEEK);
+                    int seconds = (calendar.get(Calendar.HOUR_OF_DAY) * 3600) + (calendar.get(Calendar.MINUTE) * 60) + (calendar.get(Calendar.SECOND));
+                    if ((seconds > startTime) && (seconds < endTime)) {
+                        if ((day == Calendar.MONDAY) && (mon > 0)) {
+                            validSubs.add(name);
+                            break;
+                        }
+
+                        if ((day == Calendar.TUESDAY) && (tues > 0)) {
+                            validSubs.add(name);
+                            break;
+                        }
+
+                        if ((day == Calendar.WEDNESDAY) && (wed > 0)) {
+                            validSubs.add(name);
+                            break;
+                        }
+
+                        if ((day == Calendar.THURSDAY) && (thur > 0)) {
+                            validSubs.add(name);
+                            break;
+                        }
+
+                        if ((day == Calendar.FRIDAY) && (fri > 0)) {
+                            validSubs.add(name);
+                            break;
+                        }
+
+                        if ((day == Calendar.SATURDAY) && (sat > 0)) {
+                            validSubs.add(name);
+                            break;
+                        }
+                        if ((day == Calendar.SUNDAY) && (sun > 0)) {
+                            validSubs.add(name);
+                            break;
+                        }
+
+                    }
+                }
+                cursor.close();
+            }
+
+            if (validSubs.size() > 0) {
+                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
+                        .setSmallIcon(R.drawable.ic_notification)
+                        .setContentTitle("New Update on Your TTC Subscription: " + TextUtils.join(",", validSubs));
+                NotificationManager notificationManager =
+                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.notify(notificationId++, mBuilder.build());
+            }
+
             db.close();
         } catch (JSONException e) {
             e.printStackTrace();
