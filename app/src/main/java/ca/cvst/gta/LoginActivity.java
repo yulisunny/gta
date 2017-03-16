@@ -3,7 +3,9 @@ package ca.cvst.gta;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -112,6 +114,10 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onResponse(String response) {
                 System.out.println("response = " + response);
+                SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString(getString(R.string.key_username), username);
+                editor.apply();
                 showProgress(false);
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
