@@ -37,6 +37,73 @@
                 android:layout_height="wrap_content"/>
 
             <TextView
+                android:id="@+id/text_new_historical_chart_time_range"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/new_historical_chart_time_range"
+                android:paddingTop="10dp"
+                android:visibility="gone"/>
+
+            <Spinner
+                android:id="@+id/spinner_new_historical_chart_time_range"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/new_historical_chart_time_range_array"
+                android:prompt="@string/new_historical_chart_spinner_default"
+                style="@android:style/Widget.Spinner"
+                android:spinnerMode="dropdown"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/text_new_historical_chart_start_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/new_historical_chart_start_date"
+                android:paddingTop="10dp"/>
+
+            <EditText
+                android:id="@+id/edit_new_historical_chart_start_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/text_new_historical_chart_end_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/new_historical_chart_end_date"
+                android:paddingTop="10dp"/>
+
+            <EditText
+                android:id="@+id/edit_new_historical_chart_end_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/text_new_historical_chart_start_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/new_historical_chart_start_time"
+                android:paddingTop="10dp"/>
+
+            <EditText
+                android:id="@+id/edit_new_historical_chart_start_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+
+            <TextView
+                android:id="@+id/text_new_historical_chart_end_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/new_historical_chart_end_time"
+                android:paddingTop="10dp"/>
+
+            <EditText
+                android:id="@+id/edit_new_historical_chart_end_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <TextView
                 android:id="@+id/text_new_historical_chart_type"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -50,34 +117,6 @@
                 android:prompt="@string/new_historical_chart_spinner_default"
                 style="@android:style/Widget.Spinner"
                 android:spinnerMode="dropdown"/>
-
-            <TextView
-                android:id="@+id/text_new_historical_chart_time_range"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/new_historical_chart_time_range"
-                android:paddingTop="10dp"/>
-
-            <Spinner
-                android:id="@+id/spinner_new_historical_chart_time_range"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:entries="@array/new_historical_chart_time_range_array"
-                android:prompt="@string/new_historical_chart_spinner_default"
-                style="@android:style/Widget.Spinner"
-                android:spinnerMode="dropdown"/>
-
-            <TextView
-                android:id="@+id/text_new_historical_chart_data_time"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/new_historical_chart_time_of_day"
-                android:paddingTop="10dp"/>
-
-            <EditText
-                android:id="@+id/edit_new_historical_chart_data_time"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
 
         </LinearLayout>
 

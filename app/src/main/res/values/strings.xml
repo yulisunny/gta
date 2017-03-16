@@ -91,7 +91,11 @@
         <item>One Week</item>
         <item>One Month</item>
     </string-array>
-    <string name="new_historical_chart_time_of_day">Time of day to plot: </string>
+    <string name="new_historical_chart_start_time">Start Time: </string>
+    <string name="new_historical_chart_start_date">Start Date: </string>
+    <string name="new_historical_chart_end_time">End Time: </string>
+    <string name="new_historical_chart_end_date">End Date: </string>
+
     <string name="add_new_historical_chart_button_next">Next</string>
     <string name="add_new_historical_chart_button_complete">Finish</string>
     <string name="new_historical_chart_hw_selection">Select a marker address of interest: </string>
@@ -102,10 +106,8 @@
     </string-array>
     <string name="new_historical_chart_highway_type">Data Type: </string>
     <string-array name="new_historical_chart_graph_type">
-        <item>Average Speed</item>
-        <item>Travel Time</item>
-        <item>Flow</item>
-        <item>Density</item>
+        <item>@string/item_avg_speed</item>
+        <item>@string/item_avg_travel_time</item>
     </string-array>
     <string name="new_historical_chart_air_quality_data_type_title">Air Quality Data Type: </string>
     <string-array name="new_historical_chart_air_sensor_data_types">
@@ -122,6 +124,9 @@
     <string name="item_aqhi">Air Quality Health Index (AQHI)</string>
     <string name="item_o3">Ozone (O3)</string>
     <string name="item_pm">Particulate Matter (PM)</string>
+
+    <string name="item_avg_speed">Average Speed</string>
+    <string name="item_avg_travel_time">Travel Time</string>
 
     <string name="title_activity_new_historical_chart_map">Select a location of interest </string>
     <string-array name="historical_dashboard_graph_menu_items">
