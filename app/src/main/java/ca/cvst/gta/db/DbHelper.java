@@ -31,6 +31,7 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String CREATE_TTC_NOTIFICATIONS_TABLE =
             "CREATE TABLE " + TtcNotificationEntry.TABLE_NAME + " (" +
                     TtcNotificationEntry._ID + " INTEGER PRIMARY KEY," +
+                    TtcNotificationEntry.BUS_ID + " INTEGER," +
                     TtcNotificationEntry.TIMESTAMP + " INTEGER," +
                     TtcNotificationEntry.DIR_TAG + " TEXT," +
                     TtcNotificationEntry.NAME + " TEXT," +

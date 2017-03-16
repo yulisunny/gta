@@ -72,16 +72,6 @@ public class UpdatesListenerIntentService extends IntentService {
                         }
 
                         System.out.println("s = " + s);
-//                        NotificationCompat.Builder mBuilder =
-//                                new NotificationCompat.Builder(getApplicationContext())
-//                                        .setSmallIcon(R.drawable.ic_notification)
-//                                        .setContentTitle("New Update on Your Subscription")
-//                                        .setContentText(s);
-////                        final JSONObject ttcVehicle = new JSONObject(s);
-//                        NotificationManager notificationManager =
-//                                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//                        notificationManager.notify(notificationId++, mBuilder.build());
-//                        System.out.println("notificationId = " + notificationId);
                     }
                 });
                 webSocket.setDataCallback(new DataCallback() {
@@ -101,6 +91,7 @@ public class UpdatesListenerIntentService extends IntentService {
         ContentValues values = new ContentValues();
         try {
             JSONObject data = root.getJSONObject("data");
+            values.put(TtcNotificationEntry.BUS_ID, data.getInt("id"));
             values.put(TtcNotificationEntry.TIMESTAMP, data.getInt("timestamp"));
             values.put(TtcNotificationEntry.DIR_TAG, data.getString("dirTag"));
             values.put(TtcNotificationEntry.NAME, data.getString("name"));
@@ -133,6 +124,41 @@ public class UpdatesListenerIntentService extends IntentService {
             List<String> validSubs = new ArrayList<>();
             for (int i = 0; i < subscriptionIds.length(); i++) {
                 String[] subscriptionId = {subscriptionIds.getString(i)};
+                // Run code below to force unsubscribe any incoming notification.
+//                JSONObject payload = new JSONObject();
+//                try {
+//                    payload.put("subscriptionId", subscriptionIds.getString(i));
+//
+//                        payload.put("publisherName", "ttc");
+//
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//
+//                System.out.println("payload = " + payload);
+//                JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, "http://subs.portal.cvst.ca/api/unsubscribe", payload, new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        System.out.println("response = " + response);
+//                        String status = "error";
+//                        String message = "There was an error, please try again.";
+//                        try {
+//                            status = response.getString("status");
+//                            message = response.getString("message");
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+//                    }
+//                }, new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        System.out.println("error = " + error);
+//                        System.out.println("error.getMessage() = " + error.getMessage());
+//                        Toast.makeText(getApplicationContext(), "Unsub failed.", Toast.LENGTH_LONG).show();
+//                    }
+//                });
+//                NetworkManager.getInstance(this).addToRequestQueue(request);
                 Cursor cursor = db.query(TtcSubscriptionEntry.TABLE_NAME, columns, TtcSubscriptionEntry.SUBSCRIPTION_ID + "= ?", subscriptionId, null, null, null);
                 while (cursor.moveToNext()) {
                     String name = cursor.getString(cursor.getColumnIndex(TtcSubscriptionEntry.NAME));
@@ -196,10 +222,11 @@ public class UpdatesListenerIntentService extends IntentService {
             if (validSubs.size() > 0) {
                 NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
                         .setSmallIcon(R.drawable.ic_notification)
-                        .setContentTitle("New Update on Your TTC Subscription: " + TextUtils.join(",", validSubs));
+                        .setContentTitle("TTC Update: " + TextUtils.join(",", validSubs))
+                        .setContentText("Route " + data.getString("routeNumber"));
                 NotificationManager notificationManager =
                         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.notify(notificationId++, mBuilder.build());
+                notificationManager.notify(data.getInt("id"), mBuilder.build());
             }
 
             db.close();

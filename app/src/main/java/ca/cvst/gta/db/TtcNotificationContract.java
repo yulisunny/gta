@@ -9,6 +9,7 @@ public class TtcNotificationContract {
 
     public static class TtcNotificationEntry implements BaseColumns {
         public static final String TABLE_NAME = "ttc_notifications";
+        public static final String BUS_ID = "bus_id";
         public static final String TIMESTAMP = "timestamp";
         public static final String DIR_TAG = "dir_tag";
         public static final String NAME = "name";
