@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import ca.cvst.gta.db.AirsenseSubscriptionsContract.AirsenseSubscriptionEntry;
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
@@ -41,9 +42,9 @@ public class Subscription {
             @Override
             public int compare(Subscription o1, Subscription o2) {
                 if (o1.timestamp < o2.timestamp) {
-                    return -1;
-                } else if (o1.timestamp > o2.timestamp) {
                     return 1;
+                } else if (o1.timestamp > o2.timestamp) {
+                    return -1;
                 } else {
                     return 0;
                 }
@@ -80,7 +81,29 @@ public class Subscription {
     }
 
     private static List<Subscription> loadAllAirsense(Context context) {
-        return new ArrayList<>();
+        DbHelper helper = new DbHelper(context);
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        String[] projection = {
+                AirsenseSubscriptionEntry.NAME,
+                AirsenseSubscriptionEntry.TIMESTAMP,
+                AirsenseSubscriptionEntry.SUBSCRIPTION_ID
+        };
+
+        Cursor cursor = db.query(AirsenseSubscriptionEntry.TABLE_NAME, projection, null, null, null, null, null);
+        List<Subscription> ret = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            int timestamp = cursor.getInt(cursor.getColumnIndexOrThrow(AirsenseSubscriptionEntry.TIMESTAMP));
+            String subscriptionId = cursor.getString(cursor.getColumnIndexOrThrow(AirsenseSubscriptionEntry.SUBSCRIPTION_ID));
+            Date date = new Date(timestamp * 1000L);
+            SimpleDateFormat format = new SimpleDateFormat("HH:mm, MMM dd", Locale.CANADA);
+            String createAt = "Created at: " + format.format(date);
+            Subscription sub = new Subscription(Type.AIRSENSE, "Airsense", createAt, timestamp, subscriptionId);
+            ret.add(sub);
+        }
+        cursor.close();
+        db.close();
+        return ret;
     }
 
     public Type getType() {
