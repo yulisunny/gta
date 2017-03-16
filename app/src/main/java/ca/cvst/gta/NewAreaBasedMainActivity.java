@@ -28,11 +28,14 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
     private int[] mondayToSundayArray;
     private int notificationEnabled;
     private int[] startAndEndTime;
+    private String subscriptionName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_area_based_subscription_main_page);
+
+        subscriptionName = getIntent().getStringExtra("subscription_name");
 
         NewAreaBasedFirstFragment firstFragment = NewAreaBasedFirstFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_area_based_content_container, firstFragment).commit();
@@ -168,7 +171,7 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
                     if (publisher.equals("TTC")) {
                         try {
                             cv.put(TtcSubscriptionEntry.TIMESTAMP, System.currentTimeMillis()/1000L);
-                            cv.put(TtcSubscriptionEntry.NAME, response.getString("subscription_id"));
+                            cv.put(TtcSubscriptionEntry.NAME, subscriptionName);
                             cv.put(TtcSubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
                             cv.put(TtcSubscriptionEntry.UPPER_LATITUDE, upperLatitude);
                             cv.put(TtcSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);

@@ -30,11 +30,14 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
     private int notificationEnabled;
     private int[] startAndEndTime;
     private String intersectionName;
+    private String subscriptionName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intersection_based_subscripton_main_page);
+
+        subscriptionName = getIntent().getStringExtra("subscription_name");
 
         NewIntersectionBasedFirstFragment firstFragment = NewIntersectionBasedFirstFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_intersection_based_content_container, firstFragment).commit();
@@ -142,7 +145,7 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
             JSONObject boolObject = new JSONObject().put("bool", mustObject);
 
             // publisher = mPublishersSpinner.getSelectedItem().toString();
-            payload.put("publisherName", publisher);
+            payload.put("publisherName", publisher.toLowerCase());
             payload.put("subscription", boolObject);
             payload.put("action", "subscribe");
 //            payload.put("ttl", "5m");
@@ -173,7 +176,7 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
                     if (publisher.equals("TTC")) {
                         try {
                             cv.put(TtcSubscriptionEntry.TIMESTAMP, System.currentTimeMillis()/1000L);
-                            cv.put(TtcSubscriptionEntry.NAME, intersectionName);
+                            cv.put(TtcSubscriptionEntry.NAME, subscriptionName);
                             cv.put(TtcSubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
                             cv.put(TtcSubscriptionEntry.UPPER_LATITUDE, upperLatitude);
                             cv.put(TtcSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
