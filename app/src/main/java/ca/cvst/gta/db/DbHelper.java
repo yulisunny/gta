@@ -11,7 +11,7 @@ import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
 public class DbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 10;
+    public static final int DATABASE_VERSION = 11;
     public static final String DATABASE_NAME = "cvst_gta.db";
     private static final String CREATE_HISTORICAL_GRAPHS_TABLE =
             "CREATE TABLE " + GraphEntry.TABLE_NAME + " (" +
@@ -30,6 +30,7 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String CREATE_TTC_NOTIFICATIONS_TABLE =
             "CREATE TABLE " + TtcNotificationEntry.TABLE_NAME + " (" +
                     TtcNotificationEntry._ID + " INTEGER PRIMARY KEY," +
+                    TtcNotificationEntry.BUS_ID + " INTEGER," +
                     TtcNotificationEntry.TIMESTAMP + " INTEGER," +
                     TtcNotificationEntry.DIR_TAG + " TEXT," +
                     TtcNotificationEntry.NAME + " TEXT," +
