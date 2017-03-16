@@ -2,6 +2,7 @@ package layout;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import ca.cvst.gta.MainActivity;
 import ca.cvst.gta.R;
 import ca.cvst.gta.db.AirsenseNotificationsContract.AirsenseNotificationEntry;
 import ca.cvst.gta.db.DbHelper;
@@ -220,19 +222,21 @@ public class UpdatesListenerIntentService extends IntentService {
             }
 
             if (validSubs.size() > 0) {
+                Intent intent = new Intent(this, MainActivity.class);
+                PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                 NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
                         .setSmallIcon(R.drawable.ic_notification)
+                        .setContentIntent(pending)
                         .setContentTitle("TTC Update: " + TextUtils.join(",", validSubs))
                         .setContentText("Route " + data.getString("routeNumber"));
                 NotificationManager notificationManager =
                         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                 notificationManager.notify(data.getInt("id"), mBuilder.build());
             }
-
-            db.close();
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        db.close();
 
     }
 
