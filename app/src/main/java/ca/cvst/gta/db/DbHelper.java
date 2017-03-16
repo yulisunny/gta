@@ -5,13 +5,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import ca.cvst.gta.db.AirsenseNotificationsContract.AirsenseNotificationEntry;
+import ca.cvst.gta.db.AirsenseSubscriptionsContract.AirsenseSubscriptionEntry;
 import ca.cvst.gta.db.GraphContract.GraphEntry;
 import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
 import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
 public class DbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 10;
+    public static final int DATABASE_VERSION = 11;
     public static final String DATABASE_NAME = "cvst_gta.db";
     private static final String CREATE_HISTORICAL_GRAPHS_TABLE =
             "CREATE TABLE " + GraphEntry.TABLE_NAME + " (" +
@@ -85,6 +86,30 @@ public class DbHelper extends SQLiteOpenHelper {
                     TtcSubscriptionEntry.SUBSCRIPTION_TYPE + " TEXT," +
                     TtcSubscriptionEntry.SUBSCRIPTION_ID + " TEXT)";
 
+    private static final String CREATE_AIRSENSE_SUBSCRIPTIONS_TABLE =
+            "CREATE TABLE " + AirsenseSubscriptionEntry.TABLE_NAME + " (" +
+                    AirsenseSubscriptionEntry._ID + " INTEGER PRIMARY KEY," +
+                    AirsenseSubscriptionEntry.TIMESTAMP + " INTEGER," +
+                    AirsenseSubscriptionEntry.NAME + " TEXT," +
+                    AirsenseSubscriptionEntry.UPPER_LATITUDE + " REAL," +
+                    AirsenseSubscriptionEntry.UPPER_LONGITUDE + " REAL," +
+                    AirsenseSubscriptionEntry.LOWER_LATITUDE + " REAL," +
+                    AirsenseSubscriptionEntry.LOWER_LONGITUDE + " REAL," +
+                    AirsenseSubscriptionEntry.AIR_TYPE + " TEXT," +
+                    AirsenseSubscriptionEntry.AIR_VALUE + " REAL," +
+                    AirsenseSubscriptionEntry.MONDAY + " INTEGER," +
+                    AirsenseSubscriptionEntry.TUESDAY + " INTEGER," +
+                    AirsenseSubscriptionEntry.WEDNESDAY + " INTEGER," +
+                    AirsenseSubscriptionEntry.THURSDAY + " INTEGER," +
+                    AirsenseSubscriptionEntry.FRIDAY + " INTEGER," +
+                    AirsenseSubscriptionEntry.SATURDAY + " INTEGER," +
+                    AirsenseSubscriptionEntry.SUNDAY + " INTEGER," +
+                    AirsenseSubscriptionEntry.START_TIME + " INTEGER," +
+                    AirsenseSubscriptionEntry.END_TIME + " INTEGER," +
+                    AirsenseSubscriptionEntry.NOTIFICATION_ENABLED + " INTEGER," +
+                    AirsenseSubscriptionEntry.SUBSCRIPTION_TYPE + " TEXT," +
+                    AirsenseSubscriptionEntry.SUBSCRIPTION_ID + " TEXT)";
+
     private static final String DROP_HISTORICAL_GRAPHS_TABLE =
             "DROP TABLE IF EXISTS " + GraphEntry.TABLE_NAME;
     private static final String DROP_TTC_NOTIFICATIONS_TABLE =
@@ -93,6 +118,8 @@ public class DbHelper extends SQLiteOpenHelper {
             "DROP TABLE IF EXISTS " + AirsenseNotificationEntry.TABLE_NAME;
     private static final String DROP_TTC_SUBSCRIPTIONS_TABLE =
             "DROP TABLE IF EXISTS " + TtcSubscriptionEntry.TABLE_NAME;
+    private static final String DROP_AIRSENSE_SUBSCRIPTIONS_TABLE =
+            "DROP TABLE IF EXISTS " + AirsenseSubscriptionEntry.TABLE_NAME;
 
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -103,6 +130,7 @@ public class DbHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TTC_NOTIFICATIONS_TABLE);
         db.execSQL(CREATE_AIRSENSE_NOTIFICATIONS_TABLE);
         db.execSQL(CREATE_TTC_SUBSCRIPTIONS_TABLE);
+        db.execSQL(CREATE_AIRSENSE_SUBSCRIPTIONS_TABLE);
     }
 
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -112,6 +140,7 @@ public class DbHelper extends SQLiteOpenHelper {
         db.execSQL(DROP_TTC_NOTIFICATIONS_TABLE);
         db.execSQL(DROP_AIRSENSE_NOTIFICATIONS_TABLE);
         db.execSQL(DROP_TTC_SUBSCRIPTIONS_TABLE);
+        db.execSQL(DROP_AIRSENSE_SUBSCRIPTIONS_TABLE);
         onCreate(db);
     }
 

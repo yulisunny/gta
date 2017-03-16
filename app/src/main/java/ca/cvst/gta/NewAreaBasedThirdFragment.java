@@ -26,9 +26,12 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
     private Spinner mFieldNamesSpinner;
     private EditText mFieldValueView;
     private Button mSubscribeButton;
+    private Button mEnterButton;
     private static View root;
     private HashMap<String, Float> mAirSensorMap = new HashMap<>();
     private String mTtcRouteNumber = "-1";
+    private String mAirType = "-1";
+    private float mAirValue = -1;
 
     public NewAreaBasedThirdFragment() {
     }
@@ -71,6 +74,7 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
                 if (publisher != null) {
                     mListener.setPublisher(mPublishersSpinner.getSelectedItem().toString());
                     mListener.setRouteNumber(mTtcRouteNumber);
+                    mListener.setAirTypeAndValue(mAirType, mAirValue);
                     mListener.setAirSensorMap(mAirSensorMap);
                     mListener.submitSubscription();
                 } else {
@@ -80,13 +84,14 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
         });
         mSubscribeButton.setEnabled(true);
 
-        Button enterButton = (Button) root.findViewById(R.id.btn_enter);
-        enterButton.setOnClickListener(new View.OnClickListener() {
+        mEnterButton = (Button) root.findViewById(R.id.btn_enter);
+        mEnterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 enterFieldValue();
             }
         });
+        mEnterButton.setEnabled(false);
 
         Button previousButton = (Button) root.findViewById(R.id.btn_previous);
         previousButton.setOnClickListener(new View.OnClickListener() {
@@ -171,6 +176,7 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
             String fieldName = mFieldNamesSpinner.getSelectedItem().toString();
             if (!fieldName.equals("Everything")) {
                 mSubscribeButton.setEnabled(false);
+                mEnterButton.setEnabled(true);
             }
             else {
                 mSubscribeButton.setEnabled(true);
@@ -203,29 +209,44 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
             switch (fieldName) {
                 case "Carbon Dioxide (CO2)":
                     mAirSensorMap.put("co2", Float.parseFloat(fieldValue));
+                    mAirType = "CO2";
+                    mAirValue = Float.parseFloat(fieldValue);
                     break;
                 case "Carbon Monoxide (CO)":
                     mAirSensorMap.put("co", Float.parseFloat(fieldValue));
+                    mAirType = "CO";
+                    mAirValue = Float.parseFloat(fieldValue);
                     break;
                 case "Nitrogen Oxides (NOx)":
                     mAirSensorMap.put("nox", Float.parseFloat(fieldValue));
+                    mAirType = "NOx";
+                    mAirValue = Float.parseFloat(fieldValue);
                     break;
                 case "Air Quality Health Index (AQHI)":
                     mAirSensorMap.put("aqhi", Float.parseFloat(fieldValue));
+                    mAirType = "AQHI";
+                    mAirValue = Float.parseFloat(fieldValue);
                     break;
                 case "Ozone (O3)":
                     mAirSensorMap.put("o3", Float.parseFloat(fieldValue));
+                    mAirType = "O3";
+                    mAirValue = Float.parseFloat(fieldValue);
                     break;
                 case "Particulate Matter (PM)":
                     mAirSensorMap.put("pm", Float.parseFloat(fieldValue));
+                    mAirType = "PM";
+                    mAirValue = Float.parseFloat(fieldValue);
                     break;
                 case "Everything":
                     mAirSensorMap.clear();
+                    mAirType = "-1";
+                    mAirValue = -1;
                     break;
                 default:
                     break;
             }
         }
+
 
         if (TextUtils.isEmpty(fieldValue) && !fieldName.equals("Everything")) {
             mFieldValueView.setError(getString(R.string.new_subscription_invalid_field_value));
@@ -240,5 +261,6 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
         void goToSecondSubscriptionPageFromThirdPage();
         void setRouteNumber(String routeNumber);
         void setAirSensorMap(HashMap<String, Float> airSensorMap);
+        void setAirTypeAndValue(String airType, float airValue);
     }
 }

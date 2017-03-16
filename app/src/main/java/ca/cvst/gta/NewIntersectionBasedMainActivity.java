@@ -18,6 +18,8 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
+import ca.cvst.gta.db.AirsenseSubscriptionsContract;
+import ca.cvst.gta.db.AirsenseSubscriptionsContract.AirsenseSubscriptionEntry;
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
@@ -35,6 +37,8 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
     private String subscriptionName;
     private HashMap<String, Float> airSensorMap;
     private String routeNumber;
+    private String airType;
+    private float airValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +89,12 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
     @Override
     public void setRouteNumber(String routeNumber) {
         this.routeNumber = routeNumber;
+    }
+
+    @Override
+    public void setAirTypeAndValue(String airType, float airValue) {
+        this.airType = airType;
+        this.airValue = airValue;
     }
 
     @Override
@@ -171,12 +181,13 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
                 payload.put("action", "subscribe");
             }
             else if (publisher.equals("Air Sensor")) {
-                payload.put("publisherName", publisher.toLowerCase());
+                payload.put("publisherName", "airsense");
 
-                if (!routeNumber.equals("-1")) {
-                    JSONObject routeNumberObject = new JSONObject().put("routeNumber", routeNumber);
-                    JSONObject matchObject = new JSONObject().put("match", routeNumberObject);
-                    mustArray.put(matchObject);
+                if (!airType.equals("-1")) {
+                    JSONObject gtObject = new JSONObject().put("gt", airValue);
+                    JSONObject airTypeObject = new JSONObject().put(airType.toLowerCase(), gtObject);
+                    JSONObject airRangeObject = new JSONObject().put("range", airTypeObject);
+                    mustArray.put(airRangeObject);
                 }
                 JSONObject mustObject = new JSONObject().put("must", mustArray);
                 JSONObject boolObject = new JSONObject().put("bool", mustObject);
@@ -184,7 +195,7 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
                 payload.put("subscription", boolObject);
                 payload.put("action", "subscribe");
             }
-            
+
             System.out.println("payload = " + payload);
 //            SubscriptionService.startActionSubscribe(getApplicationContext(), payload.toString());
         } catch (JSONException e) {
@@ -217,7 +228,7 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
                             cv.put(TtcSubscriptionEntry.UPPER_LATITUDE, upperLatitude);
                             cv.put(TtcSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
                             cv.put(TtcSubscriptionEntry.UPPER_LONGITUDE, upperLongitude);
-                            cv.put(TtcSubscriptionEntry.ROUTE_NUMBER, "9");
+                            cv.put(TtcSubscriptionEntry.ROUTE_NUMBER, routeNumber);
                             cv.put(TtcSubscriptionEntry.MONDAY, mondayToSundayArray[0]);
                             cv.put(TtcSubscriptionEntry.TUESDAY, mondayToSundayArray[1]);
                             cv.put(TtcSubscriptionEntry.WEDNESDAY, mondayToSundayArray[2]);
@@ -235,7 +246,34 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-
+                    }
+                    else if (publisher.equals("Air Sensor")) {
+                        try {
+                            cv.put(AirsenseSubscriptionEntry.TIMESTAMP, System.currentTimeMillis()/1000L);
+                            cv.put(AirsenseSubscriptionEntry.NAME, subscriptionName);
+                            cv.put(AirsenseSubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
+                            cv.put(AirsenseSubscriptionEntry.UPPER_LATITUDE, upperLatitude);
+                            cv.put(AirsenseSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
+                            cv.put(AirsenseSubscriptionEntry.UPPER_LONGITUDE, upperLongitude);
+                            cv.put(AirsenseSubscriptionEntry.AIR_TYPE, airType);
+                            cv.put(AirsenseSubscriptionEntry.AIR_VALUE, airValue);
+                            cv.put(AirsenseSubscriptionEntry.MONDAY, mondayToSundayArray[0]);
+                            cv.put(AirsenseSubscriptionEntry.TUESDAY, mondayToSundayArray[1]);
+                            cv.put(AirsenseSubscriptionEntry.WEDNESDAY, mondayToSundayArray[2]);
+                            cv.put(AirsenseSubscriptionEntry.THURSDAY, mondayToSundayArray[3]);
+                            cv.put(AirsenseSubscriptionEntry.FRIDAY, mondayToSundayArray[4]);
+                            cv.put(AirsenseSubscriptionEntry.SATURDAY, mondayToSundayArray[5]);
+                            cv.put(AirsenseSubscriptionEntry.SUNDAY, mondayToSundayArray[6]);
+                            cv.put(AirsenseSubscriptionEntry.START_TIME, startAndEndTime[0]);
+                            cv.put(AirsenseSubscriptionEntry.END_TIME, startAndEndTime[1]);
+                            cv.put(AirsenseSubscriptionEntry.NOTIFICATION_ENABLED, notificationEnabled);
+                            cv.put(AirsenseSubscriptionEntry.SUBSCRIPTION_TYPE, "Intersection Based");
+                            cv.put(AirsenseSubscriptionEntry.SUBSCRIPTION_ID, response.getString("subscription_id"));
+                            db.insert(AirsenseSubscriptionEntry.TABLE_NAME, null, cv);
+                            db.close();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     Intent intent = new Intent(getApplicationContext(), SubscriptionsActivity.class);
