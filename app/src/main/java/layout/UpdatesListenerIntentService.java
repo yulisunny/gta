@@ -2,7 +2,9 @@ package layout;
 
 import android.app.IntentService;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.koushikdutta.async.ByteBufferList;
@@ -14,6 +16,7 @@ import com.koushikdutta.async.http.WebSocket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ca.cvst.gta.R;
 import ca.cvst.gta.db.AirsenseNotificationsContract.AirsenseNotificationEntry;
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
@@ -34,7 +37,10 @@ public class UpdatesListenerIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        AsyncHttpClient.getDefaultInstance().websocket("ws://subs.portal.cvst.ca/liveupdate/yulisunny", null, new AsyncHttpClient.WebSocketConnectCallback() {
+        SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        String username = sharedPref.getString(getString(R.string.key_username), null);
+        System.out.println("username = " + username);
+        AsyncHttpClient.getDefaultInstance().websocket("ws://subs.portal.cvst.ca/liveupdate/" + username, null, new AsyncHttpClient.WebSocketConnectCallback() {
             @Override
             public void onCompleted(final Exception ex, WebSocket webSocket) {
                 if (ex != null) {
