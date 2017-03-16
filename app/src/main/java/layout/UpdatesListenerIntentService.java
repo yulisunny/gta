@@ -24,11 +24,14 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import ca.cvst.gta.MainActivity;
 import ca.cvst.gta.R;
 import ca.cvst.gta.db.AirsenseNotificationsContract.AirsenseNotificationEntry;
+import ca.cvst.gta.db.AirsenseSubscriptionsContract.AirsenseSubscriptionEntry;
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
 import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
@@ -40,7 +43,7 @@ import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
  */
 public class UpdatesListenerIntentService extends IntentService {
 
-    private static int notificationId = 1;
+    private static int airsenseNotifId = 1;
 
     public UpdatesListenerIntentService() {
         super("UpdatesListenerIntentService");
@@ -260,12 +263,117 @@ public class UpdatesListenerIntentService extends IntentService {
             values.put(AirsenseNotificationEntry.CO, data.getDouble("co"));
             values.put(AirsenseNotificationEntry.COO, data.getDouble("coo"));
             values.put(AirsenseNotificationEntry.ADDRESS, data.getString("address"));
-            values.put(AirsenseNotificationEntry.SUBSCRIPTION_IDS, root.getJSONArray("subscriptionIds").join(","));
+            JSONArray subscriptionIds = root.getJSONArray("subscriptionIds");
+            values.put(AirsenseNotificationEntry.SUBSCRIPTION_IDS, subscriptionIds.join(","));
             db.insert(AirsenseNotificationEntry.TABLE_NAME, null, values);
-            db.close();
+
+            String[] columns = {
+                    AirsenseSubscriptionEntry.NAME,
+                    AirsenseSubscriptionEntry.AIR_TYPE,
+                    AirsenseSubscriptionEntry.MONDAY,
+                    AirsenseSubscriptionEntry.TUESDAY,
+                    AirsenseSubscriptionEntry.WEDNESDAY,
+                    AirsenseSubscriptionEntry.THURSDAY,
+                    AirsenseSubscriptionEntry.FRIDAY,
+                    AirsenseSubscriptionEntry.SATURDAY,
+                    AirsenseSubscriptionEntry.SUNDAY,
+                    AirsenseSubscriptionEntry.START_TIME,
+                    AirsenseSubscriptionEntry.END_TIME,
+                    AirsenseSubscriptionEntry.NOTIFICATION_ENABLED
+            };
+
+            List<String> validSubs = new ArrayList<>();
+            Set<String> fieldsOfInterest = new HashSet<>();
+            for (int i = 0; i < subscriptionIds.length(); i++) {
+                String[] subscriptionId = {subscriptionIds.getString(i)};
+                Cursor cursor = db.query(AirsenseSubscriptionEntry.TABLE_NAME, columns, AirsenseSubscriptionEntry.SUBSCRIPTION_ID + "= ?", subscriptionId, null, null, null);
+                while (cursor.moveToNext()) {
+                    String name = cursor.getString(cursor.getColumnIndex(AirsenseSubscriptionEntry.NAME));
+                    String airType = cursor.getString(cursor.getColumnIndex(AirsenseSubscriptionEntry.AIR_TYPE));
+                    int mon = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.MONDAY));
+                    int tues = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.TUESDAY));
+                    int wed = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.WEDNESDAY));
+                    int thur = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.THURSDAY));
+                    int fri = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.FRIDAY));
+                    int sat = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.SATURDAY));
+                    int sun = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.SUNDAY));
+                    int startTime = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.START_TIME));
+                    int endTime = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.END_TIME));
+                    int notif_enabled = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.NOTIFICATION_ENABLED));
+                    if (notif_enabled == 0) {
+                        break;
+                    }
+
+                    Calendar calendar = Calendar.getInstance();
+                    int day = calendar.get(Calendar.DAY_OF_WEEK);
+                    int seconds = (calendar.get(Calendar.HOUR_OF_DAY) * 3600) + (calendar.get(Calendar.MINUTE) * 60) + (calendar.get(Calendar.SECOND));
+                    if ((seconds > startTime) && (seconds < endTime)) {
+                        if ((day == Calendar.MONDAY) && (mon > 0)) {
+                            validSubs.add(name);
+                            fieldsOfInterest.add(airType);
+                            break;
+                        }
+
+                        if ((day == Calendar.TUESDAY) && (tues > 0)) {
+                            validSubs.add(name);
+                            fieldsOfInterest.add(airType);
+                            break;
+                        }
+
+                        if ((day == Calendar.WEDNESDAY) && (wed > 0)) {
+                            validSubs.add(name);
+                            fieldsOfInterest.add(airType);
+                            break;
+                        }
+
+                        if ((day == Calendar.THURSDAY) && (thur > 0)) {
+                            validSubs.add(name);
+                            fieldsOfInterest.add(airType);
+                            break;
+                        }
+
+                        if ((day == Calendar.FRIDAY) && (fri > 0)) {
+                            validSubs.add(name);
+                            fieldsOfInterest.add(airType);
+                            break;
+                        }
+
+                        if ((day == Calendar.SATURDAY) && (sat > 0)) {
+                            validSubs.add(name);
+                            fieldsOfInterest.add(airType);
+                            break;
+                        }
+                        if ((day == Calendar.SUNDAY) && (sun > 0)) {
+                            validSubs.add(name);
+                            fieldsOfInterest.add(airType);
+                            break;
+                        }
+
+                    }
+                }
+                cursor.close();
+            }
+
+            if (validSubs.size() > 0) {
+                Intent intent = new Intent(this, MainActivity.class);
+                PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
+                        .setSmallIcon(R.drawable.ic_notification)
+                        .setContentIntent(pending)
+                        .setContentTitle("Airsense Update: " + TextUtils.join(",", validSubs));
+                String content = "";
+                for (String field : fieldsOfInterest) {
+                    content += (field + ": " + data.getString(field) + ". ");
+                }
+                mBuilder.setContentText(content);
+                NotificationManager notificationManager =
+                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.notify(airsenseNotifId++, mBuilder.build());
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        db.close();
     }
 
 

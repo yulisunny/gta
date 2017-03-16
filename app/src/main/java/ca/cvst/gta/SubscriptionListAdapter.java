@@ -21,6 +21,7 @@ import org.json.JSONObject;
 
 import java.util.List;
 
+import ca.cvst.gta.db.AirsenseSubscriptionsContract.AirsenseSubscriptionEntry;
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
@@ -103,7 +104,9 @@ public class SubscriptionListAdapter extends RecyclerView.Adapter<SubscriptionLi
                                     db.delete(TtcSubscriptionEntry.TABLE_NAME, TtcSubscriptionEntry.SUBSCRIPTION_ID + "= ?", subscriptionId);
                                     db.close();
                                 } else if (subscription.getType() == Subscription.Type.AIRSENSE) {
-
+                                    String[] subscriptionId = {subscription.getSubscriptionId()};
+                                    db.delete(AirsenseSubscriptionEntry.TABLE_NAME, AirsenseSubscriptionEntry.SUBSCRIPTION_ID + "= ?", subscriptionId);
+                                    db.close();
                                 }
 
                                 mDataSet.remove(position);
