@@ -380,7 +380,7 @@ public class UpdatesListenerIntentService extends IntentService {
                 mBuilder.setContentText(content);
                 NotificationManager notificationManager =
                         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.notify(airsenseNotifId++, mBuilder.build());
+                notificationManager.notify(data.getInt("id"), mBuilder.build());
             }
         } catch (JSONException e) {
             e.printStackTrace();
