@@ -174,12 +174,21 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
         }
         if (parent.getId() == R.id.spinner_field_names) {
             String fieldName = mFieldNamesSpinner.getSelectedItem().toString();
+            String dataType = mPublishersSpinner.getSelectedItem().toString();
             if (!fieldName.equals("Everything")) {
                 mSubscribeButton.setEnabled(false);
                 mEnterButton.setEnabled(true);
+                if (dataType.equals("TTC")) {
+                    mFieldValueView.setHint("EqualTo");
+                }
+                else if (dataType.equals("Air Sensor")) {
+                    mFieldValueView.setHint("GreaterThan");
+                }
             }
             else {
+                mFieldValueView.setHint("N/A");
                 mSubscribeButton.setEnabled(true);
+                mEnterButton.setEnabled(false);
             }
         }
     }
