@@ -14,6 +14,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import java.util.HashMap;
+
 public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.OnItemSelectedListener {
 
     private OnFragmentInteractionListener mListener;
@@ -24,10 +26,9 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
     private Spinner mFieldNamesSpinner;
     private EditText mFieldValueView;
     private Button mSubscribeButton;
-
-
-
     private static View root;
+    private HashMap<String, Float> mAirSensorMap = new HashMap<>();
+    private String mTtcRouteNumber = "-1";
 
     public NewAreaBasedThirdFragment() {
     }
@@ -69,6 +70,8 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
             public void onClick(View v) {
                 if (publisher != null) {
                     mListener.setPublisher(mPublishersSpinner.getSelectedItem().toString());
+                    mListener.setRouteNumber(mTtcRouteNumber);
+                    mListener.setAirSensorMap(mAirSensorMap);
                     mListener.submitSubscription();
                 } else {
                     Toast.makeText(getActivity().getApplicationContext(), "Error!", Toast.LENGTH_SHORT).show();
@@ -169,6 +172,9 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
             if (!fieldName.equals("Everything")) {
                 mSubscribeButton.setEnabled(false);
             }
+            else {
+                mSubscribeButton.setEnabled(true);
+            }
         }
     }
 
@@ -179,6 +185,47 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
     private void enterFieldValue() {
         String fieldValue = mFieldValueView.getText().toString();
         String fieldName = mFieldNamesSpinner.getSelectedItem().toString();
+        String dataType = mPublishersSpinner.getSelectedItem().toString();
+
+        if (dataType.equals("TTC")) {
+            switch (fieldName) {
+                case "Route Number":
+                    mTtcRouteNumber = fieldValue;
+                    break;
+                case "Everything":
+                    mTtcRouteNumber = "-1";
+                    break;
+                default:
+                    break;
+            }
+        }
+        else if (dataType.equals("Air Sensor")) {
+            switch (fieldName) {
+                case "Carbon Dioxide (CO2)":
+                    mAirSensorMap.put("co2", Float.parseFloat(fieldValue));
+                    break;
+                case "Carbon Monoxide (CO)":
+                    mAirSensorMap.put("co", Float.parseFloat(fieldValue));
+                    break;
+                case "Nitrogen Oxides (NOx)":
+                    mAirSensorMap.put("nox", Float.parseFloat(fieldValue));
+                    break;
+                case "Air Quality Health Index (AQHI)":
+                    mAirSensorMap.put("aqhi", Float.parseFloat(fieldValue));
+                    break;
+                case "Ozone (O3)":
+                    mAirSensorMap.put("o3", Float.parseFloat(fieldValue));
+                    break;
+                case "Particulate Matter (PM)":
+                    mAirSensorMap.put("pm", Float.parseFloat(fieldValue));
+                    break;
+                case "Everything":
+                    mAirSensorMap.clear();
+                    break;
+                default:
+                    break;
+            }
+        }
 
         if (TextUtils.isEmpty(fieldValue) && !fieldName.equals("Everything")) {
             mFieldValueView.setError(getString(R.string.new_subscription_invalid_field_value));
@@ -191,5 +238,7 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
         void setPublisher(String publisher);
         void submitSubscription();
         void goToSecondSubscriptionPageFromThirdPage();
+        void setRouteNumber(String routeNumber);
+        void setAirSensorMap(HashMap<String, Float> airSensorMap);
     }
 }

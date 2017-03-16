@@ -16,6 +16,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
@@ -29,6 +31,8 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
     private int notificationEnabled;
     private int[] startAndEndTime;
     private String subscriptionName;
+    private HashMap<String, Float> airSensorMap;
+    private String routeNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +68,16 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
     @Override
     public void setStartAndEndTime(int[] startAndEndTime) {
         this.startAndEndTime = startAndEndTime;
+    }
+
+    @Override
+    public void setAirSensorMap(HashMap<String, Float> airSensorMap) {
+        this.airSensorMap = airSensorMap;
+    }
+
+    @Override
+    public void setRouteNumber(String routeNumber) {
+        this.routeNumber = routeNumber;
     }
 
     @Override
@@ -136,14 +150,36 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
             mustArray.put(lngRangeObject);
             mustArray.put(latRangeObject);
 
-            JSONObject mustObject = new JSONObject().put("must", mustArray);
-            JSONObject boolObject = new JSONObject().put("bool", mustObject);
-
             // publisher = mPublishersSpinner.getSelectedItem().toString();
-            payload.put("publisherName", publisher.toLowerCase());
-            payload.put("subscription", boolObject);
-            payload.put("action", "subscribe");
-//            payload.put("ttl", "5m");
+            if (publisher.equals("TTC")) {
+                payload.put("publisherName", publisher.toLowerCase());
+
+                if (!routeNumber.equals("-1")) {
+                    JSONObject routeNumberObject = new JSONObject().put("routeNumber", routeNumber);
+                    JSONObject matchObject = new JSONObject().put("match", routeNumberObject);
+                    mustArray.put(matchObject);
+                }
+                JSONObject mustObject = new JSONObject().put("must", mustArray);
+                JSONObject boolObject = new JSONObject().put("bool", mustObject);
+
+                payload.put("subscription", boolObject);
+                payload.put("action", "subscribe");
+            }
+            else if (publisher.equals("Air Sensor")) {
+                payload.put("publisherName", publisher.toLowerCase());
+
+                if (!routeNumber.equals("-1")) {
+                    JSONObject routeNumberObject = new JSONObject().put("routeNumber", routeNumber);
+                    JSONObject matchObject = new JSONObject().put("match", routeNumberObject);
+                    mustArray.put(matchObject);
+                }
+                JSONObject mustObject = new JSONObject().put("must", mustArray);
+                JSONObject boolObject = new JSONObject().put("bool", mustObject);
+
+                payload.put("subscription", boolObject);
+                payload.put("action", "subscribe");
+            }
+
             System.out.println("payload = " + payload);
 //            SubscriptionService.startActionSubscribe(getApplicationContext(), payload.toString());
         } catch (JSONException e) {
@@ -176,7 +212,7 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
                             cv.put(TtcSubscriptionEntry.UPPER_LATITUDE, upperLatitude);
                             cv.put(TtcSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
                             cv.put(TtcSubscriptionEntry.UPPER_LONGITUDE, upperLongitude);
-                            cv.put(TtcSubscriptionEntry.ROUTE_NUMBER, "9");
+                            cv.put(TtcSubscriptionEntry.ROUTE_NUMBER, routeNumber);
                             cv.put(TtcSubscriptionEntry.MONDAY, mondayToSundayArray[0]);
                             cv.put(TtcSubscriptionEntry.TUESDAY, mondayToSundayArray[1]);
                             cv.put(TtcSubscriptionEntry.WEDNESDAY, mondayToSundayArray[2]);
@@ -194,7 +230,9 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-
+                    }
+                    else if (publisher.equals("Air Sensors")) {
+                        //TODO: new Db table for it.
                     }
 
                     Intent intent = new Intent(getApplicationContext(), SubscriptionsActivity.class);
