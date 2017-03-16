@@ -4,41 +4,56 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:text="Please Select the Type of Subscription"
+        android:layout_marginTop="10dp"
+        android:text="Enter Subscription Title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView0"
+        android:textSize="20sp" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/subscription_name" />
+
+
+    <TextView
+        android:layout_marginTop="10dp"
+        android:text="Select the Type of Subscription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/textView1"
-        android:textSize="30sp"
-        android:textAlignment="center" />
+        android:textSize="20sp" />
 
     <Button
         android:text="Area Based"
         android:layout_width="match_parent"
         android:id="@+id/button1"
+        android:layout_marginTop="10dp"
         android:layout_height="wrap_content"
         android:textAllCaps="false"
-        android:textSize="30sp"
+        android:textSize="20sp"
         style="@style/Widget.AppCompat.Button.Colored"
-        android:elevation="0dp"
         android:onClick="areaBasedSubscription" />
 
     <Button
         android:text="Intersection Based"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:id="@+id/button2"
         android:textAllCaps="false"
-        android:textSize="30sp"
+        android:textSize="20sp"
         style="@style/Widget.AppCompat.Button.Colored"
         android:onClick="intersectionBasedSubscription" />
 
-    <Button
-        android:text="Route Based"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/button3"
-        android:textAllCaps="false"
-        android:textSize="30sp"
-        style="@style/Widget.AppCompat.Button.Colored"
-        android:onClick="routeBasedSubscription" />
+    <!--<Button-->
+        <!--android:text="Route Based"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/button3"-->
+        <!--android:textAllCaps="false"-->
+        <!--android:textSize="30sp"-->
+        <!--style="@style/Widget.AppCompat.Button.Colored"-->
+        <!--android:onClick="routeBasedSubscription" />-->
 </LinearLayout>

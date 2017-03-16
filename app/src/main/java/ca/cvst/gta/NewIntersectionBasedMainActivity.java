@@ -16,6 +16,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
@@ -30,11 +32,16 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
     private int notificationEnabled;
     private int[] startAndEndTime;
     private String intersectionName;
+    private String subscriptionName;
+    private HashMap<String, Float> airSensorMap;
+    private String routeNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intersection_based_subscripton_main_page);
+
+        subscriptionName = getIntent().getStringExtra("subscription_name");
 
         NewIntersectionBasedFirstFragment firstFragment = NewIntersectionBasedFirstFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_intersection_based_content_container, firstFragment).commit();
@@ -68,6 +75,16 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
     @Override
     public void setIntersectionName(String name) {
         this.intersectionName = name;
+    }
+
+    @Override
+    public void setAirSensorMap(HashMap<String, Float> airSensorMap) {
+        this.airSensorMap = airSensorMap;
+    }
+
+    @Override
+    public void setRouteNumber(String routeNumber) {
+        this.routeNumber = routeNumber;
     }
 
     @Override
@@ -138,14 +155,36 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
             mustArray.put(lngRangeObject);
             mustArray.put(latRangeObject);
 
-            JSONObject mustObject = new JSONObject().put("must", mustArray);
-            JSONObject boolObject = new JSONObject().put("bool", mustObject);
-
             // publisher = mPublishersSpinner.getSelectedItem().toString();
-            payload.put("publisherName", publisher);
-            payload.put("subscription", boolObject);
-            payload.put("action", "subscribe");
-//            payload.put("ttl", "5m");
+            if (publisher.equals("TTC")) {
+                payload.put("publisherName", publisher.toLowerCase());
+
+                if (!routeNumber.equals("-1")) {
+                    JSONObject routeNumberObject = new JSONObject().put("routeNumber", routeNumber);
+                    JSONObject matchObject = new JSONObject().put("match", routeNumberObject);
+                    mustArray.put(matchObject);
+                }
+                JSONObject mustObject = new JSONObject().put("must", mustArray);
+                JSONObject boolObject = new JSONObject().put("bool", mustObject);
+
+                payload.put("subscription", boolObject);
+                payload.put("action", "subscribe");
+            }
+            else if (publisher.equals("Air Sensor")) {
+                payload.put("publisherName", publisher.toLowerCase());
+
+                if (!routeNumber.equals("-1")) {
+                    JSONObject routeNumberObject = new JSONObject().put("routeNumber", routeNumber);
+                    JSONObject matchObject = new JSONObject().put("match", routeNumberObject);
+                    mustArray.put(matchObject);
+                }
+                JSONObject mustObject = new JSONObject().put("must", mustArray);
+                JSONObject boolObject = new JSONObject().put("bool", mustObject);
+
+                payload.put("subscription", boolObject);
+                payload.put("action", "subscribe");
+            }
+            
             System.out.println("payload = " + payload);
 //            SubscriptionService.startActionSubscribe(getApplicationContext(), payload.toString());
         } catch (JSONException e) {
@@ -173,7 +212,7 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
                     if (publisher.equals("TTC")) {
                         try {
                             cv.put(TtcSubscriptionEntry.TIMESTAMP, System.currentTimeMillis()/1000L);
-                            cv.put(TtcSubscriptionEntry.NAME, intersectionName);
+                            cv.put(TtcSubscriptionEntry.NAME, subscriptionName);
                             cv.put(TtcSubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
                             cv.put(TtcSubscriptionEntry.UPPER_LATITUDE, upperLatitude);
                             cv.put(TtcSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
