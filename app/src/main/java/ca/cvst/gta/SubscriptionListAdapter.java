@@ -1,6 +1,7 @@
 package ca.cvst.gta;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -19,6 +20,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
+
+import ca.cvst.gta.db.DbHelper;
+import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
 public class SubscriptionListAdapter extends RecyclerView.Adapter<SubscriptionListAdapter.ViewHolder> {
 
@@ -64,7 +68,7 @@ public class SubscriptionListAdapter extends RecyclerView.Adapter<SubscriptionLi
                 @Override
                 public void onClick(View v) {
                     final int position = getAdapterPosition();
-                    Subscription subscription = mDataSet.get(position);
+                    final Subscription subscription = mDataSet.get(position);
                     JSONObject payload = new JSONObject();
                     try {
                         payload.put("subscriptionId", subscription.getSubscriptionId());
@@ -92,6 +96,16 @@ public class SubscriptionListAdapter extends RecyclerView.Adapter<SubscriptionLi
                             }
                             Toast.makeText(context, message, Toast.LENGTH_LONG).show();
                             if (status.equals("success")) {
+                                DbHelper helper = new DbHelper(context);
+                                SQLiteDatabase db = helper.getWritableDatabase();
+                                if (subscription.getType() == Subscription.Type.TTC) {
+                                    String[] subscriptionId = {subscription.getSubscriptionId()};
+                                    db.delete(TtcSubscriptionEntry.TABLE_NAME, TtcSubscriptionEntry.SUBSCRIPTION_ID + "= ?", subscriptionId);
+                                    db.close();
+                                } else if (subscription.getType() == Subscription.Type.AIRSENSE) {
+
+                                }
+
                                 mDataSet.remove(position);
                                 notifyItemRemoved(position);
                             }
