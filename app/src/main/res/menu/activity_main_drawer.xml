@@ -3,16 +3,24 @@
 
     <item android:title="Traffic Data Type">
         <menu>
-            <group android:id="@+id/data_type_group" android:checkableBehavior="all">
+            <group android:id="@+id/ttc_group">
                 <item
                     android:id="@+id/ttc"
                     android:icon="@drawable/ttc"
                     android:title="TTC bus"
                     />
+            </group>
+            <group android:id="@+id/current_road_incidents_group">
                 <item
                     android:id="@+id/current_road_incidents"
                     android:icon="@drawable/ic_menu_send"
                     android:title="Current Road Incidents" />
+            </group>
+            <group android:id="@+id/weather_group">
+                <item
+                    android:id="@+id/weather"
+                    android:icon="@drawable/bubble_mask"
+                    android:title="Weather" />
             </group>
         </menu>
     </item>

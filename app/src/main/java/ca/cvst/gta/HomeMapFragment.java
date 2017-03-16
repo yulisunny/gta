@@ -19,6 +19,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -43,6 +44,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.JsonObject;
 import com.koushikdutta.async.ByteBufferList;
 import com.koushikdutta.async.DataEmitter;
 import com.koushikdutta.async.callback.DataCallback;
@@ -78,11 +80,17 @@ public class HomeMapFragment extends Fragment implements
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private boolean ttcIsChecked = false;
+    private boolean roadIncidentIsChecked = false;
+    private boolean weatherIsChecked = false;
     private ArrayList<Marker> ttcMarkers;
+    private ArrayList<Marker> roadIncidentMarkers;
+    private ArrayList<Marker> weatherMarkers;
+
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
     private GoogleMap mMap;
     private Bitmap ttcIcon;
+    private Bitmap weatherIcon;
     private Map<Integer, Integer> ttcInvertedIndex;
     private MapView mMapView;
     // TODO: Rename and change types of parameters
@@ -245,6 +253,28 @@ public class HomeMapFragment extends Fragment implements
                 ttcMarker.setVisible(ttcIsChecked);
             }
         }
+        else if (id == R.id.current_road_incidents) {
+            if (item.isChecked()) {
+                item.setChecked(false);
+                roadIncidentIsChecked = false;
+            } else {
+                item.setChecked(true);
+                roadIncidentIsChecked = true;
+            }
+        }
+        else if (id == R.id.weather) {
+            if (item.isChecked()) {
+                item.setChecked(false);
+                weatherIsChecked = false;
+            } else {
+                item.setChecked(true);
+                weatherIsChecked = true;
+            }
+
+            for (Marker weatherMarker : weatherMarkers) {
+                weatherMarker.setVisible(weatherIsChecked);
+            }
+        }
         DrawerLayout drawer = (DrawerLayout) getView().findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -310,6 +340,9 @@ public class HomeMapFragment extends Fragment implements
 
         initialize_ttcData();
 
+//        initialize_roadIncidentData();
+
+        initialize_weather();
         //LatLng toronto = new LatLng(43.6543, -79.3860);
         //mMarker = mMap.addMarker(new MarkerOptions()
         //        .position(toronto)
@@ -346,10 +379,154 @@ public class HomeMapFragment extends Fragment implements
         NetworkManager.getInstance(getContext()).addToRequestQueue(jsonArrayRequest);
     }
 
+    private void initialize_weather() {
+        weatherIcon = resizeMapIcons("weather", 25, 25);
+        weatherMarkers = new ArrayList<Marker>();
+//        ttcInvertedIndex = new HashMap<Integer, Integer>();
+
+        String url = "http://portal.cvst.ca/api/0.1/weather";
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray weatherInfos) {
+                        weatherPlotNearby(weatherInfos);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("error = " + error);
+            }
+        });
+        NetworkManager.getInstance(getContext()).addToRequestQueue(jsonArrayRequest);
+    }
+
+    private void initialize_roadIncidentData() {
+
+//        String url = "http://portal.cvst.ca/api/0.1/twitter";
+        String url = "http://portal.cvst.ca/realtime/CURRENT_RC";
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject roadIncidentObject) {
+                        roadIncidentPlotAll(roadIncidentObject);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("error = " + error);
+            }
+        });
+        NetworkManager.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
+    }
+
     private Bitmap resizeMapIcons(String iconName, int width, int height) {
         Bitmap imageBitmap = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(iconName, "drawable", getContext().getPackageName()));
         Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false);
         return resizedBitmap;
+    }
+
+    private void roadIncidentPlotAll(JSONObject roadIncidentObject) {
+
+        try {
+//            int ttcMarkersIndex = 0;
+//            ArrayList<JSONObject> ttcVehiclesSecondary = new ArrayList<JSONObject>();
+
+            JSONArray roadIncidents = roadIncidentObject.getJSONArray("result");
+            for (int index = 0; index < roadIncidents.length(); index++) {
+                JSONObject roadIncident = roadIncidents.getJSONObject(index);
+                String description = roadIncident.getString("description");
+                double lat = roadIncident.getDouble("lat");
+                double lon = roadIncident.getDouble("longit");
+                LatLng incidentLocation = new LatLng(lat, lon);
+
+                System.out.println("Plot: " + incidentLocation);
+                mMap.addMarker(new MarkerOptions()
+                        .position(incidentLocation)
+                        .title("WAHAHHA")
+                        .snippet(description)
+                        .visible(true));
+            }
+            
+            // For twitter:
+//            for (int index = 0; index < roadIncidents.length(); index++) {
+//                JSONObject roadIncident = roadIncidents.getJSONObject(index);
+//                JSONObject analysis = roadIncident.getJSONObject("analysis");
+//                JSONObject location = analysis.getJSONObject("locations");
+//                JSONObject coordinates = location.getJSONObject("geo");
+//
+//                String Latitude = coordinates.getString("lat");
+//                String Longitude = coordinates.getString("lon");
+//
+//                LatLng incidentLocation = new LatLng(Double.parseDouble(Latitude), Double.parseDouble(Longitude));
+//
+//                mMap.addMarker(new MarkerOptions()
+//                        .position(incidentLocation)
+//                        .title("NOOBBB")
+//                        .snippet("YOLOLOL"));
+//
+//                        //.visible(ttcIsChecked)));
+////                if (Helper.isNearby(mLastLocation.getLatitude(), mLastLocation.getLongitude(), Latitude, Longitude)) {
+////                    ttcPlotMarker(ttcVehicle, ttcMarkersIndex, Latitude, Longitude);
+////                    ttcMarkersIndex = ttcMarkersIndex + 1;
+////                }
+////                else {
+////                ttcVehiclesSecondary.add(ttcVehicle);
+////                }
+//            }
+////            ttcPlotFurtherRecursive(ttcVehiclesSecondary, ttcMarkersIndex, 0);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    private void weatherPlotNearby(JSONArray weatherInfos) {
+        try {
+//            int ttcMarkersIndex = 0;
+//            ArrayList<JSONObject> ttcVehiclesSecondary = new ArrayList<JSONObject>();
+
+            for (int index = 0; index < weatherInfos.length(); index++) {
+                JSONObject weatherInfo = weatherInfos.getJSONObject(index);
+                JSONObject locationInfo = weatherInfo.getJSONObject("display_location");
+                double Latitude = locationInfo.getDouble("latitude");
+                double Longitude = locationInfo.getDouble("longitude");
+
+                JSONObject current_observation = weatherInfo.getJSONObject("current_observation");
+                String locationName = weatherInfo.getString("location");
+
+                String relative_humidity = current_observation.getString("relative_humidity");
+                String observation_time = current_observation.getString("observation_time");
+                String temperature_string = current_observation.getString("temperature_string");
+                String weather = current_observation.getString("weather");
+                String wind_string = current_observation.getString("wind_string");
+                String snippet_string = "Relative Humidity: " + relative_humidity + '\n'
+                        + "Time: " + observation_time + '\n' + "Temperature: "
+                        + temperature_string + '\n' + "Weather: " + weather + '\n' + "Wind: " + wind_string;
+
+                LatLng location = new LatLng(Latitude, Longitude);
+//                System.out.println("JAJAJA: " + location);
+                weatherMarkers.add(mMap.addMarker(new MarkerOptions()
+                        .position(location)
+                        .title(locationName)
+                        .visible(weatherIsChecked)
+                        .snippet(snippet_string)
+                        .icon(BitmapDescriptorFactory.fromBitmap(weatherIcon))));
+
+//                if (Helper.isNearby(mLastLocation.getLatitude(), mLastLocation.getLongitude(), Latitude, Longitude)) {
+//                    ttcPlotMarker(ttcVehicle, ttcMarkersIndex, Latitude, Longitude);
+//                    ttcMarkersIndex = ttcMarkersIndex + 1;
+//                }
+//                else {
+//                    ttcVehiclesSecondary.add(ttcVehicle);
+//                }
+            }
+//            ttcPlotFurtherRecursive(ttcVehiclesSecondary, ttcMarkersIndex, 0);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void ttcPlotNearby(JSONArray ttcVehicles) {
@@ -363,13 +540,13 @@ public class HomeMapFragment extends Fragment implements
                 double Latitude = coordinates.getDouble(1);
                 double Longitude = coordinates.getDouble(0);
 
-//                if (Helper.isNearby(mLastLocation.getLatitude(), mLastLocation.getLongitude(), Latitude, Longitude)) {
-//                    ttcPlotMarker(ttcVehicle, ttcMarkersIndex, Latitude, Longitude);
-//                    ttcMarkersIndex = ttcMarkersIndex + 1;
-//                }
-//                else {
+                if (Helper.isNearby(mLastLocation.getLatitude(), mLastLocation.getLongitude(), Latitude, Longitude)) {
+                    ttcPlotMarker(ttcVehicle, ttcMarkersIndex, Latitude, Longitude);
+                    ttcMarkersIndex = ttcMarkersIndex + 1;
+                }
+                else {
                 ttcVehiclesSecondary.add(ttcVehicle);
-//                }
+                }
             }
             ttcPlotFurtherRecursive(ttcVehiclesSecondary, ttcMarkersIndex, 0);
 
