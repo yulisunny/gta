@@ -137,7 +137,7 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
             JSONObject boolObject = new JSONObject().put("bool", mustObject);
 
             // publisher = mPublishersSpinner.getSelectedItem().toString();
-            payload.put("publisherName", publisher);
+            payload.put("publisherName", publisher.toLowerCase());
             payload.put("subscription", boolObject);
             payload.put("action", "subscribe");
 //            payload.put("ttl", "5m");

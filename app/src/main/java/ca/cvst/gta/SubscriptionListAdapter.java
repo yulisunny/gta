@@ -69,7 +69,7 @@ public class SubscriptionListAdapter extends RecyclerView.Adapter<SubscriptionLi
                     try {
                         payload.put("subscriptionId", subscription.getSubscriptionId());
                         if (subscription.getType() == Subscription.Type.TTC) {
-                            payload.put("publisherName", "TTC");
+                            payload.put("publisherName", "ttc");
                         } else if (subscription.getType() == Subscription.Type.AIRSENSE) {
                             payload.put("publisherName", "airsense");
                         }
