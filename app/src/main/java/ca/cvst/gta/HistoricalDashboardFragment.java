@@ -556,17 +556,19 @@ public class HistoricalDashboardFragment extends Fragment {
         }
 
         private void fetchDataAndCreateGraph() {
-            Long endDayTime, startTimeSecond, endTimeSecond;
+            Long endDayTime, startTimeSecond, endTimeSecond, startTimeMs, endTimeMs;
             Long offset = this.mTimeOffset / 1000;
             for (int i = 0; i < this.mTimeSteps.size(); i++) {
-                startTimeSecond = this.mTimeSteps.get(i) / 1000;
+                startTimeMs = this.mTimeSteps.get(i);
+                startTimeSecond = startTimeMs / 1000;
                 endTimeSecond = (startTimeSecond + offset);
+                endTimeMs = startTimeMs + this.mTimeOffset;
 
                 JsonArrayRequest jsonObjectRequest;
                 if (this.mChartType.equals(HistoricalChartTypes.AIR_QUALITY)) {
                     jsonObjectRequest = getAirQualityRequest(this, startTimeSecond, endTimeSecond, i);
                 } else {
-                    jsonObjectRequest = getRoadTrafficRequest(this, startTimeSecond, endTimeSecond, i);
+                    jsonObjectRequest = getRoadTrafficRequest(this, startTimeMs, endTimeMs, i);
                 }
 
                 NetworkManager.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
@@ -580,9 +582,9 @@ public class HistoricalDashboardFragment extends Fragment {
             DateTimeFormatter timeFormatter = DateTimeFormat.forPattern("HHmmss");
             String startTimeStr = dateFormatter.print(startTimeSecond) + "T" + timeFormatter.print(startTimeSecond);
             String endTimeStr = dateFormatter.print(endTimeSecond) + "T" + timeFormatter.print(endTimeSecond);
-            System.out.println("FORMATTED TIME IS " + startTimeStr + " " + endTimeStr);
             String url = "http://portal.cvst.ca/api/0.1/tomtom/hdf/average?id=" + graph.mLinkId +
                     "&starttime=" + startTimeStr + "&endtime=" + endTimeStr;
+            System.out.println("Road Traffic Api sent: " + url);
             return new JsonArrayRequest(Request.Method.GET, url, null,
                     new Response.Listener<JSONArray>() {
                         @Override
@@ -636,8 +638,9 @@ public class HistoricalDashboardFragment extends Fragment {
         @NonNull
         private JsonArrayRequest getAirQualityRequest(final HistoricalGraph graph, Long startTimeSecond,
                                                       Long endTimeSecond, final Integer dataIndex) {
-            String url = "http://portal.cvst.ca/api/0.1/airsense/" + graph.mLinkId + "?" +
+            final String url = "http://portal.cvst.ca/api/0.1/airsense/" + graph.mLinkId + "?" +
                     "&starttime=" + startTimeSecond.toString() + "&endtime=" + endTimeSecond.toString();
+            System.out.println("Air Quality API sent: " + url);
             return new JsonArrayRequest(Request.Method.GET, url, null,
                     new Response.Listener<JSONArray>() {
                         @Override
