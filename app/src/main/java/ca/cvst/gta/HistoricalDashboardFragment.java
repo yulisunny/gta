@@ -54,6 +54,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.GraphContract;
@@ -417,9 +418,11 @@ public class HistoricalDashboardFragment extends Fragment {
             TextView tvCaptions = (TextView) convertView.findViewById(
                     R.id.historical_dashboard_card_tv_captions);
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+            sdf.setTimeZone(TimeZone.getDefault());
             Date startDate = new Date(chartData.mStartTime);
             Date endDate = new Date(chartData.mEndTime);
-            tvCaptions.setText(chartData.mChartTitle + "\nData: " + chartData.mDataType + " Units: " + chartData.getDataUnit()  +"\nFrom " + sdf.format(startDate) + " To " + sdf.format(endDate));
+            tvCaptions.setText(chartData.mChartTitle + "\nData: " + chartData.mDataType + " Units: " + chartData.getDataUnit()
+                    +"\nFrom " + sdf.format(startDate) + " To " + sdf.format(endDate));
             createLineChart(convertView, chartData);
             return convertView;
         }

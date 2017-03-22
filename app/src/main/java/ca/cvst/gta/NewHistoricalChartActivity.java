@@ -158,6 +158,7 @@ public class NewHistoricalChartActivity extends AppCompatActivity {
                         myCalendar.set(Calendar.YEAR, year);
                         myCalendar.set(Calendar.MONTH, monthOfYear);
                         myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                        myCalendar.setTimeZone(TimeZone.getDefault());
                         editText.setText(new SimpleDateFormat("MM/dd/yyyy").format(myCalendar.getTime()));
                     }
                 };
@@ -247,10 +248,10 @@ public class NewHistoricalChartActivity extends AppCompatActivity {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(time[0]));
         calendar.set(Calendar.MINUTE, Integer.valueOf(time[1]));
-        calendar.set(Calendar.MONTH, Integer.valueOf(dateParams[0]));
+        calendar.set(Calendar.MONTH, Integer.valueOf(dateParams[0]) - 1);
         calendar.set(Calendar.DAY_OF_MONTH, Integer.valueOf(dateParams[1]));
         calendar.set(Calendar.YEAR, Integer.valueOf(dateParams[2]));
-        calendar.setTimeZone(TimeZone.getTimeZone("EDT"));
+        calendar.setTimeZone(TimeZone.getDefault());
         return calendar.getTime().getTime();
     }
 
