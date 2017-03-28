@@ -6,8 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,7 +17,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -44,7 +41,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.gson.JsonObject;
 import com.koushikdutta.async.ByteBufferList;
 import com.koushikdutta.async.DataEmitter;
 import com.koushikdutta.async.callback.DataCallback;
@@ -55,10 +51,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -540,7 +534,7 @@ public class HomeMapFragment extends Fragment implements
                 double Latitude = coordinates.getDouble(1);
                 double Longitude = coordinates.getDouble(0);
 
-                if (Helper.isNearby(mLastLocation.getLatitude(), mLastLocation.getLongitude(), Latitude, Longitude)) {
+                if (mLastLocation != null && Helper.isNearby(mLastLocation.getLatitude(), mLastLocation.getLongitude(), Latitude, Longitude)) {
                     ttcPlotMarker(ttcVehicle, ttcMarkersIndex, Latitude, Longitude);
                     ttcMarkersIndex = ttcMarkersIndex + 1;
                 }
