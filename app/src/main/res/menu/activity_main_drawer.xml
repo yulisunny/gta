@@ -19,7 +19,7 @@
             <group android:id="@+id/weather_group">
                 <item
                     android:id="@+id/weather"
-                    android:icon="@drawable/bubble_mask"
+                    android:icon="@drawable/weather"
                     android:title="Weather" />
             </group>
         </menu>
