@@ -1,0 +1,30 @@
+{
+  "data": {
+    "lastLocationReferencePointBEAR": "163",
+    "averageSpeed": 27.0,
+    "flow": 0.0,
+    "supplierCalculatedDataQuality": 93.0,
+    "publicationTime": "Tue, 28 Mar 2017 22:15:00 -0000",
+    "firstLocationReferencePointFOW": "SINGLE_CARRIAGEWAY",
+    "elaboratedDataID": "Obc78c771f122d239e1dfdd85cc23e",
+    "firstLocationReferencePointBEAR": "343",
+    "coordinates_end": [
+      -79.39016283917572,
+      43.70842181963501
+    ],
+    "lastLocationReferencePointFOW": "SINGLE_CARRIAGEWAY",
+    "firstLocationReferencePointFRC": "FRC4",
+    "lastLocationReferencePointFRC": "FRC4",
+    "density": 0.0,
+    "coordinates_start": [
+      -79.38464283905323,
+      43.693581819325956
+    ],
+    "To": "124-126 Moore Ave, Toronto, ON M4T 1V3, Canada",
+    "travelTime": 232.0,
+    "From": "370 Mt Pleasant Rd, Toronto, ON M4T, Canada"
+  },
+  "subscriptionIds": [
+    "307725872139708671945339907750198415681"
+  ]
+}

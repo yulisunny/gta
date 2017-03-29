@@ -1,0 +1,21 @@
+{
+  "data": {
+    "usersCount": 4768,
+    "address": "1 Front St E",
+    "lat": 43.64697265625,
+    "lng": -79.3762435913086,
+    "postalCode": "M5E 1B2",
+    "url": "http://www.sonycentre.ca",
+    "city": "Toronto",
+    "categoryPluralName": "Concert Halls",
+    "phone": "(416) 368-6161",
+    "event": "Sony Centre for the Performing Arts",
+    "checkinsCount": 7048,
+    "categoryShortName": "Concert Halls",
+    "categoryName": "Concert Hall",
+    "crossStreet": "at Yonge St"
+  },
+  "subscriptionIds": [
+    "279518707269294590017967712098879246084"
+  ]
+}

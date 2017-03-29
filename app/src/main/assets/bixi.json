@@ -1,0 +1,20 @@
+{
+  "data": {
+    "nbBikes": 7,
+    "coordinates": [
+      -79.372287,
+      43.650325
+    ],
+    "terminalName": "",
+    "timestamp": 1490754063,
+    "nbEmptyDocks": 4,
+    "lastCommWithServer": "1490753849.0",
+    "station_name": "King St E / Jarvis St",
+    "installed": true,
+    "latestUpdateTime": "",
+    "station_id": 7009
+  },
+  "subscriptionIds": [
+    "112885652457783872248166121262115036419"
+  ]
+}

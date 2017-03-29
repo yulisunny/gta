@@ -1,0 +1,19 @@
+{
+  "data": {
+    "roadway_type": "TR",
+    "pct_real_time_data": 0.7900000214576721,
+    "timestamp": 1490754003,
+    "avg_speed_capped": 56.779998779296875,
+    "sensor_location_ID": 1.0843499898910522,
+    "avg_speed_uncapped": "56.78",
+    "ref_road_name": "Keele St/Exit 362",
+    "main_road_name": "HWY-401 Collectors",
+    "JAM_FACTOR": 0,
+    "ref_road_ID": 4183,
+    "free_flow_speed": 59.650001525878906,
+    "main_road_ID": "C09+00071"
+  },
+  "subscriptionIds": [
+    "190195275950977155189222673692476840419"
+  ]
+}
