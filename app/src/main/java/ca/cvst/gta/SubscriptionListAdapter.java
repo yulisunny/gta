@@ -21,9 +21,8 @@ import org.json.JSONObject;
 
 import java.util.List;
 
-import ca.cvst.gta.db.AirsenseSubscriptionsContract.AirsenseSubscriptionEntry;
 import ca.cvst.gta.db.DbHelper;
-import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
+import ca.cvst.gta.db.SubscriptionsContract.SubscriptionEntry;
 
 public class SubscriptionListAdapter extends RecyclerView.Adapter<SubscriptionListAdapter.ViewHolder> {
 
@@ -99,15 +98,10 @@ public class SubscriptionListAdapter extends RecyclerView.Adapter<SubscriptionLi
                             if (status.equals("success")) {
                                 DbHelper helper = new DbHelper(context);
                                 SQLiteDatabase db = helper.getWritableDatabase();
-                                if (subscription.getType() == Subscription.Type.TTC) {
-                                    String[] subscriptionId = {subscription.getSubscriptionId()};
-                                    db.delete(TtcSubscriptionEntry.TABLE_NAME, TtcSubscriptionEntry.SUBSCRIPTION_ID + "= ?", subscriptionId);
-                                    db.close();
-                                } else if (subscription.getType() == Subscription.Type.AIRSENSE) {
-                                    String[] subscriptionId = {subscription.getSubscriptionId()};
-                                    db.delete(AirsenseSubscriptionEntry.TABLE_NAME, AirsenseSubscriptionEntry.SUBSCRIPTION_ID + "= ?", subscriptionId);
-                                    db.close();
-                                }
+                                String[] subscriptionId = {subscription.getSubscriptionId()};
+                                db.delete(SubscriptionEntry.TABLE_NAME, SubscriptionEntry.SUBSCRIPTION_ID + "= ?", subscriptionId);
+                                db.close();
+
 
                                 mDataSet.remove(position);
                                 notifyItemRemoved(position);
