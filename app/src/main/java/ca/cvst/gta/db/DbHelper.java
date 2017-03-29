@@ -7,12 +7,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 import ca.cvst.gta.db.AirsenseNotificationsContract.AirsenseNotificationEntry;
 import ca.cvst.gta.db.AirsenseSubscriptionsContract.AirsenseSubscriptionEntry;
 import ca.cvst.gta.db.GraphContract.GraphEntry;
+import ca.cvst.gta.db.SubscriptionsContract.SubscriptionEntry;
 import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
 import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
 
 public class DbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 14;
+    public static final int DATABASE_VERSION = 17;
     public static final String DATABASE_NAME = "cvst_gta.db";
     private static final String CREATE_HISTORICAL_GRAPHS_TABLE =
             "CREATE TABLE " + GraphEntry.TABLE_NAME + " (" +
@@ -27,6 +28,30 @@ public class DbHelper extends SQLiteOpenHelper {
                     GraphEntry.END_TIME + " INTEGER," +
                     GraphEntry.LINK_ID + " TEXT, " +
                     GraphEntry.DATA_LIST + " TEXT)";
+
+    private static final String CREATE_SUBSCRIPTIONS_TABLE =
+            "CREATE TABLE " + SubscriptionEntry.TABLE_NAME + " (" +
+                    SubscriptionEntry._ID + " INTEGER PRIMARY KEY," +
+                    SubscriptionEntry.TIMESTAMP + " INTEGER," +
+                    SubscriptionEntry.NAME + " TEXT," +
+                    SubscriptionEntry.UPPER_LATITUDE + " REAL," +
+                    SubscriptionEntry.UPPER_LONGITUDE + " REAL," +
+                    SubscriptionEntry.LOWER_LATITUDE + " REAL," +
+                    SubscriptionEntry.LOWER_LONGITUDE + " REAL," +
+                    SubscriptionEntry.TYPE + " TEXT," +
+                    SubscriptionEntry.FILTERS + " TEXT," +
+                    SubscriptionEntry.MONDAY + " INTEGER," +
+                    SubscriptionEntry.TUESDAY + " INTEGER," +
+                    SubscriptionEntry.WEDNESDAY + " INTEGER," +
+                    SubscriptionEntry.THURSDAY + " INTEGER," +
+                    SubscriptionEntry.FRIDAY + " INTEGER," +
+                    SubscriptionEntry.SATURDAY + " INTEGER," +
+                    SubscriptionEntry.SUNDAY + " INTEGER," +
+                    SubscriptionEntry.START_TIME + " INTEGER," +
+                    SubscriptionEntry.END_TIME + " INTEGER," +
+                    SubscriptionEntry.NOTIFICATION_ENABLED + " INTEGER," +
+                    SubscriptionEntry.SUBSCRIPTION_TYPE + " TEXT," +
+                    SubscriptionEntry.SUBSCRIPTION_ID + " TEXT UNIQUE)";
 
     private static final String CREATE_TTC_NOTIFICATIONS_TABLE =
             "CREATE TABLE " + TtcNotificationEntry.TABLE_NAME + " (" +
@@ -113,6 +138,8 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static final String DROP_HISTORICAL_GRAPHS_TABLE =
             "DROP TABLE IF EXISTS " + GraphEntry.TABLE_NAME;
+    private static final String DROP_SUBSCRIPTIONS_TABLE =
+            "DROP TABLE IF EXISTS " + SubscriptionEntry.TABLE_NAME;
     private static final String DROP_TTC_NOTIFICATIONS_TABLE =
             "DROP TABLE IF EXISTS " + TtcNotificationEntry.TABLE_NAME;
     private static final String DROP_AIRSENSE_NOTIFICATIONS_TABLE =
@@ -128,6 +155,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_HISTORICAL_GRAPHS_TABLE);
+        db.execSQL(CREATE_SUBSCRIPTIONS_TABLE);
         db.execSQL(CREATE_TTC_NOTIFICATIONS_TABLE);
         db.execSQL(CREATE_AIRSENSE_NOTIFICATIONS_TABLE);
         db.execSQL(CREATE_TTC_SUBSCRIPTIONS_TABLE);
@@ -138,6 +166,7 @@ public class DbHelper extends SQLiteOpenHelper {
         // This database is only a cache for online data, so its upgrade policy is
         // to simply to discard the data and start over
         db.execSQL(DROP_HISTORICAL_GRAPHS_TABLE);
+        db.execSQL(DROP_SUBSCRIPTIONS_TABLE);
         db.execSQL(DROP_TTC_NOTIFICATIONS_TABLE);
         db.execSQL(DROP_AIRSENSE_NOTIFICATIONS_TABLE);
         db.execSQL(DROP_TTC_SUBSCRIPTIONS_TABLE);

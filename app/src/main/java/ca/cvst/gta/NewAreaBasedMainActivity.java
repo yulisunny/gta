@@ -18,9 +18,10 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
+import ca.cvst.gta.Filter.Operation;
 import ca.cvst.gta.db.AirsenseSubscriptionsContract.AirsenseSubscriptionEntry;
 import ca.cvst.gta.db.DbHelper;
-import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
+import ca.cvst.gta.db.SubscriptionsContract.SubscriptionEntry;
 
 public class NewAreaBasedMainActivity extends AppCompatActivity
         implements NewAreaBasedFirstFragment.OnFragmentInteractionListener,
@@ -173,8 +174,7 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
 
                 payload.put("subscription", boolObject);
                 payload.put("action", "subscribe");
-            }
-            else if (publisher.equals("Air Sensor")) {
+            } else if (publisher.equals("Air Sensor")) {
                 payload.put("publisherName", "airsense");
 
                 if (!airType.equals("-1")) {
@@ -216,34 +216,39 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
                     ContentValues cv = new ContentValues();
                     if (publisher.equals("TTC")) {
                         try {
-                            cv.put(TtcSubscriptionEntry.TIMESTAMP, System.currentTimeMillis()/1000L);
-                            cv.put(TtcSubscriptionEntry.NAME, subscriptionName);
-                            cv.put(TtcSubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
-                            cv.put(TtcSubscriptionEntry.UPPER_LATITUDE, upperLatitude);
-                            cv.put(TtcSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
-                            cv.put(TtcSubscriptionEntry.UPPER_LONGITUDE, upperLongitude);
-                            cv.put(TtcSubscriptionEntry.ROUTE_NUMBER, routeNumber);
-                            cv.put(TtcSubscriptionEntry.MONDAY, mondayToSundayArray[0]);
-                            cv.put(TtcSubscriptionEntry.TUESDAY, mondayToSundayArray[1]);
-                            cv.put(TtcSubscriptionEntry.WEDNESDAY, mondayToSundayArray[2]);
-                            cv.put(TtcSubscriptionEntry.THURSDAY, mondayToSundayArray[3]);
-                            cv.put(TtcSubscriptionEntry.FRIDAY, mondayToSundayArray[4]);
-                            cv.put(TtcSubscriptionEntry.SATURDAY, mondayToSundayArray[5]);
-                            cv.put(TtcSubscriptionEntry.SUNDAY, mondayToSundayArray[6]);
-                            cv.put(TtcSubscriptionEntry.START_TIME, startAndEndTime[0]);
-                            cv.put(TtcSubscriptionEntry.END_TIME, startAndEndTime[1]);
-                            cv.put(TtcSubscriptionEntry.NOTIFICATION_ENABLED, notificationEnabled);
-                            cv.put(TtcSubscriptionEntry.SUBSCRIPTION_TYPE, "Area Based");
-                            cv.put(TtcSubscriptionEntry.SUBSCRIPTION_ID, response.getString("subscription_id"));
-                            db.insert(TtcSubscriptionEntry.TABLE_NAME, null, cv);
+                            cv.put(SubscriptionEntry.TIMESTAMP, System.currentTimeMillis() / 1000L);
+                            cv.put(SubscriptionEntry.NAME, subscriptionName);
+                            cv.put(SubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
+                            cv.put(SubscriptionEntry.UPPER_LATITUDE, upperLatitude);
+                            cv.put(SubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
+                            cv.put(SubscriptionEntry.UPPER_LONGITUDE, upperLongitude);
+
+                            cv.put(SubscriptionEntry.TYPE, "ttc");
+                            if (!routeNumber.equals("-1")) {
+                                Filter routeFilter = new Filter("routeNumber", Operation.EQ, routeNumber);
+                                cv.put(SubscriptionEntry.FILTERS, routeFilter.toString());
+                            }
+
+                            cv.put(SubscriptionEntry.MONDAY, mondayToSundayArray[0]);
+                            cv.put(SubscriptionEntry.TUESDAY, mondayToSundayArray[1]);
+                            cv.put(SubscriptionEntry.WEDNESDAY, mondayToSundayArray[2]);
+                            cv.put(SubscriptionEntry.THURSDAY, mondayToSundayArray[3]);
+                            cv.put(SubscriptionEntry.FRIDAY, mondayToSundayArray[4]);
+                            cv.put(SubscriptionEntry.SATURDAY, mondayToSundayArray[5]);
+                            cv.put(SubscriptionEntry.SUNDAY, mondayToSundayArray[6]);
+                            cv.put(SubscriptionEntry.START_TIME, startAndEndTime[0]);
+                            cv.put(SubscriptionEntry.END_TIME, startAndEndTime[1]);
+                            cv.put(SubscriptionEntry.NOTIFICATION_ENABLED, notificationEnabled);
+                            cv.put(SubscriptionEntry.SUBSCRIPTION_TYPE, "Area Based");
+                            cv.put(SubscriptionEntry.SUBSCRIPTION_ID, response.getString("subscription_id"));
+                            db.insert(SubscriptionEntry.TABLE_NAME, null, cv);
                             db.close();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                    }
-                    else if (publisher.equals("Air Sensor")) {
+                    } else if (publisher.equals("Air Sensor")) {
                         try {
-                            cv.put(AirsenseSubscriptionEntry.TIMESTAMP, System.currentTimeMillis()/1000L);
+                            cv.put(AirsenseSubscriptionEntry.TIMESTAMP, System.currentTimeMillis() / 1000L);
                             cv.put(AirsenseSubscriptionEntry.NAME, subscriptionName);
                             cv.put(AirsenseSubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
                             cv.put(AirsenseSubscriptionEntry.UPPER_LATITUDE, upperLatitude);

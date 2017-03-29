@@ -6,15 +6,12 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import ca.cvst.gta.db.AirsenseSubscriptionsContract.AirsenseSubscriptionEntry;
 import ca.cvst.gta.db.DbHelper;
-import ca.cvst.gta.db.TtcSubscriptionsContract.TtcSubscriptionEntry;
+import ca.cvst.gta.db.SubscriptionsContract.SubscriptionEntry;
 
 public class Subscription {
 
@@ -33,80 +30,38 @@ public class Subscription {
     }
 
     public static List<Subscription> loadAll(Context context) {
-        List<Subscription> ttbSubs = loadAllTtc(context);
-        List<Subscription> airSenseSubs = loadAllAirsense(context);
-        List<Subscription> all = new ArrayList<>(ttbSubs);
-        all.addAll(airSenseSubs);
-
-        Collections.sort(all, new Comparator<Subscription>() {
-            @Override
-            public int compare(Subscription o1, Subscription o2) {
-                if (o1.timestamp < o2.timestamp) {
-                    return 1;
-                } else if (o1.timestamp > o2.timestamp) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }
-        });
-        System.out.println(all);
-        return all;
-    }
-
-    // TODO: Render name as title, type as content, botton align, day of week and time if realtime
-    private static List<Subscription> loadAllTtc(Context context) {
         DbHelper helper = new DbHelper(context);
         SQLiteDatabase db = helper.getReadableDatabase();
 
         String[] projection = {
-                TtcSubscriptionEntry.NAME,
-                TtcSubscriptionEntry.TIMESTAMP,
-                TtcSubscriptionEntry.SUBSCRIPTION_ID
+                SubscriptionEntry.NAME,
+                SubscriptionEntry.TIMESTAMP,
+                SubscriptionEntry.TYPE,
+                SubscriptionEntry.FILTERS,
+                SubscriptionEntry.SUBSCRIPTION_ID
         };
 
-        Cursor cursor = db.query(TtcSubscriptionEntry.TABLE_NAME, projection, null, null, null, null, null);
+        Cursor cursor = db.query(SubscriptionEntry.TABLE_NAME, projection, null, null, null, null, null);
         List<Subscription> ret = new ArrayList<>();
         while (cursor.moveToNext()) {
-            int timestamp = cursor.getInt(cursor.getColumnIndexOrThrow(TtcSubscriptionEntry.TIMESTAMP));
-            String subscriptionId = cursor.getString(cursor.getColumnIndexOrThrow(TtcSubscriptionEntry.SUBSCRIPTION_ID));
-            Date date = new Date(timestamp * 1000L);
-            SimpleDateFormat format = new SimpleDateFormat("HH:mm, MMM dd", Locale.CANADA);
-            String createAt = "Created at: " + format.format(date);
-            Subscription sub = new Subscription(Type.TTC, "TTC", createAt, timestamp, subscriptionId);
-            ret.add(sub);
-        }
-        cursor.close();
-        db.close();
-        return ret;
-    }
-
-    private static List<Subscription> loadAllAirsense(Context context) {
-        DbHelper helper = new DbHelper(context);
-        SQLiteDatabase db = helper.getReadableDatabase();
-
-        String[] projection = {
-                AirsenseSubscriptionEntry.NAME,
-                AirsenseSubscriptionEntry.AIR_TYPE,
-                AirsenseSubscriptionEntry.AIR_VALUE,
-                AirsenseSubscriptionEntry.TIMESTAMP,
-                AirsenseSubscriptionEntry.SUBSCRIPTION_ID
-        };
-
-        Cursor cursor = db.query(AirsenseSubscriptionEntry.TABLE_NAME, projection, null, null, null, null, null);
-        List<Subscription> ret = new ArrayList<>();
-        while (cursor.moveToNext()) {
-            int timestamp = cursor.getInt(cursor.getColumnIndexOrThrow(AirsenseSubscriptionEntry.TIMESTAMP));
-            String subscriptionId = cursor.getString(cursor.getColumnIndexOrThrow(AirsenseSubscriptionEntry.SUBSCRIPTION_ID));
-            String airType = cursor.getString(cursor.getColumnIndexOrThrow(AirsenseSubscriptionEntry.AIR_TYPE));
-            float airValue = cursor.getFloat(cursor.getColumnIndexOrThrow(AirsenseSubscriptionEntry.AIR_VALUE));
-            Date date = new Date(timestamp * 1000L);
+            int timestamp = cursor.getInt(cursor.getColumnIndexOrThrow(SubscriptionEntry.TIMESTAMP));
+            String subscriptionId = cursor.getString(cursor.getColumnIndexOrThrow(SubscriptionEntry.SUBSCRIPTION_ID));
+            String type = cursor.getString(cursor.getColumnIndexOrThrow(SubscriptionEntry.TYPE));
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(SubscriptionEntry.NAME));
+            Date date = new Date(((long) timestamp) * 1000L);
             SimpleDateFormat format = new SimpleDateFormat("HH:mm, MMM dd", Locale.CANADA);
             String content = "Created at: " + format.format(date);
-            if (!airType.equals("-1")) {
-                content += "\n" + airType + " greater than " + String.valueOf(airValue);
+            String filtersString = cursor.getString(cursor.getColumnIndexOrThrow(SubscriptionEntry.FILTERS));
+            if (filtersString != null) {
+                String[] filtersStringArray = filtersString.split(",");
+                for (String filterString : filtersStringArray) {
+                    Filter filter = Filter.fromString(filterString);
+                    content += "\n" + filter.getFieldName() + " " + filter.getOperation().getSymbol() + " " + filter.getFieldValue();
+
+                }
             }
-            Subscription sub = new Subscription(Type.AIRSENSE, "Airsense", content, timestamp, subscriptionId);
+
+            Subscription sub = new Subscription(Type.valueOf(type.toUpperCase()), name, content, timestamp, subscriptionId);
             ret.add(sub);
         }
         cursor.close();

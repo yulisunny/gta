@@ -27,6 +27,7 @@ public class SubscriptionsContract {
         public static final String END_TIME = "end_time";
         public static final String NOTIFICATION_ENABLED = "notification_enabled";
 
+        public static final String SUBSCRIPTION_TYPE = "subscription_type";
         public static final String SUBSCRIPTION_ID = "subscription_id";
     }
 }
