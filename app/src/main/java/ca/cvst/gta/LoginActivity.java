@@ -71,6 +71,15 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        Button mSwitchRegister = (Button) findViewById(R.id.btn_switch_register);
+        mSwitchRegister.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                startActivity(intent);
+            }
+        });
+
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
         ((Button) findViewById(R.id.button_login_as_yulisunny)).setOnClickListener(new OnClickListener() {
