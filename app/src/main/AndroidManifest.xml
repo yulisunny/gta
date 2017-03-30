@@ -64,7 +64,8 @@
         <activity
             android:name=".NewSubscriptionTypeActivity"
             android:label="@string/title_activity_new_subscription"
-            android:parentActivityName=".SubscriptionsActivity">
+            android:parentActivityName=".SubscriptionsActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ca.cvst.gta.SubscriptionsActivity" />
@@ -72,7 +73,8 @@
         <activity
             android:name=".NewIntersectionBasedMainActivity"
             android:label="@string/title_activity_new_subscription"
-            android:parentActivityName=".NewSubscriptionTypeActivity">
+            android:parentActivityName=".NewSubscriptionTypeActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ca.cvst.gta.NewSubscriptionTypeActivity" />
@@ -80,7 +82,8 @@
         <activity
             android:name=".NewAreaBasedMainActivity"
             android:label="@string/title_activity_new_subscription"
-            android:parentActivityName=".NewSubscriptionTypeActivity">
+            android:parentActivityName=".NewSubscriptionTypeActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ca.cvst.gta.NewSubscriptionTypeActivity" />
