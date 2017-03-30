@@ -2,8 +2,6 @@ package ca.cvst.gta;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.location.Address;
-import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -15,7 +13,6 @@ import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -30,13 +27,10 @@ import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.maps.android.SphericalUtil;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class NewAreaBasedFirstFragment extends Fragment implements
@@ -132,6 +126,9 @@ public class NewAreaBasedFirstFragment extends Fragment implements
             @Override
             public void onClick(View v) {
                 if (previousSquare != null) {
+                    if (radius - 50 <= 0) {
+                        return;
+                    }
                     radius = radius - 50;
                     FourCorners corners = toBounds(centre, radius);
                     areaBounds = toBoundsCircle(centre, radius);
