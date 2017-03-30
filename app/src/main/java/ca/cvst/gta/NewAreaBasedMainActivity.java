@@ -20,7 +20,6 @@ import org.json.JSONObject;
 import java.util.HashMap;
 
 import ca.cvst.gta.Filter.Operation;
-import ca.cvst.gta.db.AirsenseSubscriptionsContract.AirsenseSubscriptionEntry;
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.SubscriptionsContract.SubscriptionEntry;
 
@@ -252,27 +251,31 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
                         }
                     } else if (publisher.equals("Air Sensor")) {
                         try {
-                            cv.put(AirsenseSubscriptionEntry.TIMESTAMP, System.currentTimeMillis() / 1000L);
-                            cv.put(AirsenseSubscriptionEntry.NAME, subscriptionName);
-                            cv.put(AirsenseSubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
-                            cv.put(AirsenseSubscriptionEntry.UPPER_LATITUDE, upperLatitude);
-                            cv.put(AirsenseSubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
-                            cv.put(AirsenseSubscriptionEntry.UPPER_LONGITUDE, upperLongitude);
-                            cv.put(AirsenseSubscriptionEntry.AIR_TYPE, airType);
-                            cv.put(AirsenseSubscriptionEntry.AIR_VALUE, airValue);
-                            cv.put(AirsenseSubscriptionEntry.MONDAY, mondayToSundayArray[0]);
-                            cv.put(AirsenseSubscriptionEntry.TUESDAY, mondayToSundayArray[1]);
-                            cv.put(AirsenseSubscriptionEntry.WEDNESDAY, mondayToSundayArray[2]);
-                            cv.put(AirsenseSubscriptionEntry.THURSDAY, mondayToSundayArray[3]);
-                            cv.put(AirsenseSubscriptionEntry.FRIDAY, mondayToSundayArray[4]);
-                            cv.put(AirsenseSubscriptionEntry.SATURDAY, mondayToSundayArray[5]);
-                            cv.put(AirsenseSubscriptionEntry.SUNDAY, mondayToSundayArray[6]);
-                            cv.put(AirsenseSubscriptionEntry.START_TIME, startAndEndTime[0]);
-                            cv.put(AirsenseSubscriptionEntry.END_TIME, startAndEndTime[1]);
-                            cv.put(AirsenseSubscriptionEntry.NOTIFICATION_ENABLED, notificationEnabled);
-                            cv.put(AirsenseSubscriptionEntry.SUBSCRIPTION_TYPE, "Intersection Based");
-                            cv.put(AirsenseSubscriptionEntry.SUBSCRIPTION_ID, response.getString("subscription_id"));
-                            db.insert(AirsenseSubscriptionEntry.TABLE_NAME, null, cv);
+                            cv.put(SubscriptionEntry.TIMESTAMP, System.currentTimeMillis() / 1000L);
+                            cv.put(SubscriptionEntry.NAME, subscriptionName);
+                            cv.put(SubscriptionEntry.LOWER_LATITUDE, lowerLatitude);
+                            cv.put(SubscriptionEntry.UPPER_LATITUDE, upperLatitude);
+                            cv.put(SubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
+                            cv.put(SubscriptionEntry.UPPER_LONGITUDE, upperLongitude);
+
+                            cv.put(SubscriptionEntry.TYPE, "airsense");
+                            if (!airType.equals("-1")) {
+                                Filter airFilter = new Filter(airType.toLowerCase(), Operation.GT, String.valueOf(airValue));
+                                cv.put(SubscriptionEntry.FILTERS, airFilter.toString());
+                            }
+                            cv.put(SubscriptionEntry.MONDAY, mondayToSundayArray[0]);
+                            cv.put(SubscriptionEntry.TUESDAY, mondayToSundayArray[1]);
+                            cv.put(SubscriptionEntry.WEDNESDAY, mondayToSundayArray[2]);
+                            cv.put(SubscriptionEntry.THURSDAY, mondayToSundayArray[3]);
+                            cv.put(SubscriptionEntry.FRIDAY, mondayToSundayArray[4]);
+                            cv.put(SubscriptionEntry.SATURDAY, mondayToSundayArray[5]);
+                            cv.put(SubscriptionEntry.SUNDAY, mondayToSundayArray[6]);
+                            cv.put(SubscriptionEntry.START_TIME, startAndEndTime[0]);
+                            cv.put(SubscriptionEntry.END_TIME, startAndEndTime[1]);
+                            cv.put(SubscriptionEntry.NOTIFICATION_ENABLED, notificationEnabled);
+                            cv.put(SubscriptionEntry.SUBSCRIPTION_TYPE, "Area Based");
+                            cv.put(SubscriptionEntry.SUBSCRIPTION_ID, response.getString("subscription_id"));
+                            db.insert(SubscriptionEntry.TABLE_NAME, null, cv);
                             db.close();
                         } catch (JSONException e) {
                             e.printStackTrace();
