@@ -1,9 +1,15 @@
 package layout;
 
 import android.app.IntentService;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.support.v4.app.NotificationCompat;
 
 import com.koushikdutta.async.ByteBufferList;
 import com.koushikdutta.async.DataEmitter;
@@ -11,10 +17,21 @@ import com.koushikdutta.async.callback.DataCallback;
 import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.WebSocket;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Calendar;
+
+import ca.cvst.gta.Filter;
+import ca.cvst.gta.MainActivity;
 import ca.cvst.gta.R;
+import ca.cvst.gta.SubscriptionType;
+import ca.cvst.gta.db.AirsenseNotificationsContract.AirsenseNotificationEntry;
+import ca.cvst.gta.db.DbHelper;
+import ca.cvst.gta.db.SubscriptionsContract.SubscriptionEntry;
+import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
+
 
 /**
  * This mimics the demo portal. For the proper way of doing this according to Daiqing
@@ -44,19 +61,66 @@ public class UpdatesListenerIntentService extends IntentService {
                 }
                 webSocket.setStringCallback(new WebSocket.StringCallback() {
                     public void onStringAvailable(String s) {
+                        System.out.println("s = " + s);
                         try {
                             JSONObject root = new JSONObject(s);
                             JSONObject data = root.getJSONObject("data");
-                            if (data.has("category")) {
-                                handleTtc(root);
-                            } else {
-                                handleAirsense(root);
+                            JSONArray subscriptionIds = root.getJSONArray("subscriptionIds");
+                            String[] subscriptionIdsArray = new String[subscriptionIds.length()];
+                            for (int i = 0; i < subscriptionIds.length(); i++) {
+                                subscriptionIdsArray[i] = subscriptionIds.getString(i);
                             }
+
+
+                            DbHelper dbHelper = new DbHelper(getApplicationContext());
+                            SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+                            String query = "SELECT " +
+                                    SubscriptionEntry.TYPE + ", " +
+                                    SubscriptionEntry.FILTERS + ", " +
+                                    SubscriptionEntry.NAME + ", " +
+                                    SubscriptionEntry.MONDAY + ", " +
+                                    SubscriptionEntry.TUESDAY + ", " +
+                                    SubscriptionEntry.WEDNESDAY + ", " +
+                                    SubscriptionEntry.THURSDAY + ", " +
+                                    SubscriptionEntry.FRIDAY + ", " +
+                                    SubscriptionEntry.SATURDAY + ", " +
+                                    SubscriptionEntry.SUNDAY + ", " +
+                                    SubscriptionEntry.START_TIME + ", " +
+                                    SubscriptionEntry.END_TIME + ", " +
+                                    SubscriptionEntry.NOTIFICATION_ENABLED +
+                                    " FROM " + SubscriptionEntry.TABLE_NAME + " WHERE " +
+                                    SubscriptionEntry.SUBSCRIPTION_ID + " IN (" + makePlaceholders(subscriptionIdsArray.length) + ")";
+                            Cursor cursor = db.rawQuery(query, subscriptionIdsArray);
+
+                            while (cursor.moveToNext()) {
+                                String type = cursor.getString(cursor.getColumnIndexOrThrow(SubscriptionEntry.TYPE));
+                                SubscriptionType subscriptionType = SubscriptionType.valueOf(type.toUpperCase());
+                                String filters = cursor.getString(cursor.getColumnIndexOrThrow(SubscriptionEntry.FILTERS));
+
+                                String name = cursor.getString(cursor.getColumnIndex(SubscriptionEntry.NAME));
+                                int mon = cursor.getInt(cursor.getColumnIndex(SubscriptionEntry.MONDAY));
+                                int tues = cursor.getInt(cursor.getColumnIndex(SubscriptionEntry.TUESDAY));
+                                int wed = cursor.getInt(cursor.getColumnIndex(SubscriptionEntry.WEDNESDAY));
+                                int thur = cursor.getInt(cursor.getColumnIndex(SubscriptionEntry.THURSDAY));
+                                int fri = cursor.getInt(cursor.getColumnIndex(SubscriptionEntry.FRIDAY));
+                                int sat = cursor.getInt(cursor.getColumnIndex(SubscriptionEntry.SATURDAY));
+                                int sun = cursor.getInt(cursor.getColumnIndex(SubscriptionEntry.SUNDAY));
+                                int startTime = cursor.getInt(cursor.getColumnIndex(SubscriptionEntry.START_TIME));
+                                int endTime = cursor.getInt(cursor.getColumnIndex(SubscriptionEntry.END_TIME));
+                                int notif_enabled = cursor.getInt(cursor.getColumnIndex(SubscriptionEntry.NOTIFICATION_ENABLED));
+                                persistNotification(subscriptionType, root);
+
+                                if (notif_enabled > 0 && shouldNotifyNow(startTime, endTime, mon, tues, wed, thur, fri, sat, sun)) {
+                                    notifyUser(subscriptionType, data, filters, name);
+                                }
+
+                            }
+                            cursor.close();
+                            db.close();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-
-                        System.out.println("s = " + s);
                     }
                 });
                 webSocket.setDataCallback(new DataCallback() {
@@ -70,46 +134,163 @@ public class UpdatesListenerIntentService extends IntentService {
         });
     }
 
+    private void persistNotification(SubscriptionType subscriptionType, JSONObject root) {
+        switch (subscriptionType) {
+            case TTC:
+                handleTtc(root);
+            case AIRSENSE:
+                handleAirsense(root);
+        }
+    }
+
+
     private void handleTtc(JSONObject root) {
-//        DbHelper dbHelper = new DbHelper(this);
-//        SQLiteDatabase db = dbHelper.getWritableDatabase();
-//        ContentValues values = new ContentValues();
-//        try {
-//            JSONObject data = root.getJSONObject("data");
-//            values.put(TtcNotificationEntry.BUS_ID, data.getInt("id"));
-//            values.put(TtcNotificationEntry.TIMESTAMP, data.getInt("timestamp"));
-//            values.put(TtcNotificationEntry.DIR_TAG, data.getString("dirTag"));
-//            values.put(TtcNotificationEntry.NAME, data.getString("name"));
-//            values.put(TtcNotificationEntry.GPS_TIME, data.getInt("GPStime"));
-//            values.put(TtcNotificationEntry.LAST_TIME, data.getString("lastTime"));
-//            values.put(TtcNotificationEntry.LATITUDE, data.getJSONArray("coordinates").getDouble(1));
-//            values.put(TtcNotificationEntry.LONGITUDE, data.getJSONArray("coordinates").getDouble(0));
-//            values.put(TtcNotificationEntry.DATE_TIME, data.getString("dateTime"));
-//            values.put(TtcNotificationEntry.HEADING, data.getString("heading"));
-//            values.put(TtcNotificationEntry.PREDICTABLE, data.getBoolean("predictable"));
-//            values.put(TtcNotificationEntry.ROUTE_NUMBER, data.getString("routeNumber"));
-//            JSONArray subscriptionIds = root.getJSONArray("subscriptionIds");
-//            values.put(TtcNotificationEntry.SUBSCRIPTION_IDS, subscriptionIds.join(","));
-//            db.insert(TtcNotificationEntry.TABLE_NAME, null, values);
-//
-//            String[] columns = {
-//                    TtcSubscriptionEntry.NAME,
-//                    TtcSubscriptionEntry.MONDAY,
-//                    TtcSubscriptionEntry.TUESDAY,
-//                    TtcSubscriptionEntry.WEDNESDAY,
-//                    TtcSubscriptionEntry.THURSDAY,
-//                    TtcSubscriptionEntry.FRIDAY,
-//                    TtcSubscriptionEntry.SATURDAY,
-//                    TtcSubscriptionEntry.SUNDAY,
-//                    TtcSubscriptionEntry.START_TIME,
-//                    TtcSubscriptionEntry.END_TIME,
-//                    TtcSubscriptionEntry.NOTIFICATION_ENABLED
-//            };
-//
-//            List<String> validSubs = new ArrayList<>();
-//            for (int i = 0; i < subscriptionIds.length(); i++) {
-//                String[] subscriptionId = {subscriptionIds.getString(i)};
-                // Run code below to force unsubscribe any incoming notification.
+        DbHelper dbHelper = new DbHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        try {
+            JSONObject data = root.getJSONObject("data");
+            values.put(TtcNotificationEntry.BUS_ID, data.getInt("id"));
+            values.put(TtcNotificationEntry.TIMESTAMP, data.getInt("timestamp"));
+            values.put(TtcNotificationEntry.DIR_TAG, data.getString("dirTag"));
+            values.put(TtcNotificationEntry.NAME, data.getString("name"));
+            values.put(TtcNotificationEntry.GPS_TIME, data.getInt("GPStime"));
+            values.put(TtcNotificationEntry.LAST_TIME, data.getString("lastTime"));
+            values.put(TtcNotificationEntry.LATITUDE, data.getJSONArray("coordinates").getDouble(1));
+            values.put(TtcNotificationEntry.LONGITUDE, data.getJSONArray("coordinates").getDouble(0));
+            values.put(TtcNotificationEntry.DATE_TIME, data.getString("dateTime"));
+            values.put(TtcNotificationEntry.HEADING, data.getString("heading"));
+            values.put(TtcNotificationEntry.PREDICTABLE, data.getBoolean("predictable"));
+            values.put(TtcNotificationEntry.ROUTE_NUMBER, data.getString("routeNumber"));
+            JSONArray subscriptionIds = root.getJSONArray("subscriptionIds");
+            values.put(TtcNotificationEntry.SUBSCRIPTION_IDS, subscriptionIds.join(","));
+            db.insert(TtcNotificationEntry.TABLE_NAME, null, values);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        db.close();
+
+    }
+
+    private void handleAirsense(JSONObject root) {
+        DbHelper dbHelper = new DbHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        try {
+            JSONObject data = root.getJSONObject("data");
+            values.put(AirsenseNotificationEntry.TIMESTAMP, data.getInt("timestamp"));
+            values.put(AirsenseNotificationEntry.MONITOR_NAME, data.getString("monitor_name"));
+            values.put(AirsenseNotificationEntry.DATE, data.getString("date"));
+            values.put(AirsenseNotificationEntry.LATITUDE, data.getJSONArray("coordinates").getDouble(1));
+            values.put(AirsenseNotificationEntry.LONGITUDE, data.getJSONArray("coordinates").getDouble(0));
+            values.put(AirsenseNotificationEntry.NOX, data.getDouble("nox"));
+            values.put(AirsenseNotificationEntry.O3, data.getDouble("o3"));
+            values.put(AirsenseNotificationEntry.CO2, data.getDouble("co2"));
+            values.put(AirsenseNotificationEntry.AQHI, data.getDouble("aqhi"));
+            values.put(AirsenseNotificationEntry.PM, data.getDouble("pm"));
+            values.put(AirsenseNotificationEntry.AH, data.getDouble("ah"));
+            values.put(AirsenseNotificationEntry.CO, data.getDouble("co"));
+            values.put(AirsenseNotificationEntry.COO, data.getDouble("coo"));
+            values.put(AirsenseNotificationEntry.ADDRESS, data.getString("address"));
+            JSONArray subscriptionIds = root.getJSONArray("subscriptionIds");
+            values.put(AirsenseNotificationEntry.SUBSCRIPTION_IDS, subscriptionIds.join(","));
+            db.insert(AirsenseNotificationEntry.TABLE_NAME, null, values);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        db.close();
+    }
+
+    private void notifyUser(SubscriptionType type, JSONObject data, String filters, String name) {
+        String content = "";
+        if (filters != null) {
+            String[] filtersArray = filters.split(",");
+            for (String filterString : filtersArray) {
+                Filter f = Filter.fromString(filterString);
+                try {
+                    content += f.getFieldName() + ":" + data.getString(f.getFieldName()) + "  ";
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(name)
+                .setContentIntent(pending);
+        mBuilder.setContentText(content);
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        switch (type) {
+            case TTC:
+                try {
+                    notificationManager.notify(data.getInt("id"), mBuilder.build());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case AIRSENSE:
+                notificationManager.notify(1, mBuilder.build());
+        }
+
+    }
+
+    private String makePlaceholders(int len) {
+        if (len < 1) {
+            // It will lead to an invalid query anyway ..
+            throw new RuntimeException("No placeholders");
+        } else {
+            StringBuilder sb = new StringBuilder(len * 2 - 1);
+            sb.append("?");
+            for (int i = 1; i < len; i++) {
+                sb.append(",?");
+            }
+            return sb.toString();
+        }
+    }
+
+    private boolean shouldNotifyNow(int startTime, int endTime, int mon, int tues, int wed, int thur, int fri, int sat, int sun) {
+        Calendar calendar = Calendar.getInstance();
+        int day = calendar.get(Calendar.DAY_OF_WEEK);
+        int seconds = (calendar.get(Calendar.HOUR_OF_DAY) * 3600) + (calendar.get(Calendar.MINUTE) * 60) + (calendar.get(Calendar.SECOND));
+        if ((seconds > startTime) && (seconds < endTime)) {
+            if ((day == Calendar.MONDAY) && (mon > 0)) {
+                return true;
+            }
+
+            if ((day == Calendar.TUESDAY) && (tues > 0)) {
+                return true;
+            }
+
+            if ((day == Calendar.WEDNESDAY) && (wed > 0)) {
+                return true;
+            }
+
+            if ((day == Calendar.THURSDAY) && (thur > 0)) {
+                return true;
+            }
+
+            if ((day == Calendar.FRIDAY) && (fri > 0)) {
+                return true;
+            }
+
+            if ((day == Calendar.SATURDAY) && (sat > 0)) {
+                return true;
+            }
+            if ((day == Calendar.SUNDAY) && (sun > 0)) {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
+    // Run code below to force unsubscribe any incoming notification.
 //                JSONObject payload = new JSONObject();
 //                try {
 //                    payload.put("subscriptionId", subscriptionIds.getString(i));
@@ -144,229 +325,6 @@ public class UpdatesListenerIntentService extends IntentService {
 //                    }
 //                });
 //                NetworkManager.getInstance(this).addToRequestQueue(request);
-//                Cursor cursor = db.query(TtcSubscriptionEntry.TABLE_NAME, columns, TtcSubscriptionEntry.SUBSCRIPTION_ID + "= ?", subscriptionId, null, null, null);
-//                while (cursor.moveToNext()) {
-//                    String name = cursor.getString(cursor.getColumnIndex(TtcSubscriptionEntry.NAME));
-//                    int mon = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.MONDAY));
-//                    int tues = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.TUESDAY));
-//                    int wed = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.WEDNESDAY));
-//                    int thur = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.THURSDAY));
-//                    int fri = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.FRIDAY));
-//                    int sat = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.SATURDAY));
-//                    int sun = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.SUNDAY));
-//                    int startTime = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.START_TIME));
-//                    int endTime = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.END_TIME));
-//                    int notif_enabled = cursor.getInt(cursor.getColumnIndex(TtcSubscriptionEntry.NOTIFICATION_ENABLED));
-//                    if (notif_enabled == 0) {
-//                        break;
-//                    }
-//
-//                    Calendar calendar = Calendar.getInstance();
-//                    int day = calendar.get(Calendar.DAY_OF_WEEK);
-//                    int seconds = (calendar.get(Calendar.HOUR_OF_DAY) * 3600) + (calendar.get(Calendar.MINUTE) * 60) + (calendar.get(Calendar.SECOND));
-//                    if ((seconds > startTime) && (seconds < endTime)) {
-//                        if ((day == Calendar.MONDAY) && (mon > 0)) {
-//                            validSubs.add(name);
-//                            break;
-//                        }
-//
-//                        if ((day == Calendar.TUESDAY) && (tues > 0)) {
-//                            validSubs.add(name);
-//                            break;
-//                        }
-//
-//                        if ((day == Calendar.WEDNESDAY) && (wed > 0)) {
-//                            validSubs.add(name);
-//                            break;
-//                        }
-//
-//                        if ((day == Calendar.THURSDAY) && (thur > 0)) {
-//                            validSubs.add(name);
-//                            break;
-//                        }
-//
-//                        if ((day == Calendar.FRIDAY) && (fri > 0)) {
-//                            validSubs.add(name);
-//                            break;
-//                        }
-//
-//                        if ((day == Calendar.SATURDAY) && (sat > 0)) {
-//                            validSubs.add(name);
-//                            break;
-//                        }
-//                        if ((day == Calendar.SUNDAY) && (sun > 0)) {
-//                            validSubs.add(name);
-//                            break;
-//                        }
-//
-//                    }
-//                }
-//                cursor.close();
-//            }
-//
-//            if (validSubs.size() > 0) {
-//                Intent intent = new Intent(this, MainActivity.class);
-//                PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-//                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
-//                        .setSmallIcon(R.drawable.ic_notification)
-//                        .setContentIntent(pending)
-//                        .setContentTitle("TTC Update: " + TextUtils.join(",", validSubs))
-//                        .setContentText("Route " + data.getString("routeNumber"));
-//                NotificationManager notificationManager =
-//                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//                notificationManager.notify(data.getInt("id"), mBuilder.build());
-//            }
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//        db.close();
-
-    }
-
-    private void handleAirsense(JSONObject root) {
-//        DbHelper dbHelper = new DbHelper(this);
-//        SQLiteDatabase db = dbHelper.getWritableDatabase();
-//        ContentValues values = new ContentValues();
-//        try {
-//            JSONObject data = root.getJSONObject("data");
-//            values.put(AirsenseNotificationEntry.TIMESTAMP, data.getInt("timestamp"));
-//            values.put(AirsenseNotificationEntry.MONITOR_NAME, data.getString("monitor_name"));
-//            values.put(AirsenseNotificationEntry.DATE, data.getString("date"));
-//            values.put(AirsenseNotificationEntry.LATITUDE, data.getJSONArray("coordinates").getDouble(1));
-//            values.put(AirsenseNotificationEntry.LONGITUDE, data.getJSONArray("coordinates").getDouble(0));
-//            values.put(AirsenseNotificationEntry.NOX, data.getDouble("nox"));
-//            values.put(AirsenseNotificationEntry.O3, data.getDouble("o3"));
-//            values.put(AirsenseNotificationEntry.CO2, data.getDouble("co2"));
-//            values.put(AirsenseNotificationEntry.AQHI, data.getDouble("aqhi"));
-//            values.put(AirsenseNotificationEntry.PM, data.getDouble("pm"));
-//            values.put(AirsenseNotificationEntry.AH, data.getDouble("ah"));
-//            values.put(AirsenseNotificationEntry.CO, data.getDouble("co"));
-//            values.put(AirsenseNotificationEntry.COO, data.getDouble("coo"));
-//            values.put(AirsenseNotificationEntry.ADDRESS, data.getString("address"));
-//            JSONArray subscriptionIds = root.getJSONArray("subscriptionIds");
-//            values.put(AirsenseNotificationEntry.SUBSCRIPTION_IDS, subscriptionIds.join(","));
-//            db.insert(AirsenseNotificationEntry.TABLE_NAME, null, values);
-//
-//            String[] columns = {
-//                    AirsenseSubscriptionEntry.NAME,
-//                    AirsenseSubscriptionEntry.AIR_TYPE,
-//                    AirsenseSubscriptionEntry.MONDAY,
-//                    AirsenseSubscriptionEntry.TUESDAY,
-//                    AirsenseSubscriptionEntry.WEDNESDAY,
-//                    AirsenseSubscriptionEntry.THURSDAY,
-//                    AirsenseSubscriptionEntry.FRIDAY,
-//                    AirsenseSubscriptionEntry.SATURDAY,
-//                    AirsenseSubscriptionEntry.SUNDAY,
-//                    AirsenseSubscriptionEntry.START_TIME,
-//                    AirsenseSubscriptionEntry.END_TIME,
-//                    AirsenseSubscriptionEntry.NOTIFICATION_ENABLED
-//            };
-//
-//            List<String> validSubs = new ArrayList<>();
-//            Set<String> fieldsOfInterest = new HashSet<>();
-//            for (int i = 0; i < subscriptionIds.length(); i++) {
-//                String[] subscriptionId = {subscriptionIds.getString(i)};
-//                Cursor cursor = db.query(AirsenseSubscriptionEntry.TABLE_NAME, columns, AirsenseSubscriptionEntry.SUBSCRIPTION_ID + "= ?", subscriptionId, null, null, null);
-//                while (cursor.moveToNext()) {
-//                    String name = cursor.getString(cursor.getColumnIndex(AirsenseSubscriptionEntry.NAME));
-//                    String airType = cursor.getString(cursor.getColumnIndex(AirsenseSubscriptionEntry.AIR_TYPE));
-//                    int mon = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.MONDAY));
-//                    int tues = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.TUESDAY));
-//                    int wed = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.WEDNESDAY));
-//                    int thur = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.THURSDAY));
-//                    int fri = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.FRIDAY));
-//                    int sat = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.SATURDAY));
-//                    int sun = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.SUNDAY));
-//                    int startTime = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.START_TIME));
-//                    int endTime = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.END_TIME));
-//                    int notif_enabled = cursor.getInt(cursor.getColumnIndex(AirsenseSubscriptionEntry.NOTIFICATION_ENABLED));
-//                    if (notif_enabled == 0) {
-//                        break;
-//                    }
-//
-//                    Calendar calendar = Calendar.getInstance();
-//                    int day = calendar.get(Calendar.DAY_OF_WEEK);
-//                    int seconds = (calendar.get(Calendar.HOUR_OF_DAY) * 3600) + (calendar.get(Calendar.MINUTE) * 60) + (calendar.get(Calendar.SECOND));
-//                    if ((seconds > startTime) && (seconds < endTime)) {
-//                        if ((day == Calendar.MONDAY) && (mon > 0)) {
-//                            validSubs.add(name);
-//                            if (!airType.equals("-1")) {
-//                                fieldsOfInterest.add(airType);
-//                            }
-//                            break;
-//                        }
-//
-//                        if ((day == Calendar.TUESDAY) && (tues > 0)) {
-//                            validSubs.add(name);
-//                            fieldsOfInterest.add(airType);
-//                            break;
-//                        }
-//
-//                        if ((day == Calendar.WEDNESDAY) && (wed > 0)) {
-//                            validSubs.add(name);
-//                            if (!airType.equals("-1")) {
-//                                fieldsOfInterest.add(airType);
-//                            }
-//                            break;
-//                        }
-//
-//                        if ((day == Calendar.THURSDAY) && (thur > 0)) {
-//                            validSubs.add(name);
-//                            if (!airType.equals("-1")) {
-//                                fieldsOfInterest.add(airType);
-//                            }
-//                            break;
-//                        }
-//
-//                        if ((day == Calendar.FRIDAY) && (fri > 0)) {
-//                            validSubs.add(name);
-//                            if (!airType.equals("-1")) {
-//                                fieldsOfInterest.add(airType);
-//                            }
-//                            break;
-//                        }
-//
-//                        if ((day == Calendar.SATURDAY) && (sat > 0)) {
-//                            validSubs.add(name);
-//                            if (!airType.equals("-1")) {
-//                                fieldsOfInterest.add(airType);
-//                            }
-//                            break;
-//                        }
-//                        if ((day == Calendar.SUNDAY) && (sun > 0)) {
-//                            validSubs.add(name);
-//                            if (!airType.equals("-1")) {
-//                                fieldsOfInterest.add(airType);
-//                            }
-//                            break;
-//                        }
-//
-//                    }
-//                }
-//                cursor.close();
-//            }
-//
-//            if (validSubs.size() > 0) {
-//                Intent intent = new Intent(this, MainActivity.class);
-//                PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-//                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
-//                        .setSmallIcon(R.drawable.ic_notification)
-//                        .setContentIntent(pending)
-//                        .setContentTitle("Airsense Update: " + TextUtils.join(",", validSubs));
-//                String content = "";
-//                for (String field : fieldsOfInterest) {
-//                    content += (field + ": " + data.getString(field.toLowerCase()) + ". ");
-//                }
-//                mBuilder.setContentText(content);
-//                NotificationManager notificationManager =
-//                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//                notificationManager.notify(data.getInt("id"), mBuilder.build());
-//            }
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//        db.close();
-    }
 
 
 }

@@ -15,13 +15,13 @@ import ca.cvst.gta.db.SubscriptionsContract.SubscriptionEntry;
 
 public class Subscription {
 
-    private Type type;
+    private SubscriptionType type;
     private String title;
     private String content;
     private int timestamp;
     private String subscriptionId;
 
-    public Subscription(Type type, String title, String content, int timestamp, String subscriptionId) {
+    public Subscription(SubscriptionType type, String title, String content, int timestamp, String subscriptionId) {
         this.type = type;
         this.title = title;
         this.content = content;
@@ -61,7 +61,7 @@ public class Subscription {
                 }
             }
 
-            Subscription sub = new Subscription(Type.valueOf(type.toUpperCase()), name, content, timestamp, subscriptionId);
+            Subscription sub = new Subscription(SubscriptionType.valueOf(type.toUpperCase()), name, content, timestamp, subscriptionId);
             ret.add(sub);
         }
         cursor.close();
@@ -69,7 +69,7 @@ public class Subscription {
         return ret;
     }
 
-    public Type getType() {
+    public SubscriptionType getType() {
         return type;
     }
 
@@ -85,8 +85,4 @@ public class Subscription {
         return content;
     }
 
-    enum Type {
-        TTC,
-        AIRSENSE
-    }
 }

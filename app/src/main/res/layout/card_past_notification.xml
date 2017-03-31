@@ -48,6 +48,12 @@
             android:layout_below="@+id/text_past_notification_line_1_name"
             android:layout_toEndOf="@+id/text_past_notification_line_2_name" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/text_past_notification_line_2_name"
+            android:lines="5"/>
+
     </RelativeLayout>
 
 

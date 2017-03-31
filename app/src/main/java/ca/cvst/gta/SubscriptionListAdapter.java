@@ -72,9 +72,9 @@ public class SubscriptionListAdapter extends RecyclerView.Adapter<SubscriptionLi
                     JSONObject payload = new JSONObject();
                     try {
                         payload.put("subscriptionId", subscription.getSubscriptionId());
-                        if (subscription.getType() == Subscription.Type.TTC) {
+                        if (subscription.getType() == SubscriptionType.TTC) {
                             payload.put("publisherName", "ttc");
-                        } else if (subscription.getType() == Subscription.Type.AIRSENSE) {
+                        } else if (subscription.getType() == SubscriptionType.AIRSENSE) {
                             payload.put("publisherName", "airsense");
                         }
                     } catch (JSONException e) {
