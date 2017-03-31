@@ -1,4 +1,4 @@
-package layout;
+package ca.cvst.gta;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
@@ -23,10 +23,6 @@ import org.json.JSONObject;
 
 import java.util.Calendar;
 
-import ca.cvst.gta.Filter;
-import ca.cvst.gta.MainActivity;
-import ca.cvst.gta.R;
-import ca.cvst.gta.SubscriptionType;
 import ca.cvst.gta.db.AirsenseNotificationsContract.AirsenseNotificationEntry;
 import ca.cvst.gta.db.DbHelper;
 import ca.cvst.gta.db.SubscriptionsContract.SubscriptionEntry;

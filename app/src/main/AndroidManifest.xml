@@ -90,7 +90,7 @@
         </activity>
 
         <service
-            android:name="layout.UpdatesListenerIntentService"
+            android:name=".UpdatesListenerIntentService"
             android:exported="false" />
 
         <activity

@@ -12,8 +12,6 @@ import android.widget.Toast;
 import com.roughike.bottombar.BottomBar;
 import com.roughike.bottombar.OnTabSelectListener;
 
-import layout.UpdatesListenerIntentService;
-
 public class MainActivity extends AppCompatActivity implements
         HomeMapFragment.OnFragmentInteractionListener,
         HistoricalDashboardFragment.OnFragmentInteractionListener,
