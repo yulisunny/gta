@@ -1,20 +1,48 @@
-{
-  "data": {
-    "event": "National Ballet's Winter Mixed Programme",
-    "eventurl": "https://nowtoronto.com/events/national-ballet-s-winter-mixed-programme/",
-    "enddate": "Apr 2, 2017",
-    "lng": -79.38540649414062,
-    "location": "Four Seasons Centre for the Performing Arts",
-    "locationurl": "https://nowtoronto.com/locations/four-seasons-centre-for-the-performing-arts/",
-    "lat": 43.65108108520508,
-    "description": "The National Ballet of Canada presents works by Wayne McGregor, George Balanchine, Robert Binet and Jerome Robbins.",
-    "categories": [
-      "Dance",
-      "Stage"
-    ],
-    "startdate": "Mar 29, 2017"
+[
+  {
+    "data": {
+      "event": "National Ballet's Winter Mixed Programme",
+      "eventurl": "https://nowtoronto.com/events/national-ballet-s-winter-mixed-programme/",
+      "enddate": "Apr 2, 2017",
+      "lng": -79.38540649414062,
+      "location": "Four Seasons Centre for the Performing Arts",
+      "locationurl": "https://nowtoronto.com/locations/four-seasons-centre-for-the-performing-arts/",
+      "lat": 43.65108108520508,
+      "description": "The National Ballet of Canada presents works by Wayne McGregor, George Balanchine, Robert Binet and Jerome Robbins.",
+      "categories": [
+        "Dance",
+        "Stage"
+      ],
+      "startdate": "Mar 29, 2017"
+    },
+    "subscriptionIds": [
+      "181579469168592546998361719337382221003"
+    ]
   },
-  "subscriptionIds": [
-    "181579469168592546998361719337382221003"
-  ]
-}
+  {
+    "publisherName": "nowtoronto",
+    "subscription": {
+      "bool": {
+        "must": [
+          {
+            "range": {
+              "lng": {
+                "gt": -79.37,
+                "lt": -79.17
+              }
+            }
+          },
+          {
+            "range": {
+              "lat": {
+                "gt": 43.66,
+                "lt": 43.77
+              }
+            }
+          }
+        ]
+      }
+    },
+    "action": "subscribe"
+  }
+]

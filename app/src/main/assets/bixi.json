@@ -1,20 +1,48 @@
-{
-  "data": {
-    "nbBikes": 7,
-    "coordinates": [
-      -79.372287,
-      43.650325
-    ],
-    "terminalName": "",
-    "timestamp": 1490754063,
-    "nbEmptyDocks": 4,
-    "lastCommWithServer": "1490753849.0",
-    "station_name": "King St E / Jarvis St",
-    "installed": true,
-    "latestUpdateTime": "",
-    "station_id": 7009
+[
+  {
+    "data": {
+      "nbBikes": 7,
+      "coordinates": [
+        -79.372287,
+        43.650325
+      ],
+      "terminalName": "",
+      "timestamp": 1490754063,
+      "nbEmptyDocks": 4,
+      "lastCommWithServer": "1490753849.0",
+      "station_name": "King St E / Jarvis St",
+      "installed": true,
+      "latestUpdateTime": "",
+      "station_id": 7009
+    },
+    "subscriptionIds": [
+      "112885652457783872248166121262115036419"
+    ]
   },
-  "subscriptionIds": [
-    "112885652457783872248166121262115036419"
-  ]
-}
+  {
+    "publisherName": "bixi",
+    "subscription": {
+      "bool": {
+        "must": [
+          {
+            "range": {
+              "coordinates": {
+                "gt": -80.37,
+                "lt": -79.17
+              }
+            }
+          },
+          {
+            "range": {
+              "coordinates": {
+                "gt": 40.66,
+                "lt": 43.77
+              }
+            }
+          }
+        ]
+      }
+    },
+    "action": "subscribe"
+  }
+]

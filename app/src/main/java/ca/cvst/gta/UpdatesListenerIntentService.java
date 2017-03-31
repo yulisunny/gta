@@ -133,14 +133,14 @@ public class UpdatesListenerIntentService extends IntentService {
     private void persistNotification(SubscriptionType subscriptionType, JSONObject root) {
         switch (subscriptionType) {
             case TTC:
-                handleTtc(root);
+                persistTtc(root);
             case AIRSENSE:
-                handleAirsense(root);
+                persistAirsense(root);
         }
     }
 
 
-    private void handleTtc(JSONObject root) {
+    private void persistTtc(JSONObject root) {
         DbHelper dbHelper = new DbHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -168,7 +168,7 @@ public class UpdatesListenerIntentService extends IntentService {
 
     }
 
-    private void handleAirsense(JSONObject root) {
+    private void persistAirsense(JSONObject root) {
         DbHelper dbHelper = new DbHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
