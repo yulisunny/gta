@@ -17,6 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.List;
 
 import ca.cvst.gta.Filter.Operation;
 import ca.cvst.gta.db.DbHelper;
@@ -38,6 +39,7 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
     private String routeNumber;
     private String airType;
     private float airValue;
+    private List<Filter> mFilters;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +99,11 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
     }
 
     @Override
+    public void setFilterList(List<Filter> mFilters) {
+        this.mFilters = mFilters;
+    }
+
+    @Override
     public void submitSubscription() {
         attemptSubscribe();
     }
@@ -134,25 +141,7 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
         final double lowerLatitude = AreaBounds.southwest.latitude;
 
         try {
-//            JSONArray mustArray = new JSONArray();
-//            for (Filter filter : mFilters) {
-//                if (filter.getOperation() == Filter.Operation.EQ) {
-//                    JSONObject o1 = new JSONObject();
-//                    o1.put(filter.getFieldName(), filter.getFieldValue());
-//                    JSONObject o2 = new JSONObject();
-//                    o2.put("match", o1);
-//                    mustArray.put(o2);
-//                } else {
-//                    JSONObject o1 = new JSONObject();
-//                    o1.put(filter.getOperation().toString().toLowerCase(), Float.valueOf(filter.getFieldValue()));
-//                    JSONObject o2 = new JSONObject();
-//                    o2.put(filter.getFieldName(), o1);
-//                    JSONObject o3 = new JSONObject();
-//                    o3.put("range", o2);
-//                    mustArray.put(o3);
-//                }
-//            }
-
+            // Area Subscription: Range {}
             JSONObject lngObject = new JSONObject().put("gt", lowerLongitude).put("lt", upperLongitude);
             JSONObject latObject = new JSONObject().put("gt", lowerLatitude).put("lt", upperLatitude);
             JSONObject lngCoordinateObject = new JSONObject().put("coordinates", lngObject);
@@ -164,6 +153,23 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
             mustArray.put(lngRangeObject);
             mustArray.put(latRangeObject);
 
+            for (Filter filter : mFilters) {
+                if (filter.getOperation() == Filter.Operation.EQ) {
+                    JSONObject o1 = new JSONObject();
+                    o1.put(filter.getFieldName(), filter.getFieldValue());
+                    JSONObject o2 = new JSONObject();
+                    o2.put("match", o1);
+                    mustArray.put(o2);
+                } else {
+                    JSONObject o1 = new JSONObject();
+                    o1.put(filter.getOperation().toString().toLowerCase(), Float.valueOf(filter.getFieldValue()));
+                    JSONObject o2 = new JSONObject();
+                    o2.put(filter.getFieldName(), o1);
+                    JSONObject o3 = new JSONObject();
+                    o3.put("range", o2);
+                    mustArray.put(o3);
+                }
+            }
             // publisher = mPublishersSpinner.getSelectedItem().toString();
             if (publisher.equals("TTC")) {
                 payload.put("publisherName", publisher.toLowerCase());
