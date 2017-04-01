@@ -56,7 +56,7 @@ public class Subscription {
                 String[] filtersStringArray = filtersString.split(",");
                 for (String filterString : filtersStringArray) {
                     Filter filter = Filter.fromString(filterString);
-                    content += "\n" + filter.getFieldName() + " " + filter.getOperation().getSymbol() + " " + filter.getFieldValue();
+                    content += "\n" + KeyConverter.toReadable(filter.getFieldName()) + " " + filter.getOperation().getSymbol() + " " + filter.getFieldValue();
 
                 }
             }

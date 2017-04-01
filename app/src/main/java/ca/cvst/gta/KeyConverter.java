@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class JsonKeyToReadableConverter {
+public class KeyConverter {
 
     private static Map<String, String> table;
     static {
