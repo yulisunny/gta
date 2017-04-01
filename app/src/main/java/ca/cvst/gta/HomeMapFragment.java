@@ -76,15 +76,21 @@ public class HomeMapFragment extends Fragment implements
     private boolean ttcIsChecked = false;
     private boolean roadIncidentIsChecked = false;
     private boolean weatherIsChecked = false;
+    private boolean borderIsChecked = false;
+    private boolean HW_speedIsChecked = false;
     private ArrayList<Marker> ttcMarkers;
     private ArrayList<Marker> roadIncidentMarkers;
     private ArrayList<Marker> weatherMarkers;
+    private ArrayList<Marker> borderMarkers;
+    private ArrayList<Marker> HW_speedMarkers;
 
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
     private GoogleMap mMap;
     private Bitmap ttcIcon;
     private Bitmap weatherIcon;
+    private Bitmap borderIcon;
+    private Bitmap HW_speedIcon;
     private Map<Integer, Integer> ttcInvertedIndex;
     private MapView mMapView;
     // TODO: Rename and change types of parameters
@@ -247,15 +253,6 @@ public class HomeMapFragment extends Fragment implements
                 ttcMarker.setVisible(ttcIsChecked);
             }
         }
-        else if (id == R.id.current_road_incidents) {
-            if (item.isChecked()) {
-                item.setChecked(false);
-                roadIncidentIsChecked = false;
-            } else {
-                item.setChecked(true);
-                roadIncidentIsChecked = true;
-            }
-        }
         else if (id == R.id.weather) {
             if (item.isChecked()) {
                 item.setChecked(false);
@@ -269,6 +266,41 @@ public class HomeMapFragment extends Fragment implements
                 weatherMarker.setVisible(weatherIsChecked);
             }
         }
+        else if (id == R.id.border) {
+            if (item.isChecked()) {
+                item.setChecked(false);
+                borderIsChecked = false;
+            } else {
+                item.setChecked(true);
+                borderIsChecked = true;
+            }
+
+            for (Marker borderMarker: borderMarkers) {
+                borderMarker.setVisible(borderIsChecked);
+            }
+        }
+        else if (id == R.id.HW_speed) {
+            if (item.isChecked()) {
+                item.setChecked(false);
+                HW_speedIsChecked = false;
+            } else {
+                item.setChecked(true);
+                HW_speedIsChecked = true;
+            }
+
+            for (Marker marker: HW_speedMarkers) {
+                marker.setVisible(HW_speedIsChecked);
+            }
+        }
+        //        else if (id == R.id.current_road_incidents) {
+//            if (item.isChecked()) {
+//                item.setChecked(false);
+//                roadIncidentIsChecked = false;
+//            } else {
+//                item.setChecked(true);
+//                roadIncidentIsChecked = true;
+//            }
+//        }
         DrawerLayout drawer = (DrawerLayout) getView().findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -337,6 +369,13 @@ public class HomeMapFragment extends Fragment implements
 //        initialize_roadIncidentData();
 
         initialize_weather();
+//
+        initialize_border();
+//
+//        initialize_HW_speed();
+
+
+        //refreshData();
         //LatLng toronto = new LatLng(43.6543, -79.3860);
         //mMarker = mMap.addMarker(new MarkerOptions()
         //        .position(toronto)
@@ -354,7 +393,7 @@ public class HomeMapFragment extends Fragment implements
 
     private void initialize_ttcData() {
         ttcIcon = resizeMapIcons("ttc", 25, 25);
-        ttcMarkers = new ArrayList<Marker>();
+        ttcMarkers = new ArrayList<>();
         ttcInvertedIndex = new HashMap<Integer, Integer>();
 
         String url = "http://portal.cvst.ca/api/0.1/ttc";
@@ -375,8 +414,7 @@ public class HomeMapFragment extends Fragment implements
 
     private void initialize_weather() {
         weatherIcon = resizeMapIcons("weather", 25, 25);
-        weatherMarkers = new ArrayList<Marker>();
-//        ttcInvertedIndex = new HashMap<Integer, Integer>();
+        weatherMarkers = new ArrayList<>();
 
         String url = "http://portal.cvst.ca/api/0.1/weather";
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
@@ -392,6 +430,143 @@ public class HomeMapFragment extends Fragment implements
             }
         });
         NetworkManager.getInstance(getContext()).addToRequestQueue(jsonArrayRequest);
+    }
+
+    private void initialize_border() {
+        borderIcon = resizeMapIcons("border", 25, 25);
+        borderMarkers = new ArrayList<>();
+
+        String url = "http://portal.cvst.ca/api/0.1/border";
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray borderInfos) {
+                        borderPlotNearby(borderInfos);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("error = " + error);
+            }
+        });
+        NetworkManager.getInstance(getContext()).addToRequestQueue(jsonArrayRequest);
+    }
+
+    private void initialize_HW_speed() {
+        HW_speedIcon = resizeMapIcons("highway_speed", 25, 25);
+        HW_speedMarkers = new ArrayList<>();
+
+        String url = "http://portal.cvst.ca/api/0.1/HW_speed";
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray HW_speedInfos) {
+                        HW_speedPlotNearby(HW_speedInfos);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("error = " + error);
+            }
+        });
+        NetworkManager.getInstance(getContext()).addToRequestQueue(jsonArrayRequest);
+    }
+
+    private void reverseSearch(final JSONObject HW_speedInfo) {
+        try {
+            String ref_road_name = HW_speedInfo.getString("ref_road_name");
+            String main_road_name = HW_speedInfo.getString("main_road_name");
+            String inputLocation = main_road_name + " " + ref_road_name + " " + "Toronto Canada";
+
+            String url = "http://maps.googleapis.com/maps/api/geocode/json?address=" + inputLocation.replace(" ", "%20").replace("&", "AND");
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject intersectionInfo) {
+                            try {
+                                double lat = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lat");
+                                double lng = intersectionInfo.getJSONArray("results").getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lng");
+                                LatLng location = new LatLng(lat, lng);
+
+                                String JAM_FACTOR = HW_speedInfo.getString("JAM_FACTOR");
+                                String avg_speed_capped = HW_speedInfo.getString("avg_speed_capped");
+                                String free_flow_speed = HW_speedInfo.getString("free_flow_speed");
+                                String main_road_name = HW_speedInfo.getString("main_road_name");
+                                String ref_road_name = HW_speedInfo.getString("ref_road_name");
+                                String roadway_type = HW_speedInfo.getString("roadway_type");
+                                String title = main_road_name + " " + ref_road_name;
+
+                                String snippet_string = "Jam Factor: " + JAM_FACTOR + '\n'
+                                        + "Average Speed: " + avg_speed_capped + '\n' + "Free Flow Speed: "
+                                        + free_flow_speed + '\n' + "Roadway Type: " + roadway_type;
+
+                                if (HW_speedMarkers != null) {
+                                    HW_speedMarkers.add(mMap.addMarker(new MarkerOptions()
+                                            .position(location)
+                                            .title(title)
+                                            .visible(HW_speedIsChecked)
+                                            .snippet(snippet_string)
+                                            .icon(BitmapDescriptorFactory.fromBitmap(HW_speedIcon))));
+                                }
+
+                            } catch (JSONException e) {
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    System.out.println("error = " + error);
+                }
+            });
+            NetworkManager.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
+        } catch (Exception e) {
+
+        }
+
+    }
+
+    private void HW_speedPlotNearby(JSONArray HW_speedInfos) {
+        try {
+            JSONArray HW_speedInfosArray = HW_speedInfos.getJSONObject(0).getJSONArray("data");
+            for (int index = 0; index < HW_speedInfosArray.length(); index++) {
+                JSONObject borderInfo = HW_speedInfosArray.getJSONObject(index);
+                reverseSearch(borderInfo);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void borderPlotNearby(JSONArray borderInfos) {
+        try {
+
+            for (int index = 0; index < borderInfos.length(); index++) {
+                JSONObject borderInfo = borderInfos.getJSONObject(index);
+                double Latitude = borderInfo.getDouble("lat");
+                double Longitude = borderInfo.getDouble("lng");
+
+                String port_name = borderInfo.getString("port_name");
+                String port_id = borderInfo.getString("port_id");
+                String lane_type = borderInfo.getString("lane_type");
+                String delay_1 = borderInfo.getString("delay1");
+                String delay_2 = borderInfo.getString("delay2");
+
+                String snippet_string = "Port ID: " + port_id + '\n' + "Lane Type: "
+                        + lane_type + '\n' + "Canada-Facing Delay: " + delay_1 + '\n' + "USA-Facing Delay: " + delay_2;
+
+                LatLng location = new LatLng(Latitude, Longitude);
+                if (borderMarkers != null) {
+                    borderMarkers.add(mMap.addMarker(new MarkerOptions()
+                            .position(location)
+                            .title(port_name)
+                            .visible(borderIsChecked)
+                            .snippet(snippet_string)
+                            .icon(BitmapDescriptorFactory.fromBitmap(borderIcon))));
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initialize_roadIncidentData() {
@@ -501,13 +676,14 @@ public class HomeMapFragment extends Fragment implements
 
                 LatLng location = new LatLng(Latitude, Longitude);
 //                System.out.println("JAJAJA: " + location);
-                weatherMarkers.add(mMap.addMarker(new MarkerOptions()
-                        .position(location)
-                        .title(locationName)
-                        .visible(weatherIsChecked)
-                        .snippet(snippet_string)
-                        .icon(BitmapDescriptorFactory.fromBitmap(weatherIcon))));
-
+                if (weatherMarkers != null) {
+                    weatherMarkers.add(mMap.addMarker(new MarkerOptions()
+                            .position(location)
+                            .title(locationName)
+                            .visible(weatherIsChecked)
+                            .snippet(snippet_string)
+                            .icon(BitmapDescriptorFactory.fromBitmap(weatherIcon))));
+                }
 //                if (Helper.isNearby(mLastLocation.getLatitude(), mLastLocation.getLongitude(), Latitude, Longitude)) {
 //                    ttcPlotMarker(ttcVehicle, ttcMarkersIndex, Latitude, Longitude);
 //                    ttcMarkersIndex = ttcMarkersIndex + 1;
@@ -639,6 +815,63 @@ public class HomeMapFragment extends Fragment implements
             e.printStackTrace();
         }
     }
+
+    private void refreshData() {
+
+//        Handler refreshHandler = new Handler(Looper.getMainLooper());
+//        refreshHandler.post(
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        Thread.sleep(200 * 1000);
+                    } catch (InterruptedException e) {
+
+                    }
+                    if (borderMarkers != null)
+                    {
+                        for (Marker marker : borderMarkers) {
+                            marker.remove();
+                        }
+                    }
+//                    borderMarkers.clear();
+//                    borderMarkers = null;
+                    initialize_border();
+                    if (weatherMarkers != null) {
+                        for (Marker marker : weatherMarkers) {
+                            marker.remove();
+                        }
+                    }
+//                    weatherMarkers.clear();
+//                    weatherMarkers = null;
+                    initialize_weather();
+                    try {
+                        Thread.sleep(2000 * 1000);
+                    } catch (InterruptedException e) {
+
+                    }
+
+                    if (HW_speedMarkers != null) {
+                        for (Marker marker : HW_speedMarkers) {
+                            marker.remove();
+                        }
+                    }
+//                    HW_speedMarkers.clear();
+//                    HW_speedMarkers = null;
+                    initialize_HW_speed();
+                    try {
+                        Thread.sleep(500 * 1000);
+                    } catch (InterruptedException e) {
+
+                    }
+                }
+            }
+        };
+
+        new Thread(runnable).start();
+    }
+
 
     private void WebSocketConn() {
         System.out.println("Starting");

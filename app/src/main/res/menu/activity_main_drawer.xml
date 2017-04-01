@@ -10,17 +10,23 @@
                     android:title="TTC bus"
                     />
             </group>
-            <group android:id="@+id/current_road_incidents_group">
+            <group android:id="@+id/HW_speed_group">
                 <item
-                    android:id="@+id/current_road_incidents"
+                    android:id="@+id/HW_speed"
                     android:icon="@drawable/ic_menu_send"
-                    android:title="Current Road Incidents" />
+                    android:title="Traffic Speed" />
             </group>
             <group android:id="@+id/weather_group">
                 <item
                     android:id="@+id/weather"
                     android:icon="@drawable/weather"
                     android:title="Weather" />
+            </group>
+            <group android:id="@+id/border_group">
+                <item
+                    android:id="@+id/border"
+                    android:icon="@drawable/bg_day_selected"
+                    android:title="Border" />
             </group>
         </menu>
     </item>
