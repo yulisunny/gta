@@ -14,7 +14,7 @@ public class Filter {
 
     public static Filter fromString(String filterString) {
         if (filterString.equals("")) {
-            return null;
+            throw new IllegalArgumentException("filter String is null");
         }
         int operatorIndex = filterString.indexOf(Operation.EQ.getSymbol());
         if (operatorIndex != -1) {
@@ -40,7 +40,7 @@ public class Filter {
         if (operatorIndex != -1) {
             return new Filter(filterString.substring(0, operatorIndex), Operation.LTE, filterString.substring(operatorIndex + 2));
         }
-        return null;
+        throw new IllegalStateException();
     }
 
     public String getFieldValue() {

@@ -134,8 +134,10 @@ public class UpdatesListenerIntentService extends IntentService {
         switch (subscriptionType) {
             case TTC:
                 persistTtc(root);
+                break;
             case AIRSENSE:
                 persistAirsense(root);
+                break;
         }
     }
 
@@ -198,17 +200,23 @@ public class UpdatesListenerIntentService extends IntentService {
     }
 
     private void notifyUser(SubscriptionType type, JSONObject data, String filters, String name) {
-        String content = "";
-        if (filters != null) {
-            String[] filtersArray = filters.split(",");
-            for (String filterString : filtersArray) {
-                Filter f = Filter.fromString(filterString);
-                try {
-                    content += f.getFieldName() + ":" + data.getString(f.getFieldName()) + "  ";
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
+        switch (type) {
+            case TTC:
+                notifyTtc(data, filters, name);
+                break;
+            case AIRSENSE:
+                notifyAirsense(data, filters, name);
+                break;
+        }
+    }
+
+    private void notifyTtc(JSONObject data, String filters, String name) {
+        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+        try {
+            inboxStyle.addLine("Bus ID: " + data.getInt("id"));
+            inboxStyle.addLine("Direction: " + Helper.calculateDirection(Integer.valueOf(data.getString("heading"))));
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
 
 
@@ -216,23 +224,51 @@ public class UpdatesListenerIntentService extends IntentService {
         PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
                 .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(name)
-                .setContentIntent(pending);
-        mBuilder.setContentText(content);
+                .setContentIntent(pending)
+                .setContentText(name)
+                .setStyle(inboxStyle);
+
+        try {
+            mBuilder.setContentTitle(data.getString("name"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        try {
+            notificationManager.notify(data.getInt("id"), mBuilder.build());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
-        switch (type) {
-            case TTC:
+    private void notifyAirsense(JSONObject data, String filters, String name) {
+        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+        if (filters != null) {
+            String[] filtersArray = filters.split(",");
+            for (String filterString : filtersArray) {
+                Filter f = Filter.fromString(filterString);
                 try {
-                    notificationManager.notify(data.getInt("id"), mBuilder.build());
+                    inboxStyle.addLine(f.getFieldName() + ": " + data.getString(f.getFieldName()));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                break;
-            case AIRSENSE:
-                notificationManager.notify(1, mBuilder.build());
+            }
         }
+
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle("Air Quality Update")
+                .setContentIntent(pending)
+                .setContentText(name)
+                .setStyle(inboxStyle);
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(1, mBuilder.build());
 
     }
 
