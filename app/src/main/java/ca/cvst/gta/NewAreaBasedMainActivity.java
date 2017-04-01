@@ -235,18 +235,7 @@ public class NewAreaBasedMainActivity extends AppCompatActivity
 
                             cv.put(SubscriptionEntry.TYPE, "ttc");
                             if (!routeNumber.equals("-1")) {
-//                                Filter routeFilter = new Filter("routeNumber", Operation.EQ, routeNumber);
-//                                String commaSeparatedFilters = null;
-//                                for (Filter filter : mFilters) {
-//                                    if (commaSeparatedFilters == null) {
-//                                        commaSeparatedFilters = filter.toString();
-//                                    }
-//                                    else {
-//                                        commaSeparatedFilters = commaSeparatedFilters + "," + filter.toString();
-//                                    }
-//                                }
-//                                System.out.println("Comma Separated Filter String: " + commaSeparatedFilters);
-                                cv.put(SubscriptionEntry.FILTERS, mFilters.toString());
+                                cv.put(SubscriptionEntry.FILTERS, mFilters.toString().replace("[","").replace("]",""));
                             }
 
                             cv.put(SubscriptionEntry.MONDAY, mondayToSundayArray[0]);
