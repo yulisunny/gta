@@ -51,6 +51,10 @@ public class Filter {
         return fieldName;
     }
 
+    public String getReadableFieldName() {
+        return KeyConverter.toReadable(fieldName);
+    }
+
     public Operation getOperation() {
         return operation;
     }

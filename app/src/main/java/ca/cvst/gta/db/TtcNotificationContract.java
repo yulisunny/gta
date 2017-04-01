@@ -21,6 +21,7 @@ public class TtcNotificationContract {
         public static final String HEADING = "heading";
         public static final String PREDICTABLE = "predictable";
         public static final String ROUTE_NUMBER = "route_number";
-        public static final String SUBSCRIPTION_IDS = "subscription_ids";
+        public static final String SUBSCRIPTION_ID = "subscription_id";
+        public static final String FILTERS = "filters";
     }
 }

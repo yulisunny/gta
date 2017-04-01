@@ -21,5 +21,6 @@ public class AirsenseNotificationsContract {
         public static final String COO = "coo";
         public static final String ADDRESS = "address";
         public static final String SUBSCRIPTION_IDS = "subscription_ids";
+        public static final String FILTERS = "filters";
     }
 }

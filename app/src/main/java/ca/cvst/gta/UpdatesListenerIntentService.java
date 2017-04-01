@@ -36,8 +36,6 @@ import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
  */
 public class UpdatesListenerIntentService extends IntentService {
 
-    private static int airsenseNotifId = 1;
-
     public UpdatesListenerIntentService() {
         super("UpdatesListenerIntentService");
     }
@@ -72,6 +70,7 @@ public class UpdatesListenerIntentService extends IntentService {
                             SQLiteDatabase db = dbHelper.getWritableDatabase();
 
                             String query = "SELECT " +
+                                    SubscriptionEntry.SUBSCRIPTION_ID + ", " +
                                     SubscriptionEntry.TYPE + ", " +
                                     SubscriptionEntry.FILTERS + ", " +
                                     SubscriptionEntry.NAME + ", " +
@@ -90,6 +89,7 @@ public class UpdatesListenerIntentService extends IntentService {
                             Cursor cursor = db.rawQuery(query, subscriptionIdsArray);
 
                             while (cursor.moveToNext()) {
+                                String subscriptionId = cursor.getString(cursor.getColumnIndexOrThrow(SubscriptionEntry.SUBSCRIPTION_ID));
                                 String type = cursor.getString(cursor.getColumnIndexOrThrow(SubscriptionEntry.TYPE));
                                 SubscriptionType subscriptionType = SubscriptionType.valueOf(type.toUpperCase());
                                 String filters = cursor.getString(cursor.getColumnIndexOrThrow(SubscriptionEntry.FILTERS));
@@ -105,7 +105,7 @@ public class UpdatesListenerIntentService extends IntentService {
                                 int startTime = cursor.getInt(cursor.getColumnIndex(SubscriptionEntry.START_TIME));
                                 int endTime = cursor.getInt(cursor.getColumnIndex(SubscriptionEntry.END_TIME));
                                 int notif_enabled = cursor.getInt(cursor.getColumnIndex(SubscriptionEntry.NOTIFICATION_ENABLED));
-                                persistNotification(subscriptionType, root);
+                                persistNotification(subscriptionType, data, filters, subscriptionId);
 
                                 if (notif_enabled > 0 && shouldNotifyNow(startTime, endTime, mon, tues, wed, thur, fri, sat, sun)) {
                                     notifyUser(subscriptionType, data, filters, name);
@@ -130,24 +130,23 @@ public class UpdatesListenerIntentService extends IntentService {
         });
     }
 
-    private void persistNotification(SubscriptionType subscriptionType, JSONObject root) {
+    private void persistNotification(SubscriptionType subscriptionType, JSONObject data, String filters, String subscriptionId) {
         switch (subscriptionType) {
             case TTC:
-                persistTtc(root);
+                persistTtc(data, filters, subscriptionId);
                 break;
             case AIRSENSE:
-                persistAirsense(root);
+                persistAirsense(data, filters, subscriptionId);
                 break;
         }
     }
 
 
-    private void persistTtc(JSONObject root) {
+    private void persistTtc(JSONObject data, String filters, String subscriptionId) {
         DbHelper dbHelper = new DbHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         try {
-            JSONObject data = root.getJSONObject("data");
             values.put(TtcNotificationEntry.BUS_ID, data.getInt("id"));
             values.put(TtcNotificationEntry.TIMESTAMP, data.getInt("timestamp"));
             values.put(TtcNotificationEntry.DIR_TAG, data.getString("dirTag"));
@@ -160,8 +159,8 @@ public class UpdatesListenerIntentService extends IntentService {
             values.put(TtcNotificationEntry.HEADING, data.getString("heading"));
             values.put(TtcNotificationEntry.PREDICTABLE, data.getBoolean("predictable"));
             values.put(TtcNotificationEntry.ROUTE_NUMBER, data.getString("routeNumber"));
-            JSONArray subscriptionIds = root.getJSONArray("subscriptionIds");
-            values.put(TtcNotificationEntry.SUBSCRIPTION_IDS, subscriptionIds.join(","));
+            values.put(TtcNotificationEntry.FILTERS, filters);
+            values.put(TtcNotificationEntry.SUBSCRIPTION_ID, subscriptionId);
             db.insert(TtcNotificationEntry.TABLE_NAME, null, values);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -170,12 +169,11 @@ public class UpdatesListenerIntentService extends IntentService {
 
     }
 
-    private void persistAirsense(JSONObject root) {
+    private void persistAirsense(JSONObject data, String filters, String subscriptionId) {
         DbHelper dbHelper = new DbHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         try {
-            JSONObject data = root.getJSONObject("data");
             values.put(AirsenseNotificationEntry.TIMESTAMP, data.getInt("timestamp"));
             values.put(AirsenseNotificationEntry.MONITOR_NAME, data.getString("monitor_name"));
             values.put(AirsenseNotificationEntry.DATE, data.getString("date"));
@@ -190,8 +188,8 @@ public class UpdatesListenerIntentService extends IntentService {
             values.put(AirsenseNotificationEntry.CO, data.getDouble("co"));
             values.put(AirsenseNotificationEntry.COO, data.getDouble("coo"));
             values.put(AirsenseNotificationEntry.ADDRESS, data.getString("address"));
-            JSONArray subscriptionIds = root.getJSONArray("subscriptionIds");
-            values.put(AirsenseNotificationEntry.SUBSCRIPTION_IDS, subscriptionIds.join(","));
+            values.put(AirsenseNotificationEntry.FILTERS, filters);
+            values.put(AirsenseNotificationEntry.SUBSCRIPTION_IDS, subscriptionId);
             db.insert(AirsenseNotificationEntry.TABLE_NAME, null, values);
         } catch (JSONException e) {
             e.printStackTrace();

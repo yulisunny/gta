@@ -11,7 +11,7 @@ import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
 
 public class DbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 19;
+    public static final int DATABASE_VERSION = 20;
     public static final String DATABASE_NAME = "cvst_gta.db";
     private static final String CREATE_HISTORICAL_GRAPHS_TABLE =
             "CREATE TABLE " + GraphEntry.TABLE_NAME + " (" +
@@ -66,7 +66,8 @@ public class DbHelper extends SQLiteOpenHelper {
                     TtcNotificationEntry.HEADING + " TEXT," +
                     TtcNotificationEntry.PREDICTABLE + " INTEGER," +
                     TtcNotificationEntry.ROUTE_NUMBER + " TEXT," +
-                    TtcNotificationEntry.SUBSCRIPTION_IDS + " TEXT)";
+                    TtcNotificationEntry.FILTERS + " TEXT," +
+                    TtcNotificationEntry.SUBSCRIPTION_ID + " TEXT)";
 
     private static final String CREATE_AIRSENSE_NOTIFICATIONS_TABLE =
             "CREATE TABLE " + AirsenseNotificationEntry.TABLE_NAME + " (" +
@@ -85,6 +86,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     AirsenseNotificationEntry.CO + " REAL," +
                     AirsenseNotificationEntry.COO + " REAL," +
                     AirsenseNotificationEntry.ADDRESS + " TEXT," +
+                    AirsenseNotificationEntry.FILTERS + " TEXT," +
                     AirsenseNotificationEntry.SUBSCRIPTION_IDS + " TEXT)";
 
     private static final String DROP_HISTORICAL_GRAPHS_TABLE =

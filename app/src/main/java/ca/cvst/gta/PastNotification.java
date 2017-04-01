@@ -3,6 +3,7 @@ package ca.cvst.gta;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -95,22 +96,34 @@ public class PastNotification {
     private static List<PastNotification> loadNAirsense(Context context, int n) {
         DbHelper helper = new DbHelper(context);
         SQLiteDatabase db = helper.getReadableDatabase();
-
-        String[] projection = {
-                AirsenseNotificationEntry.LATITUDE,
-                AirsenseNotificationEntry.LONGITUDE,
-                AirsenseNotificationEntry.TIMESTAMP,
-                AirsenseNotificationEntry.MONITOR_NAME
-        };
-
-        Cursor cursor = db.query(AirsenseNotificationEntry.TABLE_NAME, projection, null, null, null, null, null, String.valueOf(n));
+        Cursor cursor = db.query(AirsenseNotificationEntry.TABLE_NAME, null, null, null, null, null, null, String.valueOf(n));
         List<PastNotification> ret = new ArrayList<>();
         while (cursor.moveToNext()) {
             float lat = cursor.getFloat(cursor.getColumnIndexOrThrow(AirsenseNotificationEntry.LATITUDE));
             float lon = cursor.getFloat(cursor.getColumnIndexOrThrow(AirsenseNotificationEntry.LONGITUDE));
             int timestamp = cursor.getInt(cursor.getColumnIndexOrThrow(AirsenseNotificationEntry.TIMESTAMP));
             String monitorName = cursor.getString(cursor.getColumnIndexOrThrow(AirsenseNotificationEntry.MONITOR_NAME));
+            String filters = cursor.getString(cursor.getColumnIndexOrThrow(AirsenseNotificationEntry.FILTERS));
+
             String content = "<b>" + "Time: " + "</b>" + new Date(((long) timestamp) * 1000L).toString();
+            for (String filterString : TextUtils.split(filters, ",")) {
+                Filter filter = Filter.fromString(filterString);
+                int columnIndex = cursor.getColumnIndexOrThrow(filter.getFieldName());
+                int type = cursor.getType(columnIndex);
+                switch (type) {
+                    case Cursor.FIELD_TYPE_INTEGER:
+                        content += "<br /><b>" + filter.getReadableFieldName() + ": </b>" + cursor.getInt(columnIndex);
+                        break;
+                    case Cursor.FIELD_TYPE_FLOAT:
+                        content += "<br /><b>" + filter.getReadableFieldName() + ": </b>" + cursor.getFloat(columnIndex);
+                        break;
+                    case Cursor.FIELD_TYPE_STRING:
+                        content += "<br /><b>" + filter.getReadableFieldName() + ": </b>" + cursor.getString(columnIndex);
+                        break;
+                }
+            }
+
+
             PastNotification pn = new PastNotification(monitorName, content, lat, lon, timestamp, SubscriptionType.AIRSENSE);
             ret.add(pn);
 

@@ -139,7 +139,7 @@ public class SubscriptionService extends Service {
             values.put(TtcNotificationEntry.HEADING, data.getString("heading"));
             values.put(TtcNotificationEntry.PREDICTABLE, data.getBoolean("predictable"));
             values.put(TtcNotificationEntry.ROUTE_NUMBER, data.getString("routeNumber"));
-            values.put(TtcNotificationEntry.SUBSCRIPTION_IDS, root.getJSONArray("subscriptionIds").join(","));
+            values.put(TtcNotificationEntry.SUBSCRIPTION_ID, root.getJSONArray("subscriptionIds").join(","));
             db.insert(TtcNotificationEntry.TABLE_NAME, null, values);
             db.close();
         } catch (JSONException e) {
