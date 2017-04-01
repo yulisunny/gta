@@ -17,21 +17,19 @@ import ca.cvst.gta.db.TtcNotificationContract.TtcNotificationEntry;
 public class PastNotification {
 
     private String title;
-    private String line1name;
-    private String line1value;
-    private String line2name;
-    private String line2value;
+    private String content;
     private float latitude;
     private float longitude;
     private int timestamp;
+    private SubscriptionType type;
 
-    public PastNotification(String title, String line1name, String line1value, float latitude, float longitude, int timestamp) {
+    public PastNotification(String title, String content, float latitude, float longitude, int timestamp, SubscriptionType type) {
         this.title = title;
-        this.line1name = line1name;
-        this.line1value = line1value;
+        this.content = content;
         this.latitude = latitude;
         this.longitude = longitude;
         this.timestamp = timestamp;
+        this.type = type;
     }
 
     public static List<PastNotification> loadNFromDb(Context context, int n) {
@@ -68,7 +66,9 @@ public class PastNotification {
                 TtcNotificationEntry.LATITUDE,
                 TtcNotificationEntry.LONGITUDE,
                 TtcNotificationEntry.TIMESTAMP,
-                TtcNotificationEntry.ROUTE_NUMBER
+                TtcNotificationEntry.NAME,
+                TtcNotificationEntry.BUS_ID,
+                TtcNotificationEntry.HEADING,
         };
 
         Cursor cursor = db.query(TtcNotificationEntry.TABLE_NAME, projection, null, null, null, null, null, String.valueOf(n));
@@ -77,9 +77,13 @@ public class PastNotification {
             float lat = cursor.getFloat(cursor.getColumnIndexOrThrow(TtcNotificationEntry.LATITUDE));
             float lon = cursor.getFloat(cursor.getColumnIndexOrThrow(TtcNotificationEntry.LONGITUDE));
             int timestamp = cursor.getInt(cursor.getColumnIndexOrThrow(TtcNotificationEntry.TIMESTAMP));
-            String routeNumber = cursor.getString(cursor.getColumnIndexOrThrow(TtcNotificationEntry.ROUTE_NUMBER));
-            PastNotification pn = new PastNotification("TTC", "Time", new Date(Long.valueOf(timestamp) * 1000).toString(), lat, lon, timestamp);
-            pn.setLine2("Route Number", routeNumber);
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(TtcNotificationEntry.NAME));
+            int busId = cursor.getInt(cursor.getColumnIndexOrThrow(TtcNotificationEntry.BUS_ID));
+            String heading = cursor.getString(cursor.getColumnIndexOrThrow(TtcNotificationEntry.HEADING));
+            String content = "<b>" + "Time: " + "</b>" + new Date(((long) timestamp) * 1000L).toString();
+            content += "<br /><b>" + "Bus ID: " + "</b>" + busId;
+            content += "<br /><b>" + "Direction: " + "</b>" + Helper.calculateDirection(Integer.valueOf(heading));
+            PastNotification pn = new PastNotification(name, content, lat, lon, timestamp, SubscriptionType.TTC);
             ret.add(pn);
 
         }
@@ -95,7 +99,8 @@ public class PastNotification {
         String[] projection = {
                 AirsenseNotificationEntry.LATITUDE,
                 AirsenseNotificationEntry.LONGITUDE,
-                AirsenseNotificationEntry.TIMESTAMP
+                AirsenseNotificationEntry.TIMESTAMP,
+                AirsenseNotificationEntry.MONITOR_NAME
         };
 
         Cursor cursor = db.query(AirsenseNotificationEntry.TABLE_NAME, projection, null, null, null, null, null, String.valueOf(n));
@@ -104,7 +109,9 @@ public class PastNotification {
             float lat = cursor.getFloat(cursor.getColumnIndexOrThrow(AirsenseNotificationEntry.LATITUDE));
             float lon = cursor.getFloat(cursor.getColumnIndexOrThrow(AirsenseNotificationEntry.LONGITUDE));
             int timestamp = cursor.getInt(cursor.getColumnIndexOrThrow(AirsenseNotificationEntry.TIMESTAMP));
-            PastNotification pn = new PastNotification("Airsense", "Time", new Date(timestamp * 1000L).toString(), lat, lon, timestamp);
+            String monitorName = cursor.getString(cursor.getColumnIndexOrThrow(AirsenseNotificationEntry.MONITOR_NAME));
+            String content = "<b>" + "Time: " + "</b>" + new Date(((long) timestamp) * 1000L).toString();
+            PastNotification pn = new PastNotification(monitorName, content, lat, lon, timestamp, SubscriptionType.AIRSENSE);
             ret.add(pn);
 
         }
@@ -113,17 +120,6 @@ public class PastNotification {
         return ret;
     }
 
-    public String getLine2name() {
-        return line2name;
-    }
-
-    public String getLine2value() {
-        return line2value;
-    }
-
-    public String getLine1value() {
-        return line1value;
-    }
 
     public float getLatitude() {
         return latitude;
@@ -133,17 +129,16 @@ public class PastNotification {
         return longitude;
     }
 
-    public void setLine2(String line2name, String line2value) {
-        this.line2name = line2name;
-        this.line2value = line2value;
-    }
 
     public String getTitle() {
         return title;
     }
 
-    public String getLine1name() {
-        return line1name;
+    public String getContent() {
+        return content;
     }
 
+    public SubscriptionType getType() {
+        return type;
+    }
 }

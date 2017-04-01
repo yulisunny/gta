@@ -2,6 +2,8 @@ package ca.cvst.gta;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +27,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -41,6 +44,7 @@ public class PastNotificationFragment extends Fragment implements
     private MapView mMapView;
     private GoogleMap mMap;
     private Marker marker;
+    private Bitmap ttcIcon;
 
     private RecyclerView mPastNotificationsRecyclerView;
     private RecyclerView.LayoutManager mPastNotificationListLayoutManager;
@@ -64,6 +68,7 @@ public class PastNotificationFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        ttcIcon = resizeMapIcons(R.drawable.ttc, 100, 100);
 
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(getContext())
@@ -106,7 +111,11 @@ public class PastNotificationFragment extends Fragment implements
                     if (marker != null) {
                         marker.remove();
                     }
-                    marker = mMap.addMarker(new MarkerOptions().position(latLng));
+                    MarkerOptions mo = new MarkerOptions().position(latLng);
+                    if (current_notif.getType() == SubscriptionType.TTC) {
+                        mo.icon(BitmapDescriptorFactory.fromBitmap(ttcIcon));
+                    }
+                    marker = mMap.addMarker(mo);
                     System.out.println("current_item = " + current_item);
                 }
             }
@@ -127,6 +136,18 @@ public class PastNotificationFragment extends Fragment implements
                 LatLng currentLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
                 mMap.moveCamera(newLatLng(currentLocation));
             }
+        }
+
+        if (mPastNotifications.size() > 0) {
+            PastNotification first_notif = mPastNotifications.get(0);
+            LatLng latLng = new LatLng(first_notif.getLatitude(), first_notif.getLongitude());
+            CameraUpdate update = CameraUpdateFactory.newLatLng(latLng);
+            mMap.animateCamera(update);
+            MarkerOptions mo = new MarkerOptions().position(latLng);
+            if (first_notif.getType() == SubscriptionType.TTC) {
+                mo.icon(BitmapDescriptorFactory.fromBitmap(ttcIcon));
+            }
+            marker = mMap.addMarker(mo);
         }
     }
 
@@ -209,6 +230,11 @@ public class PastNotificationFragment extends Fragment implements
             mMap.setMyLocationEnabled(true);
         }
 
+    }
+
+    private Bitmap resizeMapIcons(int resourceId, int width, int height) {
+        Bitmap imageBitmap = BitmapFactory.decodeResource(getResources(), resourceId);
+        return Bitmap.createScaledBitmap(imageBitmap, width, height, false);
     }
 
     public interface OnFragmentInteractionListener {
