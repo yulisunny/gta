@@ -3,6 +3,8 @@ package ca.cvst.gta;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,10 +13,16 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.OnItemSelectedListener {
 
@@ -32,6 +40,12 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
     private String mTtcRouteNumber = "-1";
     private String mAirType = "-1";
     private float mAirValue = -1;
+    private RadioGroup mOperationsRadioGroup;
+    private List<Filter> mFilters;
+    private RecyclerView mFilterList;
+    private FilterListAdapter mFilterListAdapter;
+    private RecyclerView.LayoutManager mFilterListLayoutManager;
+
 
     public NewAreaBasedThirdFragment() {
     }
@@ -76,6 +90,8 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
                     mListener.setRouteNumber(mTtcRouteNumber);
                     mListener.setAirTypeAndValue(mAirType, mAirValue);
                     mListener.setAirSensorMap(mAirSensorMap);
+
+                    mListener.setFilterList(mFilters);
                     mListener.submitSubscription();
                 } else {
                     Toast.makeText(getActivity().getApplicationContext(), "Error!", Toast.LENGTH_SHORT).show();
@@ -100,6 +116,28 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
                 mListener.goToSecondSubscriptionPageFromThirdPage();
             }
         });
+
+        mOperationsRadioGroup = (RadioGroup) root.findViewById(R.id.radio_group_operation);
+        RadioButton eqButton = (RadioButton) root.findViewById(R.id.radio_eq);
+        eqButton.setChecked(true);
+
+
+        mFilterList = (RecyclerView) root.findViewById(R.id.filter_list);
+        mFilterListLayoutManager = new LinearLayoutManager(root.getContext());
+        mFilterList.setLayoutManager(mFilterListLayoutManager);
+        mFilters = new ArrayList<>();
+        mFilterListAdapter = new FilterListAdapter(root.getContext(), mFilters);
+        mFilterListAdapter.setOnDeleteFilterBtnClickListener(new FilterListAdapter.OnDeleteFilterBtnClickListener() {
+            @Override
+            public void onDeleteFilterBtnClick(View deleteBtn, int position) {
+                mFilters.remove(position);
+                mFilterListAdapter.notifyItemRemoved(position);
+//                if (mFilters.isEmpty()) {
+//                    mSubscribeButton.setEnabled(false);
+//                }
+            }
+        });
+        mFilterList.setAdapter(mFilterListAdapter);
 
         return root;
         //return super.onCreateView(inflater, container, savedInstanceState);
@@ -176,14 +214,14 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
             String fieldName = mFieldNamesSpinner.getSelectedItem().toString();
             String dataType = mPublishersSpinner.getSelectedItem().toString();
             if (!fieldName.equals("Everything")) {
-                mSubscribeButton.setEnabled(false);
+//                mSubscribeButton.setEnabled(false);
                 mEnterButton.setEnabled(true);
-                if (dataType.equals("TTC")) {
-                    mFieldValueView.setHint("EqualTo");
-                }
-                else if (dataType.equals("Air Sensor")) {
-                    mFieldValueView.setHint("GreaterThan");
-                }
+//                if (dataType.equals("TTC")) {
+//                    mFieldValueView.setHint("");
+//                }
+//                else if (dataType.equals("Air Sensor")) {
+//                    mFieldValueView.setHint("GreaterThan");
+//                }
             }
             else {
                 mFieldValueView.setHint("N/A");
@@ -200,11 +238,12 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
     private void enterFieldValue() {
         String fieldValue = mFieldValueView.getText().toString();
         String fieldName = mFieldNamesSpinner.getSelectedItem().toString();
-        String dataType = mPublishersSpinner.getSelectedItem().toString();
 
+        String dataType = mPublishersSpinner.getSelectedItem().toString();
         if (dataType.equals("TTC")) {
             switch (fieldName) {
                 case "Route Number":
+                    fieldName = "routeNumber";
                     mTtcRouteNumber = fieldValue;
                     break;
                 case "Everything":
@@ -217,31 +256,37 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
         else if (dataType.equals("Air Sensor")) {
             switch (fieldName) {
                 case "Carbon Dioxide (CO2)":
+                    fieldName = "co2";
                     mAirSensorMap.put("co2", Float.parseFloat(fieldValue));
                     mAirType = "CO2";
                     mAirValue = Float.parseFloat(fieldValue);
                     break;
                 case "Carbon Monoxide (CO)":
+                    fieldName = "co";
                     mAirSensorMap.put("co", Float.parseFloat(fieldValue));
                     mAirType = "CO";
                     mAirValue = Float.parseFloat(fieldValue);
                     break;
                 case "Nitrogen Oxides (NOx)":
+                    fieldName = "nox";
                     mAirSensorMap.put("nox", Float.parseFloat(fieldValue));
                     mAirType = "NOx";
                     mAirValue = Float.parseFloat(fieldValue);
                     break;
                 case "Air Quality Health Index (AQHI)":
+                    fieldName = "aqhi";
                     mAirSensorMap.put("aqhi", Float.parseFloat(fieldValue));
                     mAirType = "AQHI";
                     mAirValue = Float.parseFloat(fieldValue);
                     break;
                 case "Ozone (O3)":
+                    fieldName = "o3";
                     mAirSensorMap.put("o3", Float.parseFloat(fieldValue));
                     mAirType = "O3";
                     mAirValue = Float.parseFloat(fieldValue);
                     break;
                 case "Particulate Matter (PM)":
+                    fieldName = "pm";
                     mAirSensorMap.put("pm", Float.parseFloat(fieldValue));
                     mAirType = "PM";
                     mAirValue = Float.parseFloat(fieldValue);
@@ -256,12 +301,35 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
             }
         }
 
-
         if (TextUtils.isEmpty(fieldValue) && !fieldName.equals("Everything")) {
             mFieldValueView.setError(getString(R.string.new_subscription_invalid_field_value));
             return;
         }
+
+        RadioButton checkedOperation = (RadioButton) root.findViewById(mOperationsRadioGroup.getCheckedRadioButtonId());
+//
+        Filter.Operation operation = Filter.Operation.valueOf(checkedOperation.getText().toString().toUpperCase());
+        Filter newFilter = new Filter(fieldName, operation, fieldValue);
+        if (checkNewFilter(newFilter)) {
+            mFilters.add(0, newFilter);
+            mFilterListAdapter.notifyItemInserted(0);
+            mFilterList.scrollToPosition(0);
+            mSubscribeButton.setEnabled(true);
+        }
+
         mSubscribeButton.setEnabled(true);
+    }
+
+
+    public boolean checkNewFilter(Filter newFilter) {
+        for (Filter existingFilter : mFilters) {
+            if (TextUtils.equals(newFilter.getFieldName(), existingFilter.getFieldName()) &&
+                    newFilter.getOperation() == existingFilter.getOperation() &&
+                    TextUtils.equals(newFilter.getFieldValue(), existingFilter.getFieldValue())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public interface OnFragmentInteractionListener {
@@ -271,5 +339,6 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
         void setRouteNumber(String routeNumber);
         void setAirSensorMap(HashMap<String, Float> airSensorMap);
         void setAirTypeAndValue(String airType, float airValue);
+        void setFilterList(List<Filter> mFilters);
     }
 }

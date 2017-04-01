@@ -93,6 +93,46 @@
             android:layout_weight="1"/>
     </LinearLayout>
 
+    <RadioGroup
+        android:id="@+id/radio_group_operation"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp">
+
+        <RadioButton
+            android:id="@+id/radio_eq"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/new_subscription_eq" />
+
+        <RadioButton
+            android:id="@+id/radio_gt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/new_subscription_gt" />
+
+        <RadioButton
+            android:id="@+id/radio_lt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/new_subscription_lt" />
+
+        <RadioButton
+            android:id="@+id/radio_gte"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/new_subscription_gte" />
+
+        <RadioButton
+            android:id="@+id/radio_lte"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/new_subscription_lte" />
+    </RadioGroup>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -126,5 +166,12 @@
             android:id="@+id/btn_subscribe"
             style="@style/Widget.AppCompat.Button.Colored" />
     </LinearLayout>
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/filter_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
 
 </LinearLayout>
