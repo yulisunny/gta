@@ -244,27 +244,28 @@ public class UpdatesListenerIntentService extends IntentService {
     }
 
     private void notifyAirsense(JSONObject data, String filters, String name) {
-        String content = "";
+        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
         if (filters != null) {
             String[] filtersArray = filters.split(",");
             for (String filterString : filtersArray) {
                 Filter f = Filter.fromString(filterString);
                 try {
-                    content += f.getFieldName() + ":" + data.getString(f.getFieldName()) + "  ";
+                    inboxStyle.addLine(f.getFieldName() + ": " + data.getString(f.getFieldName()));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
         }
 
-
         Intent intent = new Intent(this, MainActivity.class);
         PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
                 .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(name)
-                .setContentIntent(pending);
-        mBuilder.setContentText(content);
+                .setContentTitle("Air Quality Update")
+                .setContentIntent(pending)
+                .setContentText(name)
+                .setStyle(inboxStyle);
+
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(1, mBuilder.build());
