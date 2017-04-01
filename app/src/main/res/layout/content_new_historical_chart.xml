@@ -138,7 +138,7 @@
                 android:id="@+id/spinner_new_historical_chart_air_quality_data_types"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:entries="@array/new_historical_chart_air_sensor_data_types"
+                android:entries="@array/air_sensor_data_types"
                 style="@android:style/Widget.Spinner"
                 android:spinnerMode="dropdown"/>
         </LinearLayout>

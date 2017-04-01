@@ -250,7 +250,7 @@ public class UpdatesListenerIntentService extends IntentService {
             for (String filterString : filtersArray) {
                 Filter f = Filter.fromString(filterString);
                 try {
-                    inboxStyle.addLine(f.getFieldName() + ": " + data.getString(f.getFieldName()));
+                    inboxStyle.addLine(JsonKeyToReadableConverter.toReadable(f.getFieldName()) + ": " + data.getString(f.getFieldName()));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
