@@ -32,12 +32,12 @@
 
     <string-array name="air_sensor_field_array">
         <item>Everything</item>
-        <item>@string/item_co2</item>
-        <item>@string/item_co</item>
-        <item>@string/item_nox</item>
-        <item>@string/item_aqhi</item>
-        <item>@string/item_o3</item>
-        <item>@string/item_pm</item>
+        <item>@string/co2</item>
+        <item>@string/co</item>
+        <item>@string/nox</item>
+        <item>@string/aqhi</item>
+        <item>@string/o3</item>
+        <item>@string/pm</item>
     </string-array>
 
     <string-array name="ttc_field_names_array">
@@ -110,20 +110,20 @@
         <item>@string/item_avg_travel_time</item>
     </string-array>
     <string name="new_historical_chart_air_quality_data_type_title">Air Quality Data Type: </string>
-    <string-array name="new_historical_chart_air_sensor_data_types">
-        <item>@string/item_co2</item>
-        <item>@string/item_co</item>
-        <item>@string/item_nox</item>
-        <item>@string/item_aqhi</item>
-        <item>@string/item_o3</item>
-        <item>@string/item_pm</item>
+    <string-array name="air_sensor_data_types">
+        <item>@string/co2</item>
+        <item>@string/co</item>
+        <item>@string/nox</item>
+        <item>@string/aqhi</item>
+        <item>@string/o3</item>
+        <item>@string/pm</item>
     </string-array>
-    <string name="item_co2">Carbon Dioxide (CO2)</string>
-    <string name="item_co">Carbon Monoxide (CO)</string>
-    <string name="item_nox">Nitrogen Oxides (NOx)</string>
-    <string name="item_aqhi">Air Quality Health Index (AQHI)</string>
-    <string name="item_o3">Ozone (O3)</string>
-    <string name="item_pm">Particulate Matter (PM)</string>
+    <string name="co2">Carbon Dioxide (CO2)</string>
+    <string name="co">Carbon Monoxide (CO)</string>
+    <string name="nox">Nitrogen Oxides (NOx)</string>
+    <string name="aqhi">Air Quality Health Index (AQHI)</string>
+    <string name="o3">Ozone (O3)</string>
+    <string name="pm">Particulate Matter (PM)</string>
 
     <string name="item_avg_speed">Average Speed</string>
     <string name="item_avg_travel_time">Travel Time</string>

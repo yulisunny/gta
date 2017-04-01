@@ -225,7 +225,7 @@ public class HistoricalDashboardFragment extends Fragment {
                     graph.fetchDataAndCreateGraph();
                 } else {
                     linkId = data.getStringExtra("DEVICE_ID");
-                    dataTypes = getResources().getStringArray(R.array.new_historical_chart_air_sensor_data_types);
+                    dataTypes = getResources().getStringArray(R.array.air_sensor_data_types);
                     HistoricalGraph graph = new HistoricalGraph(HistoricalChartTypes.AIR_QUALITY, chartTitle, dataTypes[typePos],
                             startTime, endTime, chartDataTime, null, HistoricalChartStatus.NEEDS_PERSIST, linkId);
                     graph.fetchDataAndCreateGraph();
@@ -662,17 +662,17 @@ public class HistoricalDashboardFragment extends Fragment {
         }
 
         private String getDataUnit() {
-            if (mDataType.equals(getString(R.string.item_co2))) {
+            if (mDataType.equals(getString(R.string.co2))) {
                 return "ppm";
-            } else if (mDataType.equals(getString(R.string.item_o3))) {
+            } else if (mDataType.equals(getString(R.string.o3))) {
                 return "ppb";
-            } else if (mDataType.equals(getString(R.string.item_pm))) {
+            } else if (mDataType.equals(getString(R.string.pm))) {
                 return "µg/m3";
-            } else if (mDataType.equals(getString(R.string.item_nox))) {
+            } else if (mDataType.equals(getString(R.string.nox))) {
                 return "ppb";
-            } else if (mDataType.equals(getString(R.string.item_aqhi))) {
+            } else if (mDataType.equals(getString(R.string.aqhi))) {
                 return "Index";
-            } else if (mDataType.equals(getString(R.string.item_co))) {
+            } else if (mDataType.equals(getString(R.string.co))) {
                 return "ppm";
             } else if (mDataType.equals(getString(R.string.item_avg_speed))) {
                 return "km/h";
@@ -706,15 +706,15 @@ public class HistoricalDashboardFragment extends Fragment {
         } ]
          */
             String dataKey;
-            if (dataType.equals(getString(R.string.item_co2))) {
+            if (dataType.equals(getString(R.string.co2))) {
                 dataKey = "co2";
-            } else if (dataType.equals(getString(R.string.item_co))) {
+            } else if (dataType.equals(getString(R.string.co))) {
                 dataKey = "co";
-            } else if (dataType.equals(getString(R.string.item_aqhi))) {
+            } else if (dataType.equals(getString(R.string.aqhi))) {
                 dataKey = "aqhi";
-            } else if (dataType.equals(getString(R.string.item_nox))) {
+            } else if (dataType.equals(getString(R.string.nox))) {
                 dataKey = "nox";
-            } else if (dataType.equals(getString(R.string.item_pm))) {
+            } else if (dataType.equals(getString(R.string.pm))) {
                 dataKey = "pm";
             } else {
                 dataKey = "o3";

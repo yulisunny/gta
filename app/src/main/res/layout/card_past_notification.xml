@@ -49,6 +49,7 @@
             android:layout_toEndOf="@+id/text_past_notification_line_2_name" />
 
         <TextView
+            android:id="@+id/text_past_notification_content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/text_past_notification_line_2_name"
