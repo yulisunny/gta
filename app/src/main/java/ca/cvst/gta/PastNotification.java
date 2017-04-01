@@ -99,7 +99,8 @@ public class PastNotification {
         String[] projection = {
                 AirsenseNotificationEntry.LATITUDE,
                 AirsenseNotificationEntry.LONGITUDE,
-                AirsenseNotificationEntry.TIMESTAMP
+                AirsenseNotificationEntry.TIMESTAMP,
+                AirsenseNotificationEntry.MONITOR_NAME
         };
 
         Cursor cursor = db.query(AirsenseNotificationEntry.TABLE_NAME, projection, null, null, null, null, null, String.valueOf(n));
@@ -108,8 +109,9 @@ public class PastNotification {
             float lat = cursor.getFloat(cursor.getColumnIndexOrThrow(AirsenseNotificationEntry.LATITUDE));
             float lon = cursor.getFloat(cursor.getColumnIndexOrThrow(AirsenseNotificationEntry.LONGITUDE));
             int timestamp = cursor.getInt(cursor.getColumnIndexOrThrow(AirsenseNotificationEntry.TIMESTAMP));
+            String monitorName = cursor.getString(cursor.getColumnIndexOrThrow(AirsenseNotificationEntry.MONITOR_NAME));
             String content = "<b>" + "Time: " + "</b>" + new Date(((long) timestamp) * 1000L).toString();
-            PastNotification pn = new PastNotification("Airsense", content, lat, lon, timestamp, SubscriptionType.AIRSENSE);
+            PastNotification pn = new PastNotification(monitorName, content, lat, lon, timestamp, SubscriptionType.AIRSENSE);
             ret.add(pn);
 
         }
