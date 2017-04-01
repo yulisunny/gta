@@ -23,11 +23,13 @@
     <string-array name="publishers_array">
         <item>TTC</item>
         <item>Air Sensor</item>
+        <item>Bixi</item>
     </string-array>
 
     <string-array name="ttc_field_array">
         <item>Everything</item>
         <item>Route Number</item>
+        <item>Vehicle ID</item>
     </string-array>
 
     <string-array name="air_sensor_field_array">
@@ -38,6 +40,14 @@
         <item>@string/aqhi</item>
         <item>@string/o3</item>
         <item>@string/pm</item>
+    </string-array>
+
+    <string-array name="bixi_field_array">
+        <item>Everything</item>
+        <item>Station ID</item>
+        <item>Station Name</item>
+        <item>Number of Bikes</item>
+        <item>Number of Empty Docks</item>
     </string-array>
 
     <string-array name="ttc_field_names_array">

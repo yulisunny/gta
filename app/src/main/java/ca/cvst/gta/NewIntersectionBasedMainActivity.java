@@ -35,10 +35,7 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
     private int[] startAndEndTime;
     private String intersectionName;
     private String subscriptionName;
-    private HashMap<String, Float> airSensorMap;
-    private String routeNumber;
-    private String airType;
-    private float airValue;
+    private boolean mEverything;
     private List<Filter> mFilters;
 
     @Override
@@ -57,10 +54,6 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
         this.AreaBounds = bounds;
     }
 
-    @Override
-    public void setPublisher(String publisher) {
-        this.publisher = publisher;
-    }
 
     @Override
     public void setMondayToSunday(int[] mondayToSundayArray) {
@@ -82,25 +75,12 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
         this.intersectionName = name;
     }
 
-    @Override
-    public void setAirSensorMap(HashMap<String, Float> airSensorMap) {
-        this.airSensorMap = airSensorMap;
-    }
 
     @Override
-    public void setRouteNumber(String routeNumber) {
-        this.routeNumber = routeNumber;
-    }
-
-    @Override
-    public void setAirTypeAndValue(String airType, float airValue) {
-        this.airType = airType;
-        this.airValue = airValue;
-    }
-
-    @Override
-    public void setFilterList(List<Filter> mFilters) {
+    public void setFilterList(List<Filter> mFilters, boolean mEverything, String mPublisher) {
         this.mFilters = mFilters;
+        this.mEverything = mEverything;
+        this.publisher = mPublisher;
     }
 
     @Override
@@ -153,56 +133,38 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
             mustArray.put(lngRangeObject);
             mustArray.put(latRangeObject);
 
-            for (Filter filter : mFilters) {
-                if (filter.getOperation() == Filter.Operation.EQ) {
-                    JSONObject o1 = new JSONObject();
-                    o1.put(filter.getFieldName(), filter.getFieldValue());
-                    JSONObject o2 = new JSONObject();
-                    o2.put("match", o1);
-                    mustArray.put(o2);
-                } else {
-                    JSONObject o1 = new JSONObject();
-                    o1.put(filter.getOperation().toString().toLowerCase(), Float.valueOf(filter.getFieldValue()));
-                    JSONObject o2 = new JSONObject();
-                    o2.put(filter.getFieldName(), o1);
-                    JSONObject o3 = new JSONObject();
-                    o3.put("range", o2);
-                    mustArray.put(o3);
+            if (!mEverything) {
+                for (Filter filter : mFilters) {
+                    if (filter.getOperation() == Filter.Operation.EQ) {
+                        JSONObject o1 = new JSONObject();
+                        o1.put(filter.getFieldName(), filter.getFieldValue());
+                        JSONObject o2 = new JSONObject();
+                        o2.put("match", o1);
+                        mustArray.put(o2);
+                    } else {
+                        JSONObject o1 = new JSONObject();
+                        o1.put(filter.getOperation().toString().toLowerCase(), Float.valueOf(filter.getFieldValue()));
+                        JSONObject o2 = new JSONObject();
+                        o2.put(filter.getFieldName(), o1);
+                        JSONObject o3 = new JSONObject();
+                        o3.put("range", o2);
+                        mustArray.put(o3);
+                    }
                 }
             }
-
-            // publisher = mPublishersSpinner.getSelectedItem().toString();
             if (publisher.equals("TTC")) {
                 payload.put("publisherName", publisher.toLowerCase());
-
-//                if (!routeNumber.equals("-1")) {
-//                    JSONObject routeNumberObject = new JSONObject().put("routeNumber", routeNumber);
-//                    JSONObject matchObject = new JSONObject().put("match", routeNumberObject);
-//                    mustArray.put(matchObject);
-//                }
-                JSONObject mustObject = new JSONObject().put("must", mustArray);
-                JSONObject boolObject = new JSONObject().put("bool", mustObject);
-
-                payload.put("subscription", boolObject);
-                payload.put("action", "subscribe");
             } else if (publisher.equals("Air Sensor")) {
                 payload.put("publisherName", "airsense");
-
-//                if (!airType.equals("-1")) {
-//                    JSONObject gtObject = new JSONObject().put("gt", airValue);
-//                    JSONObject airTypeObject = new JSONObject().put(airType.toLowerCase(), gtObject);
-//                    JSONObject airRangeObject = new JSONObject().put("range", airTypeObject);
-//                    mustArray.put(airRangeObject);
-//                }
-                JSONObject mustObject = new JSONObject().put("must", mustArray);
-                JSONObject boolObject = new JSONObject().put("bool", mustObject);
-
-                payload.put("subscription", boolObject);
-                payload.put("action", "subscribe");
+            } else if (publisher.equals("Bixi")) {
+                payload.put("publisherName", "bixi");
             }
+            JSONObject mustObject = new JSONObject().put("must", mustArray);
+            JSONObject boolObject = new JSONObject().put("bool", mustObject);
+            payload.put("subscription", boolObject);
+            payload.put("action", "subscribe");
 
             System.out.println("payload = " + payload);
-//            SubscriptionService.startActionSubscribe(getApplicationContext(), payload.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -233,12 +195,10 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
                             cv.put(SubscriptionEntry.UPPER_LATITUDE, upperLatitude);
                             cv.put(SubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
                             cv.put(SubscriptionEntry.UPPER_LONGITUDE, upperLongitude);
-
                             cv.put(SubscriptionEntry.TYPE, "ttc");
-                            if (!routeNumber.equals("-1")) {
+                            if (!mEverything) {
                                 cv.put(SubscriptionEntry.FILTERS, mFilters.toString().replace("[","").replace("]",""));
                             }
-
                             cv.put(SubscriptionEntry.MONDAY, mondayToSundayArray[0]);
                             cv.put(SubscriptionEntry.TUESDAY, mondayToSundayArray[1]);
                             cv.put(SubscriptionEntry.WEDNESDAY, mondayToSundayArray[2]);
@@ -265,9 +225,8 @@ public class NewIntersectionBasedMainActivity extends AppCompatActivity
                             cv.put(SubscriptionEntry.UPPER_LATITUDE, upperLatitude);
                             cv.put(SubscriptionEntry.LOWER_LONGITUDE, lowerLongitude);
                             cv.put(SubscriptionEntry.UPPER_LONGITUDE, upperLongitude);
-
                             cv.put(SubscriptionEntry.TYPE, "airsense");
-                            if (!airType.equals("-1")) {
+                            if (!mEverything) {
                                 cv.put(SubscriptionEntry.FILTERS, mFilters.toString().replace("[","").replace("]",""));
                             }
                             cv.put(SubscriptionEntry.MONDAY, mondayToSundayArray[0]);

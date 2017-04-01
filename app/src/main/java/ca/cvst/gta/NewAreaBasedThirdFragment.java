@@ -36,10 +36,7 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
     private Button mSubscribeButton;
     private Button mEnterButton;
     private static View root;
-    private HashMap<String, Float> mAirSensorMap = new HashMap<>();
-    private String mTtcRouteNumber = "-1";
-    private String mAirType = "-1";
-    private float mAirValue = -1;
+    private boolean mEverything = true;
     private RadioGroup mOperationsRadioGroup;
     private List<Filter> mFilters;
     private RecyclerView mFilterList;
@@ -86,12 +83,7 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
             @Override
             public void onClick(View v) {
                 if (publisher != null) {
-                    mListener.setPublisher(mPublishersSpinner.getSelectedItem().toString());
-                    mListener.setRouteNumber(mTtcRouteNumber);
-                    mListener.setAirTypeAndValue(mAirType, mAirValue);
-                    mListener.setAirSensorMap(mAirSensorMap);
-
-                    mListener.setFilterList(mFilters);
+                    mListener.setFilterList(mFilters, mEverything, mPublishersSpinner.getSelectedItem().toString());
                     mListener.submitSubscription();
                 } else {
                     Toast.makeText(getActivity().getApplicationContext(), "Error!", Toast.LENGTH_SHORT).show();
@@ -201,6 +193,9 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
                 case 1:
                     mFieldNamesAdapter = ArrayAdapter.createFromResource(root.getContext(), R.array.air_sensor_field_array, android.R.layout.simple_spinner_item);
                     break;
+                case 2:
+                    mFieldNamesAdapter = ArrayAdapter.createFromResource(root.getContext(), R.array.bixi_field_array, android.R.layout.simple_spinner_item);
+                    break;
             }
             mFieldNamesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             mFieldNamesSpinner.setAdapter(mFieldNamesAdapter);
@@ -212,7 +207,7 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
         }
         if (parent.getId() == R.id.spinner_field_names) {
             String fieldName = mFieldNamesSpinner.getSelectedItem().toString();
-            String dataType = mPublishersSpinner.getSelectedItem().toString();
+//            String dataType = mPublishersSpinner.getSelectedItem().toString();
             if (!fieldName.equals("Everything")) {
 //                mSubscribeButton.setEnabled(false);
                 mEnterButton.setEnabled(true);
@@ -238,16 +233,19 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
     private void enterFieldValue() {
         String fieldValue = mFieldValueView.getText().toString();
         String fieldName = mFieldNamesSpinner.getSelectedItem().toString();
-
         String dataType = mPublishersSpinner.getSelectedItem().toString();
         if (dataType.equals("TTC")) {
             switch (fieldName) {
                 case "Route Number":
                     fieldName = "routeNumber";
-                    mTtcRouteNumber = fieldValue;
+                    mEverything = false;
+                    break;
+                case "Vehicle ID":
+                    fieldName = "id";
+                    mEverything = false;
                     break;
                 case "Everything":
-                    mTtcRouteNumber = "-1";
+                    mEverything = true;
                     break;
                 default:
                     break;
@@ -257,44 +255,55 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
             switch (fieldName) {
                 case "Carbon Dioxide (CO2)":
                     fieldName = "co2";
-                    mAirSensorMap.put("co2", Float.parseFloat(fieldValue));
-                    mAirType = "CO2";
-                    mAirValue = Float.parseFloat(fieldValue);
+                    mEverything = false;
                     break;
                 case "Carbon Monoxide (CO)":
                     fieldName = "co";
-                    mAirSensorMap.put("co", Float.parseFloat(fieldValue));
-                    mAirType = "CO";
-                    mAirValue = Float.parseFloat(fieldValue);
+                    mEverything = false;
                     break;
                 case "Nitrogen Oxides (NOx)":
                     fieldName = "nox";
-                    mAirSensorMap.put("nox", Float.parseFloat(fieldValue));
-                    mAirType = "NOx";
-                    mAirValue = Float.parseFloat(fieldValue);
+                    mEverything = false;
                     break;
                 case "Air Quality Health Index (AQHI)":
                     fieldName = "aqhi";
-                    mAirSensorMap.put("aqhi", Float.parseFloat(fieldValue));
-                    mAirType = "AQHI";
-                    mAirValue = Float.parseFloat(fieldValue);
+                    mEverything = false;
                     break;
                 case "Ozone (O3)":
                     fieldName = "o3";
-                    mAirSensorMap.put("o3", Float.parseFloat(fieldValue));
-                    mAirType = "O3";
-                    mAirValue = Float.parseFloat(fieldValue);
+                    mEverything = false;
                     break;
                 case "Particulate Matter (PM)":
                     fieldName = "pm";
-                    mAirSensorMap.put("pm", Float.parseFloat(fieldValue));
-                    mAirType = "PM";
-                    mAirValue = Float.parseFloat(fieldValue);
+                    mEverything = false;
                     break;
                 case "Everything":
-                    mAirSensorMap.clear();
-                    mAirType = "-1";
-                    mAirValue = -1;
+                    mEverything = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+        else if (dataType.equals("Bixi")) {
+            switch (fieldName) {
+                case "Station ID":
+                    fieldName = "station_id";
+                    mEverything = false;
+                    break;
+                case "Station Name":
+                    fieldName = "station_name";
+                    mEverything = false;
+                    break;
+                case "Number of Bikes":
+                    fieldName = "nbBikes";
+                    mEverything = false;
+                    break;
+                case "Number of Empty Docks":
+                    fieldName = "nbEmptyDocks";
+                    mEverything = false;
+                    break;
+                case "Everything":
+                    mEverything = true;
                     break;
                 default:
                     break;
@@ -307,7 +316,6 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
         }
 
         RadioButton checkedOperation = (RadioButton) root.findViewById(mOperationsRadioGroup.getCheckedRadioButtonId());
-//
         Filter.Operation operation = Filter.Operation.valueOf(checkedOperation.getText().toString().toUpperCase());
         Filter newFilter = new Filter(fieldName, operation, fieldValue);
         if (checkNewFilter(newFilter)) {
@@ -316,7 +324,6 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
             mFilterList.scrollToPosition(0);
             mSubscribeButton.setEnabled(true);
         }
-
         mSubscribeButton.setEnabled(true);
     }
 
@@ -333,12 +340,8 @@ public class NewAreaBasedThirdFragment extends Fragment implements AdapterView.O
     }
 
     public interface OnFragmentInteractionListener {
-        void setPublisher(String publisher);
         void submitSubscription();
         void goToSecondSubscriptionPageFromThirdPage();
-        void setRouteNumber(String routeNumber);
-        void setAirSensorMap(HashMap<String, Float> airSensorMap);
-        void setAirTypeAndValue(String airType, float airValue);
-        void setFilterList(List<Filter> mFilters);
+        void setFilterList(List<Filter> mFilters, boolean mEverything, String mPublisher);
     }
 }
